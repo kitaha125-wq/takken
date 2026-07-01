@@ -463,6 +463,7 @@ function App() {
   const [questions,setQuestions] = useState([]);
   const [qIdx,setQIdx]           = useState(0);
   const [score,setScore]         = useState(0);
+  const [skipped,setSkipped]     = useState(0);
   const [answered,setAnswered]   = useState(null);
   const [history,setHistory]     = useState(()=>sg('tk_hist_v5',[]));
 
@@ -505,7 +506,7 @@ function App() {
     } else {
       qs = pickQuestions(quizScope, quizCount, srs);
     }
-    setQuestions(qs.map(q=>({...q}))); setQIdx(0); setScore(0); setAnswered(null); setQuizPhase('running');
+    setQuestions(qs.map(q=>({...q}))); setQIdx(0); setScore(0); setSkipped(0); setAnswered(null); setQuizPhase('running');
   },[quizCount, quizMode, quizScope, dueQuestions, srs]);
 
   const handleOX = useCallback(ans=>{
@@ -525,15 +526,29 @@ function App() {
   const nextQ = useCallback(()=>{
     if(qIdx+1>=quizCount){
       setQuizPhase('result');
-      const p=Math.round(score/quizCount*100);
-      const entry={date:new Date().toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}),score,total:quizCount,pct:p,diff:quizDiff||'—',scope:quizMode==='review'?'📚復習モード':quizScope==='all'?'全分野':quizScope};
+      const attempted=quizCount-skipped;
+      const p=attempted>0?Math.round(score/attempted*100):0;
+      const entry={date:new Date().toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}),score,total:quizCount,pct:p,skipped,diff:quizDiff||'—',scope:quizMode==='review'?'📚復習モード':quizScope==='all'?'全分野':quizScope};
       setHistory(prev=>{const nh=[entry,...prev].slice(0,15);ss('tk_hist_v5',nh);return nh;});
     } else { setQIdx(i=>i+1); setAnswered(null); }
-  },[qIdx,quizCount,score,quizDiff,quizMode,quizScope]);
+  },[qIdx,quizCount,score,skipped,quizDiff,quizMode,quizScope]);
+
+  const skipQ = useCallback(()=>{
+    if(answered!==null) return;
+    setSkipped(s=>s+1);
+    if(qIdx+1>=quizCount){
+      setQuizPhase('result');
+      const attempted=quizCount-(skipped+1);
+      const p=attempted>0?Math.round(score/attempted*100):0;
+      const entry={date:new Date().toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}),score,total:quizCount,pct:p,skipped:skipped+1,diff:quizDiff||'—',scope:quizMode==='review'?'📚復習モード':quizScope==='all'?'全分野':quizScope};
+      setHistory(prev=>{const nh=[entry,...prev].slice(0,15);ss('tk_hist_v5',nh);return nh;});
+    } else { setQIdx(i=>i+1); setAnswered(null); }
+  },[answered,qIdx,quizCount,score,skipped,quizDiff,quizMode,quizScope]);
 
   const q=questions[qIdx]; const totalQ=quizCount||5;
   const barPct=quizPhase==='running'?Math.round(qIdx/totalQ*100):0;
-  const finalPct=quizPhase==='result'?Math.round(score/totalQ*100):0;
+  const attempted=totalQ-skipped;
+  const finalPct=quizPhase==='result'?(attempted>0?Math.round(score/attempted*100):0):0;
   const currentRec = q?.id ? srs[q.id] : null;
 
   const TABS=[['home','🏠','ホーム'],['calendar','📅','計画'],['tracker','📋','進捗'],['quiz','✏️','問題集']];
@@ -552,7 +567,7 @@ function App() {
         {tab==='home'    &&<HomeTab daysLeft={daysLeft} todayTask={todayTask} todayPlanDay={todayPlanDay} done={done} pct={pct} doneTime={doneTime} remTime={remTime} daysDone={daysDone} dueCount={dueCount} srs={srs} setTab={setTab} goQuiz={goQuiz} startReviewNow={startReviewNow}/>}
         {tab==='calendar'&&<CalendarTab daysDone={daysDone} toggleDay={toggleDay} goQuiz={goQuiz}/>}
         {tab==='tracker' &&<TrackerTab done={done} toggleDone={toggleDone} goQuiz={goQuiz} doneTime={doneTime} remTime={remTime} pct={pct} srs={srs}/>}
-        {tab==='quiz'    &&<QuizTab quizPhase={quizPhase} quizScope={quizScope} setQuizScope={setQuizScope} quizDiff={quizDiff} setQuizDiff={setQuizDiff} quizCount={quizCount} setQuizCount={setQuizCount} quizMode={quizMode} setQuizMode={setQuizMode} dueCount={dueCount} q={q} qIdx={qIdx} score={score} totalQ={totalQ} answered={answered} barPct={barPct} finalPct={finalPct} currentRec={currentRec} handleOX={handleOX} nextQ={nextQ} startQuiz={startQuiz} backToSetup={()=>setQuizPhase('setup')} history={history} srs={srs}/>}
+        {tab==='quiz'    &&<QuizTab quizPhase={quizPhase} quizScope={quizScope} setQuizScope={setQuizScope} quizDiff={quizDiff} setQuizDiff={setQuizDiff} quizCount={quizCount} setQuizCount={setQuizCount} quizMode={quizMode} setQuizMode={setQuizMode} dueCount={dueCount} q={q} qIdx={qIdx} score={score} skipped={skipped} totalQ={totalQ} answered={answered} barPct={barPct} finalPct={finalPct} currentRec={currentRec} handleOX={handleOX} nextQ={nextQ} skipQ={skipQ} startQuiz={startQuiz} backToSetup={()=>setQuizPhase('setup')} history={history} srs={srs}/>}
       </div>
     </div>
   );
@@ -1024,7 +1039,7 @@ function TrackerTab({done,toggleDone,goQuiz,doneTime,remTime,pct,srs}) {
 // ══════════════════════════════════════════════════
 // QuizTab
 // ══════════════════════════════════════════════════
-function QuizTab({quizPhase,quizScope,setQuizScope,quizDiff,setQuizDiff,quizCount,setQuizCount,quizMode,setQuizMode,dueCount,q,qIdx,score,totalQ,answered,barPct,finalPct,currentRec,handleOX,nextQ,startQuiz,backToSetup,history,srs}) {
+function QuizTab({quizPhase,quizScope,setQuizScope,quizDiff,setQuizDiff,quizCount,setQuizCount,quizMode,setQuizMode,dueCount,q,qIdx,score,skipped,totalQ,answered,barPct,finalPct,currentRec,handleOX,nextQ,skipQ,startQuiz,backToSetup,history,srs}) {
   const allCats=[...new Set(LECTURES.map(l=>l.cat))].filter(c=>QB[c]).sort((a,b)=>RANK_ORDER[LECTURES.find(l=>l.cat===a).rank]-RANK_ORDER[LECTURES.find(l=>l.cat===b).rank]);
   const ready = quizMode==='review' ? !!quizCount : (!!quizDiff && !!quizCount);
   const qAcc  = currentRec && currentRec.totalAns>0 ? Math.round(currentRec.correctAns/currentRec.totalAns*100) : null;
@@ -1130,7 +1145,7 @@ function QuizTab({quizPhase,quizScope,setQuizScope,quizDiff,setQuizDiff,quizCoun
               :<span style={{fontSize:11,padding:'2px 8px',fontWeight:700,background:quizDiff==='hard'?C.hardBg:'#f0f4ff',color:quizDiff==='hard'?C.hard:C.a,border:`1px solid ${quizDiff==='hard'?'#d4a0c8':C.aBd}`}}>{quizDiff==='hard'?'🔥 難しい':'📖 普通'}</span>
             }
             <span style={{fontSize:11,color:C.muted}}>🎯 {quizMode==='review'?'復習':quizScope==='all'?'全分野':quizScope}</span>
-            <span style={{fontSize:12}}>正解: {score}</span>
+            <span style={{fontSize:12}}>正解: {score}{skipped>0&&<span style={{color:C.muted,marginLeft:6}}>スキップ: {skipped}</span>}</span>
           </div>
 
           {/* この問題のSRS情報 */}
@@ -1149,10 +1164,15 @@ function QuizTab({quizPhase,quizScope,setQuizScope,quizDiff,setQuizDiff,quizCoun
           </div>
 
           {answered===null&&(
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:14}}>
-              <OXBtn type="O" onClick={()=>handleOX(true)}/>
-              <OXBtn type="X" onClick={()=>handleOX(false)}/>
-            </div>
+            <>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:10}}>
+                <OXBtn type="O" onClick={()=>handleOX(true)}/>
+                <OXBtn type="X" onClick={()=>handleOX(false)}/>
+              </div>
+              <button onClick={skipQ} style={{width:'100%',padding:10,border:`1px solid ${C.line}`,background:'white',color:C.muted,fontSize:12,cursor:'pointer',fontFamily:"'Zen Kaku Gothic New',sans-serif",marginBottom:14}}>
+                わからない（スキップ →）
+              </button>
+            </>
           )}
 
           {answered!==null&&q&&(
@@ -1187,8 +1207,11 @@ function QuizTab({quizPhase,quizScope,setQuizScope,quizDiff,setQuizDiff,quizCoun
         <div style={{background:'white',border:`1px solid ${C.line}`,padding:'30px 20px',textAlign:'center',marginBottom:20}}>
           <div style={{fontSize:48,marginBottom:12}}>{finalPct>=80?'🏆':finalPct>=60?'📚':'💪'}</div>
           <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:18,fontWeight:800,marginBottom:5}}>{finalPct>=80?'合格圏内！':finalPct>=60?'もう一息！':'復習が必要'}</div>
-          <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:48,fontWeight:800,color:C.s,lineHeight:1,margin:'14px 0'}}>{score} <span style={{fontSize:16,color:C.muted}}>/ {totalQ}</span></div>
-          <div style={{fontSize:13,color:C.muted,marginBottom:8,lineHeight:1.8}}>正答率 {finalPct}%{finalPct>=80&&' この調子で仕上げましょう！'}{finalPct>=60&&finalPct<80&&' 解説を読み返しましょう。'}{finalPct<60&&' 基本から確認し直しましょう。'}</div>
+          <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:48,fontWeight:800,color:C.s,lineHeight:1,margin:'14px 0'}}>{score} <span style={{fontSize:16,color:C.muted}}>/ {totalQ-skipped}</span></div>
+          <div style={{fontSize:13,color:C.muted,marginBottom:8,lineHeight:1.8}}>
+            正答率 {finalPct}%{skipped>0&&`（スキップ ${skipped}問）`}
+            {finalPct>=80&&' この調子で仕上げましょう！'}{finalPct>=60&&finalPct<80&&' 解説を読み返しましょう。'}{finalPct<60&&skipped<totalQ&&' 基本から確認し直しましょう。'}
+          </div>
           {quizMode==='review'&&<div style={{fontSize:12,color:C.review,marginBottom:16}}>🔔 回答結果は忘却曲線に記録されました</div>}
           <div style={{display:'flex',gap:10,justifyContent:'center',flexWrap:'wrap'}}>
             <button onClick={startQuiz} style={{padding:'11px 22px',border:`2px solid ${C.ink}`,background:'white',fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:12,fontWeight:700,cursor:'pointer'}}>もう一度</button>
@@ -1204,9 +1227,9 @@ function QuizTab({quizPhase,quizScope,setQuizScope,quizDiff,setQuizDiff,quizCoun
             :history.map((h,i)=>(
               <div key={i} style={{display:'flex',gap:8,alignItems:'center',padding:'8px 11px',background:'white',border:`1px solid ${C.line}`,marginBottom:4,fontSize:12,flexWrap:'wrap'}}>
                 <span style={{color:C.muted,minWidth:75}}>{h.date}</span>
-                <span style={{fontFamily:"'Shippori Mincho',serif",fontWeight:700,fontSize:14,color:h.pct>=80?C.done:h.pct>=60?C.a:C.s}}>{h.score}/{h.total}（{h.pct}%）</span>
+                <span style={{fontFamily:"'Shippori Mincho',serif",fontWeight:700,fontSize:14,color:h.pct>=80?C.done:h.pct>=60?C.a:C.s}}>{h.score}/{h.total-(h.skipped||0)}（{h.pct}%）</span>
                 <span style={{fontSize:11}}>{h.scope}</span>
-                <span style={{marginLeft:'auto',fontSize:11,color:C.muted}}>{h.diff} {h.total}問</span>
+                <span style={{marginLeft:'auto',fontSize:11,color:C.muted}}>{h.diff} {h.total}問{h.skipped>0&&` · スキップ${h.skipped}`}</span>
               </div>
             ))
           }
