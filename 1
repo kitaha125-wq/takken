@@ -523,27 +523,44 @@ function App() {
     }
   },[answered,questions,qIdx,srs]);
 
+  const saveSessionHistory = useCallback((opts={})=>{
+    const {interrupted=false,finalSkipped=skipped,finalScore=score}=opts;
+    let attempted,total;
+    if(interrupted){
+      const dealt=qIdx+(answered!==null?1:0);
+      attempted=dealt-finalSkipped;
+      if(dealt===0) return;
+      total=dealt;
+    } else {
+      attempted=quizCount-finalSkipped;
+      total=quizCount;
+    }
+    const p=attempted>0?Math.round(finalScore/attempted*100):0;
+    const entry={date:new Date().toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}),score:finalScore,total,pct:p,skipped:finalSkipped,interrupted,planned:quizCount,diff:quizDiff||'—',scope:quizMode==='review'?'📚復習モード':quizScope==='all'?'全分野':quizScope};
+    setHistory(prev=>{const nh=[entry,...prev].slice(0,15);ss('tk_hist_v5',nh);return nh;});
+  },[qIdx,answered,skipped,score,quizCount,quizDiff,quizMode,quizScope]);
+
   const nextQ = useCallback(()=>{
     if(qIdx+1>=quizCount){
       setQuizPhase('result');
-      const attempted=quizCount-skipped;
-      const p=attempted>0?Math.round(score/attempted*100):0;
-      const entry={date:new Date().toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}),score,total:quizCount,pct:p,skipped,diff:quizDiff||'—',scope:quizMode==='review'?'📚復習モード':quizScope==='all'?'全分野':quizScope};
-      setHistory(prev=>{const nh=[entry,...prev].slice(0,15);ss('tk_hist_v5',nh);return nh;});
+      saveSessionHistory({interrupted:false});
     } else { setQIdx(i=>i+1); setAnswered(null); }
-  },[qIdx,quizCount,score,skipped,quizDiff,quizMode,quizScope]);
+  },[qIdx,quizCount,saveSessionHistory]);
 
   const skipQ = useCallback(()=>{
     if(answered!==null) return;
-    setSkipped(s=>s+1);
+    const newSkipped=skipped+1;
+    setSkipped(newSkipped);
     if(qIdx+1>=quizCount){
       setQuizPhase('result');
-      const attempted=quizCount-(skipped+1);
-      const p=attempted>0?Math.round(score/attempted*100):0;
-      const entry={date:new Date().toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}),score,total:quizCount,pct:p,skipped:skipped+1,diff:quizDiff||'—',scope:quizMode==='review'?'📚復習モード':quizScope==='all'?'全分野':quizScope};
-      setHistory(prev=>{const nh=[entry,...prev].slice(0,15);ss('tk_hist_v5',nh);return nh;});
+      saveSessionHistory({interrupted:false,finalSkipped:newSkipped});
     } else { setQIdx(i=>i+1); setAnswered(null); }
-  },[answered,qIdx,quizCount,score,skipped,quizDiff,quizMode,quizScope]);
+  },[answered,qIdx,quizCount,skipped,saveSessionHistory]);
+
+  const abortQuiz = useCallback(()=>{
+    if(quizPhase==='running') saveSessionHistory({interrupted:true});
+    setQuizPhase('setup');
+  },[quizPhase,saveSessionHistory]);
 
   const q=questions[qIdx]; const totalQ=quizCount||5;
   const barPct=quizPhase==='running'?Math.round(qIdx/totalQ*100):0;
@@ -567,7 +584,7 @@ function App() {
         {tab==='home'    &&<HomeTab daysLeft={daysLeft} todayTask={todayTask} todayPlanDay={todayPlanDay} done={done} pct={pct} doneTime={doneTime} remTime={remTime} daysDone={daysDone} dueCount={dueCount} srs={srs} setTab={setTab} goQuiz={goQuiz} startReviewNow={startReviewNow}/>}
         {tab==='calendar'&&<CalendarTab daysDone={daysDone} toggleDay={toggleDay} goQuiz={goQuiz}/>}
         {tab==='tracker' &&<TrackerTab done={done} toggleDone={toggleDone} goQuiz={goQuiz} doneTime={doneTime} remTime={remTime} pct={pct} srs={srs}/>}
-        {tab==='quiz'    &&<QuizTab quizPhase={quizPhase} quizScope={quizScope} setQuizScope={setQuizScope} quizDiff={quizDiff} setQuizDiff={setQuizDiff} quizCount={quizCount} setQuizCount={setQuizCount} quizMode={quizMode} setQuizMode={setQuizMode} dueCount={dueCount} q={q} qIdx={qIdx} score={score} skipped={skipped} totalQ={totalQ} answered={answered} barPct={barPct} finalPct={finalPct} currentRec={currentRec} handleOX={handleOX} nextQ={nextQ} skipQ={skipQ} startQuiz={startQuiz} backToSetup={()=>setQuizPhase('setup')} history={history} srs={srs}/>}
+        {tab==='quiz'    &&<QuizTab quizPhase={quizPhase} quizScope={quizScope} setQuizScope={setQuizScope} quizDiff={quizDiff} setQuizDiff={setQuizDiff} quizCount={quizCount} setQuizCount={setQuizCount} quizMode={quizMode} setQuizMode={setQuizMode} dueCount={dueCount} q={q} qIdx={qIdx} score={score} skipped={skipped} totalQ={totalQ} answered={answered} barPct={barPct} finalPct={finalPct} currentRec={currentRec} handleOX={handleOX} nextQ={nextQ} skipQ={skipQ} startQuiz={startQuiz} backToSetup={abortQuiz} history={history} srs={srs}/>}
       </div>
     </div>
   );
@@ -1229,7 +1246,8 @@ function QuizTab({quizPhase,quizScope,setQuizScope,quizDiff,setQuizDiff,quizCoun
                 <span style={{color:C.muted,minWidth:75}}>{h.date}</span>
                 <span style={{fontFamily:"'Shippori Mincho',serif",fontWeight:700,fontSize:14,color:h.pct>=80?C.done:h.pct>=60?C.a:C.s}}>{h.score}/{h.total-(h.skipped||0)}（{h.pct}%）</span>
                 <span style={{fontSize:11}}>{h.scope}</span>
-                <span style={{marginLeft:'auto',fontSize:11,color:C.muted}}>{h.diff} {h.total}問{h.skipped>0&&` · スキップ${h.skipped}`}</span>
+                {h.interrupted&&<span style={{fontSize:10,padding:'1px 6px',fontWeight:700,background:C.warnBg,color:C.warn,border:`1px solid ${C.warn}`}}>中断</span>}
+                <span style={{marginLeft:'auto',fontSize:11,color:C.muted}}>{h.diff} {h.interrupted?`${h.total}/${h.planned||h.total}問（中断）`: `${h.total}問`}{h.skipped>0&&` · スキップ${h.skipped}`}</span>
               </div>
             ))
           }
