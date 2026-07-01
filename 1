@@ -364,6 +364,41 @@ const QB={
 };
 
 // ══════════════════════════════════════════════════
+// 問題のユーザー修正
+// ══════════════════════════════════════════════════
+function loadQEdits() { return sg('tk_q_edits_v1', {}); }
+function saveQEdits(data) { ss('tk_q_edits_v1', data); }
+
+function getBaseQ(id) {
+  const sep = id.indexOf('::');
+  if (sep < 0) return null;
+  const cat = id.slice(0, sep);
+  const idx = parseInt(id.slice(sep + 2), 10);
+  const q = QB[cat]?.[idx];
+  return q ? { ...q, id, cat } : null;
+}
+
+function applyQEdits(q, edits) {
+  if (!q?.id) return q;
+  const e = edits?.[q.id];
+  if (!e) return q;
+  return {
+    ...q,
+    ...(e.s !== undefined && { s: e.s }),
+    ...(e.a !== undefined && { a: e.a }),
+    ...(e.e !== undefined && { e: e.e }),
+  };
+}
+
+function buildQEditsDiff(base, updated) {
+  const diff = {};
+  if (updated.s !== base.s) diff.s = updated.s;
+  if (updated.a !== base.a) diff.a = updated.a;
+  if (updated.e !== base.e) diff.e = updated.e;
+  return diff;
+}
+
+// ══════════════════════════════════════════════════
 // SRS（間隔反復学習）ロジック
 // ══════════════════════════════════════════════════
 // qRecord の構造:
@@ -390,7 +425,7 @@ function recordAnswer(srs, id, correct) {
 }
 
 // 今日出題すべき問題を取得
-function getDueQuestions(srs) {
+function getDueQuestions(srs, edits={}) {
   const now = today0();
   const due = [];
   Object.entries(QB).forEach(([cat, qs]) => {
@@ -398,11 +433,11 @@ function getDueQuestions(srs) {
       const id = qid(cat, idx);
       const rec = srs[id];
       if (!rec || rec.nextDate <= now) {
-        due.push({ ...q, id, cat, idx,
+        due.push(applyQEdits({ ...q, id, cat, idx,
           streak: rec?.streak || 0,
           accuracy: rec ? Math.round(rec.correctAns / rec.totalAns * 100) : null,
           totalAns: rec?.totalAns || 0,
-        });
+        }, edits));
       }
     });
   });
@@ -428,10 +463,10 @@ function sortByPriority(questions, srs) {
 }
 
 // 通常クイズ用ピック（SRS考慮）
-function pickQuestions(scope, count, srs) {
+function pickQuestions(scope, count, srs, edits={}) {
   let pool = scope === 'all'
-    ? Object.entries(QB).flatMap(([cat, qs]) => qs.map((q, idx) => ({...q, id:qid(cat,idx), cat})))
-    : (QB[scope] || []).map((q, idx) => ({...q, id:qid(scope,idx), cat:scope}));
+    ? Object.entries(QB).flatMap(([cat, qs]) => qs.map((q, idx) => applyQEdits({...q, id:qid(cat,idx), cat}, edits)))
+    : (QB[scope] || []).map((q, idx) => applyQEdits({...q, id:qid(scope,idx), cat:scope}, edits));
 
   const now = today0();
   // 期限切れ（今日出題すべき）を優先
@@ -466,11 +501,12 @@ function App() {
   const [skipped,setSkipped]     = useState(0);
   const [answered,setAnswered]   = useState(null);
   const [history,setHistory]     = useState(()=>sg('tk_hist_v5',[]));
+  const [qEdits,setQEdits]       = useState(()=>loadQEdits());
 
   const daysLeft     = getDaysLeft();
   const todayPlanDay = getTodayPlanDay();
   const todayTask    = todayPlanDay ? SCHEDULE.find(s=>s.day===todayPlanDay) : null;
-  const dueQuestions = getDueQuestions(srs);
+  const dueQuestions = getDueQuestions(srs, qEdits);
   const dueCount     = dueQuestions.length;
 
   const toggleDone = useCallback(n=>{
@@ -500,14 +536,14 @@ function App() {
       const prioritized = sortByPriority(dueQuestions, srs);
       qs = prioritized.slice(0, quizCount);
       if (qs.length < quizCount) {
-        const extra = pickQuestions('all', quizCount - qs.length, srs).filter(q=>!qs.find(x=>x.id===q.id));
+        const extra = pickQuestions('all', quizCount - qs.length, srs, qEdits).filter(q=>!qs.find(x=>x.id===q.id));
         qs = [...qs, ...extra];
       }
     } else {
-      qs = pickQuestions(quizScope, quizCount, srs);
+      qs = pickQuestions(quizScope, quizCount, srs, qEdits);
     }
     setQuestions(qs.map(q=>({...q}))); setQIdx(0); setScore(0); setSkipped(0); setAnswered(null); setQuizPhase('running');
-  },[quizCount, quizMode, quizScope, dueQuestions, srs]);
+  },[quizCount, quizMode, quizScope, dueQuestions, srs, qEdits]);
 
   const handleOX = useCallback(ans=>{
     if(answered!==null) return;
@@ -522,6 +558,27 @@ function App() {
       saveSRS(newSRS);
     }
   },[answered,questions,qIdx,srs]);
+
+  const editQuestion = useCallback((id, patch)=>{
+    const base=getBaseQ(id);
+    if(!base) return;
+    const prev=qEdits[id]||{};
+    const merged={s:base.s,a:base.a,e:base.e,...prev,...patch};
+    const diff=buildQEditsDiff(base,merged);
+    const nextEdits={...qEdits};
+    if(Object.keys(diff).length===0) delete nextEdits[id];
+    else nextEdits[id]=diff;
+    setQEdits(nextEdits);
+    saveQEdits(nextEdits);
+    setQuestions(prevQs=>prevQs.map(x=>x.id===id?applyQEdits(x,nextEdits):x));
+    if(answered!==null&&patch.a!==undefined){
+      const oldQ=questions[qIdx];
+      const wasCorrect=answered===oldQ?.a;
+      const nowCorrect=answered===merged.a;
+      if(wasCorrect&&!nowCorrect) setScore(s=>Math.max(0,s-1));
+      if(!wasCorrect&&nowCorrect) setScore(s=>s+1);
+    }
+  },[qEdits,questions,qIdx,answered]);
 
   const saveSessionHistory = useCallback((opts={})=>{
     const {interrupted=false,finalSkipped=skipped,finalScore=score}=opts;
@@ -584,7 +641,7 @@ function App() {
         {tab==='home'    &&<HomeTab daysLeft={daysLeft} todayTask={todayTask} todayPlanDay={todayPlanDay} done={done} pct={pct} doneTime={doneTime} remTime={remTime} daysDone={daysDone} dueCount={dueCount} srs={srs} setTab={setTab} goQuiz={goQuiz} startReviewNow={startReviewNow}/>}
         {tab==='calendar'&&<CalendarTab daysDone={daysDone} toggleDay={toggleDay} goQuiz={goQuiz}/>}
         {tab==='tracker' &&<TrackerTab done={done} toggleDone={toggleDone} goQuiz={goQuiz} doneTime={doneTime} remTime={remTime} pct={pct} srs={srs}/>}
-        {tab==='quiz'    &&<QuizTab quizPhase={quizPhase} quizScope={quizScope} setQuizScope={setQuizScope} quizDiff={quizDiff} setQuizDiff={setQuizDiff} quizCount={quizCount} setQuizCount={setQuizCount} quizMode={quizMode} setQuizMode={setQuizMode} dueCount={dueCount} q={q} qIdx={qIdx} score={score} skipped={skipped} totalQ={totalQ} answered={answered} barPct={barPct} finalPct={finalPct} currentRec={currentRec} handleOX={handleOX} nextQ={nextQ} skipQ={skipQ} startQuiz={startQuiz} backToSetup={abortQuiz} history={history} srs={srs}/>}
+        {tab==='quiz'    &&<QuizTab quizPhase={quizPhase} quizScope={quizScope} setQuizScope={setQuizScope} quizDiff={quizDiff} setQuizDiff={setQuizDiff} quizCount={quizCount} setQuizCount={setQuizCount} quizMode={quizMode} setQuizMode={setQuizMode} dueCount={dueCount} q={q} qIdx={qIdx} score={score} skipped={skipped} totalQ={totalQ} answered={answered} barPct={barPct} finalPct={finalPct} currentRec={currentRec} handleOX={handleOX} nextQ={nextQ} skipQ={skipQ} editQuestion={editQuestion} startQuiz={startQuiz} backToSetup={abortQuiz} history={history} srs={srs}/>}
       </div>
     </div>
   );
@@ -1056,10 +1113,45 @@ function TrackerTab({done,toggleDone,goQuiz,doneTime,remTime,pct,srs}) {
 // ══════════════════════════════════════════════════
 // QuizTab
 // ══════════════════════════════════════════════════
-function QuizTab({quizPhase,quizScope,setQuizScope,quizDiff,setQuizDiff,quizCount,setQuizCount,quizMode,setQuizMode,dueCount,q,qIdx,score,skipped,totalQ,answered,barPct,finalPct,currentRec,handleOX,nextQ,skipQ,startQuiz,backToSetup,history,srs}) {
+function QuestionEditor({q,onSave,onCancel,onReset}) {
+  const base=getBaseQ(q.id);
+  const [s,setS]=useState(q.s);
+  const [a,setA]=useState(q.a);
+  const [e,setE]=useState(q.e);
+  useEffect(()=>{setS(q.s);setA(q.a);setE(q.e);},[q.id,q.s,q.a,q.e]);
+  const isEdited=base&&(q.s!==base.s||q.a!==base.a||q.e!==base.e);
+  const ta={width:'100%',padding:'10px 12px',border:`1px solid ${C.line}`,fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:13,lineHeight:1.7,resize:'vertical',marginBottom:12};
+  return(
+    <div style={{background:'#fffef8',border:`2px solid ${C.warn}`,padding:'16px',marginBottom:14}}>
+      <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:12,fontWeight:700,color:C.warn,marginBottom:12}}>✏️ 問題を修正</div>
+      <Lbl>問題文</Lbl>
+      <textarea value={s} onChange={ev=>setS(ev.target.value)} rows={4} style={ta}/>
+      <Lbl>正解</Lbl>
+      <div style={{display:'flex',gap:10,marginBottom:12}}>
+        {[{v:true,label:'○ 正しい',col:C.o},{v:false,label:'× 誤り',col:C.x}].map(x=>(
+          <button key={String(x.v)} onClick={()=>setA(x.v)} style={{flex:1,padding:'10px',border:`2px solid ${a===x.v?x.col:C.line}`,background:a===x.v?x.col+'18':'white',color:a===x.v?x.col:C.muted,fontFamily:"'Shippori Mincho',serif",fontSize:14,fontWeight:700,cursor:'pointer'}}>{x.label}</button>
+        ))}
+      </div>
+      <Lbl>解説</Lbl>
+      <textarea value={e} onChange={ev=>setE(ev.target.value)} rows={4} style={ta}/>
+      <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+        <button onClick={()=>onSave({s,a,e})} style={{padding:'9px 18px',border:'none',background:C.ink,color:'white',fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:12,fontWeight:700,cursor:'pointer'}}>保存</button>
+        <button onClick={onCancel} style={{padding:'9px 18px',border:`1px solid ${C.line}`,background:'white',color:C.muted,fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:12,cursor:'pointer'}}>キャンセル</button>
+        {isEdited&&base&&<button onClick={onReset} style={{padding:'9px 18px',border:`1px solid ${C.warn}`,background:C.warnBg,color:C.warn,fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:12,cursor:'pointer'}}>元の問題に戻す</button>}
+      </div>
+      <div style={{fontSize:11,color:C.muted,marginTop:10,lineHeight:1.6}}>修正はこの端末に保存され、次回以降の出題にも反映されます</div>
+    </div>
+  );
+}
+
+function QuizTab({quizPhase,quizScope,setQuizScope,quizDiff,setQuizDiff,quizCount,setQuizCount,quizMode,setQuizMode,dueCount,q,qIdx,score,skipped,totalQ,answered,barPct,finalPct,currentRec,handleOX,nextQ,skipQ,editQuestion,startQuiz,backToSetup,history,srs}) {
+  const [editing,setEditing]=useState(false);
+  useEffect(()=>setEditing(false),[q?.id]);
   const allCats=[...new Set(LECTURES.map(l=>l.cat))].filter(c=>QB[c]).sort((a,b)=>RANK_ORDER[LECTURES.find(l=>l.cat===a).rank]-RANK_ORDER[LECTURES.find(l=>l.cat===b).rank]);
   const ready = quizMode==='review' ? !!quizCount : (!!quizDiff && !!quizCount);
   const qAcc  = currentRec && currentRec.totalAns>0 ? Math.round(currentRec.correctAns/currentRec.totalAns*100) : null;
+  const qBase = q?.id ? getBaseQ(q.id) : null;
+  const isQEdited = qBase && q && (q.s!==qBase.s||q.a!==qBase.a||q.e!==qBase.e);
 
   return(
     <div style={{paddingTop:20}}>
@@ -1175,12 +1267,27 @@ function QuizTab({quizPhase,quizScope,setQuizScope,quizDiff,setQuizDiff,quizCoun
             </div>
           )}
 
-          <div style={{background:'white',border:`1px solid ${C.line}`,padding:'20px',marginBottom:18,minHeight:90}}>
-            <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:10,letterSpacing:'0.3em',color:C.muted,marginBottom:10}}>問 {qIdx+1}　{q?.cat||''}</div>
+          <div style={{background:'white',border:`1px solid ${C.line}`,padding:'20px',marginBottom:10,minHeight:90}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10,flexWrap:'wrap',gap:6}}>
+              <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:10,letterSpacing:'0.3em',color:C.muted}}>問 {qIdx+1}　{q?.cat||''}</div>
+              {!editing&&q?.id&&(
+                <button onClick={()=>setEditing(true)} style={{padding:'4px 10px',border:`1px solid ${C.line}`,background:'white',color:C.muted,fontSize:11,cursor:'pointer',fontFamily:"'Zen Kaku Gothic New',sans-serif"}}>✏️ 問題を修正</button>
+              )}
+            </div>
+            {isQEdited&&!editing&&<div style={{fontSize:10,color:C.warn,marginBottom:8}}>※ この問題は修正済みです</div>}
             <div style={{fontSize:15,lineHeight:1.9,fontWeight:500}}>{q?.s}</div>
           </div>
 
-          {answered===null&&(
+          {editing&&q&&(
+            <QuestionEditor
+              q={q}
+              onSave={patch=>{editQuestion(q.id,patch);setEditing(false);}}
+              onCancel={()=>setEditing(false)}
+              onReset={()=>{const b=getBaseQ(q.id);if(b)editQuestion(q.id,{s:b.s,a:b.a,e:b.e});setEditing(false);}}
+            />
+          )}
+
+          {!editing&&answered===null&&(
             <>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:10}}>
                 <OXBtn type="O" onClick={()=>handleOX(true)}/>
@@ -1192,7 +1299,7 @@ function QuizTab({quizPhase,quizScope,setQuizScope,quizDiff,setQuizDiff,quizCoun
             </>
           )}
 
-          {answered!==null&&q&&(
+          {!editing&&answered!==null&&q&&(
             <>
               <div style={{padding:'16px',marginBottom:12,textAlign:'center',background:answered===q.a?C.doneBg:'#ffeaea',border:`2px solid ${answered===q.a?C.doneBd:'#e08080'}`}}>
                 <div style={{fontSize:40,marginBottom:5}}>{answered===q.a?'⭕':'❌'}</div>
