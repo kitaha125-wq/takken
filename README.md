@@ -1,38 +1,61 @@
 # 宅建士合格アプリ
 
-2026年度宅建試験向けの学習管理PWA（Netlify版）
+## いちばん簡単：URLを開くだけ（ダウンロード不要）
 
-## 公開URL
+**https://kitaha125-wq.github.io/takken/index.html**
 
-**https://reliable-mousse-e94d97.netlify.app/index.html**
+Safari で開く → ホーム画面に追加
 
-ホーム画面に追加している場合も、上記URLから再インストールすると最新版が反映されます。
+---
 
-## 機能
+## Netlify を更新する（3つの方法）
 
-| タブ | 機能 |
-|------|------|
-| 🏠 ホーム | 試験カウントダウン、前回の学習、分野別進捗 |
-| 📅 計画 | 学習カレンダー・計画表 |
-| 📋 進捗 | 講義・問題の進捗トラッカー |
-| ✏️ 問題集 | ○×問題、忘却曲線、模擬試験 |
-| 📎 資料 | 講義資料・Geminiメモ |
+### 方法A：Git 連携（おすすめ・ファイル不要）
 
-### 問題集の追加機能
+1. https://app.netlify.com/ にログイン
+2. **Add new site** → **Import an existing project**
+3. **GitHub** → リポジトリ `kitaha125-wq/takken` を選択
+4. 設定はそのまま **Deploy site**
+5. 以降、`main` を更新するたびに自動デプロイ
 
-- わからない問題をスキップ
-- 中断しても成績を保存
-- 解答中に問題文・正解・解説を修正
+※ 既存サイト `reliable-mousse-e94d97` がある場合：
+- そのサイトの **Site configuration** → **Build & deploy** → **Link repository**
+- 同じ `takken` リポジトリを選ぶ
 
-## Netlify への再デプロイ
+---
 
-1. このリポジトリの `index.html` を Netlify にデプロイ
-2. または Netlify ダッシュボードで Git 連携している場合は `main` を push 後に自動デプロイ
+### 方法B：ZIP をダウンロード（PDFにならない）
 
-## ローカル確認
+1. iPhone/Mac の Safari で次を開く：
+
+   **https://github.com/kitaha125-wq/takken/releases/latest**
+
+2. **takken-app-update.zip** をタップしてダウンロード
+3. ZIP を解凍 → 中の `index.html` が出る
+4. Netlify → サイト → **Deploys** → `index.html` をドラッグ＆ドロップ
+
+⚠️ GitHub のページで「共有→PDF」は使わないでください（PDFになります）
+
+---
+
+### 方法C：Mac のターミナル（上級者）
 
 ```bash
-python3 -m http.server 8000
+cd ~/Downloads
+curl -L -o index.html https://github.com/kitaha125-wq/takken/raw/main/index.html
 ```
 
-http://localhost:8000/index.html を開く
+Netlify の Deploys に `index.html` をドロップ
+
+---
+
+## 更新できたか確認
+
+問題集を開始して、次が表示されれば成功：
+
+- **わからない（スキップ →）**
+- **✏️ 問題を修正**
+
+## 進捗データの引き継ぎ
+
+URL を変える場合は、旧アプリで **💾 バックアップをダウンロード** → 新URLで **復元**
