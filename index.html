@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="宅建士">
+<meta name="theme-color" content="#1a1a1a">
+<title>宅建士合格アプリ</title>
+
+<!-- PWA manifest (inline) -->
+<link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIuWuheW7uuWjq+WQiOagvOOCouODl+ODqiIsCiAgInNob3J0X25hbWUiOiAi5a6F5bu65aOrIiwKICAiZGVzY3JpcHRpb24iOiAi5a6F5bu65aOrMjAyNuW5tOW6puWQiOagvOebruaomSDlrabnv5LjgqLjg5fjg6oiLAogICJzdGFydF91cmwiOiAiLi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMxYTFhMWEiLAogICJ0aGVtZV9jb2xvciI6ICIjMWExYTFhIiwKICAib3JpZW50YXRpb24iOiAicG9ydHJhaXQiLAogICJpY29ucyI6IFsKICAgIHsic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbDtiYXNlNjQsUEhOMlp5QjRiV3h1Y3owaWFIUjBjRG92TDNkM2R5NTNNeTV2Y21jdk1qQXdNQzl6ZG1jaUlIWnBaWGRDYjNnOUlqQWdNQ0F4T1RJZ01Ua3lJajQ4Y21WamRDQjNhV1IwYUQwaU1Ua3lJaUJvWldsbmFIUTlJakU1TWlJZ2NuZzlJak15SWlCbWFXeHNQU0lqTVdFeFlURmhJaTgrUEhKbFkzUWdlRDBpT0NJZ2VUMGlPQ0lnZDJsa2RHZzlJakUzTmlJZ2FHVnBaMmgwUFNJeE56WWlJSEo0UFNJeU5pSWdabWxzYkQwaUl6RmhNV0V4WVNJZ2MzUnliMnRsUFNJall6Z3hNREpsSWlCemRISnZhMlV0ZDJsa2RHZzlJalFpTHo0OGRHVjRkQ0I0UFNJNU5pSWdlVDBpTVRNd0lpQjBaWGgwTFdGdVkyaHZjajBpYldsa1pHeGxJaUJtYjI1MExXWmhiV2xzZVQwaWMyVnlhV1lpSUdadmJuUXRjMmw2WlQwaU1URXdJaUJtYjI1MExYZGxhV2RvZEQwaU9UQXdJaUJtYVd4c1BTSWpabVptWm1abUlqN2xyb1U4TDNSbGVIUStQSFJsZUhRZ2VEMGlPVFlpSUhrOUlqRTNOU0lnZEdWNGRDMWhibU5vYjNJOUltMXBaR1JzWlNJZ1ptOXVkQzFtWVcxcGJIazlJbk5sY21sbUlpQm1iMjUwTFhOcGVtVTlJakl5SWlCbWIyNTBMWGRsYVdkb2REMGlOekF3SWlCbWFXeHNQU0lqWXpneE1ESmxJaUJzWlhSMFpYSXRjM0JoWTJsdVp6MGlOaUkrNWJ1NjVhT3JQQzkwWlhoMFBqd3ZjM1puUGc9PSIsICJzaXplcyI6ICIxOTJ4MTkyIiwgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCJ9LAogICAgeyJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCNGJXeHVjejBpYUhSMGNEb3ZMM2QzZHk1M015NXZjbWN2TWpBd01DOXpkbWNpSUhacFpYZENiM2c5SWpBZ01DQTFNVElnTlRFeUlqNDhjbVZqZENCM2FXUjBhRDBpTlRFeUlpQm9aV2xuYUhROUlqVXhNaUlnY25nOUlqZ3dJaUJtYVd4c1BTSWpNV0V4WVRGaElpOCtQSEpsWTNRZ2VEMGlNVFlpSUhrOUlqRTJJaUIzYVdSMGFEMGlORGd3SWlCb1pXbG5hSFE5SWpRNE1DSWdjbmc5SWpZMklpQm1hV3hzUFNJak1XRXhZVEZoSWlCemRISnZhMlU5SWlOak9ERXdNbVVpSUhOMGNtOXJaUzEzYVdSMGFEMGlNVEFpTHo0OGRHVjRkQ0I0UFNJeU5UWWlJSGs5SWpNMU1DSWdkR1Y0ZEMxaGJtTm9iM0k5SW0xcFpHUnNaU0lnWm05dWRDMW1ZVzFwYkhrOUluTmxjbWxtSWlCbWIyNTBMWE5wZW1VOUlqSTVNQ0lnWm05dWRDMTNaV2xuYUhROUlqa3dNQ0lnWm1sc2JEMGlJMlptWm1abVppSSs1YTZGUEM5MFpYaDBQangwWlhoMElIZzlJakkxTmlJZ2VUMGlORFl3SWlCMFpYaDBMV0Z1WTJodmNqMGliV2xrWkd4bElpQm1iMjUwTFdaaGJXbHNlVDBpYzJWeWFXWWlJR1p2Ym5RdGMybDZaVDBpTmpBaUlHWnZiblF0ZDJWcFoyaDBQU0kzTURBaUlHWnBiR3c5SWlOak9ERXdNbVVpSUd4bGRIUmxjaTF6Y0dGamFXNW5QU0l4TmlJKzVidTY1YU9yUEM5MFpYaDBQand2YzNablBnPT0iLCAic2l6ZXMiOiAiNTEyeDUxMiIsICJ0eXBlIjogImltYWdlL3N2Zyt4bWwiLCAicHVycG9zZSI6ICJhbnkgbWFza2FibGUifQogIF0KfQ==">
+
+<!-- Apple touch icon -->
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjMyIiBmaWxsPSIjMWExYTFhIi8+PHJlY3QgeD0iOCIgeT0iOCIgd2lkdGg9IjE3NiIgaGVpZ2h0PSIxNzYiIHJ4PSIyNiIgZmlsbD0iIzFhMWExYSIgc3Ryb2tlPSIjYzgxMDJlIiBzdHJva2Utd2lkdGg9IjQiLz48dGV4dCB4PSI5NiIgeT0iMTMwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2VyaWYiIGZvbnQtc2l6ZT0iMTEwIiBmb250LXdlaWdodD0iOTAwIiBmaWxsPSIjZmZmZmZmIj7lroU8L3RleHQ+PHRleHQgeD0iOTYiIHk9IjE3NSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InNlcmlmIiBmb250LXNpemU9IjIyIiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjYzgxMDJlIiBsZXR0ZXItc3BhY2luZz0iNiI+5bu65aOrPC90ZXh0Pjwvc3ZnPg==">
+<link rel="apple-touch-icon" sizes="152x152" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjMyIiBmaWxsPSIjMWExYTFhIi8+PHJlY3QgeD0iOCIgeT0iOCIgd2lkdGg9IjE3NiIgaGVpZ2h0PSIxNzYiIHJ4PSIyNiIgZmlsbD0iIzFhMWExYSIgc3Ryb2tlPSIjYzgxMDJlIiBzdHJva2Utd2lkdGg9IjQiLz48dGV4dCB4PSI5NiIgeT0iMTMwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2VyaWYiIGZvbnQtc2l6ZT0iMTEwIiBmb250LXdlaWdodD0iOTAwIiBmaWxsPSIjZmZmZmZmIj7lroU8L3RleHQ+PHRleHQgeD0iOTYiIHk9IjE3NSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InNlcmlmIiBmb250LXNpemU9IjIyIiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjYzgxMDJlIiBsZXR0ZXItc3BhY2luZz0iNiI+5bu65aOrPC90ZXh0Pjwvc3ZnPg==">
+<link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjMyIiBmaWxsPSIjMWExYTFhIi8+PHJlY3QgeD0iOCIgeT0iOCIgd2lkdGg9IjE3NiIgaGVpZ2h0PSIxNzYiIHJ4PSIyNiIgZmlsbD0iIzFhMWExYSIgc3Ryb2tlPSIjYzgxMDJlIiBzdHJva2Utd2lkdGg9IjQiLz48dGV4dCB4PSI5NiIgeT0iMTMwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2VyaWYiIGZvbnQtc2l6ZT0iMTEwIiBmb250LXdlaWdodD0iOTAwIiBmaWxsPSIjZmZmZmZmIj7lroU8L3RleHQ+PHRleHQgeD0iOTYiIHk9IjE3NSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InNlcmlmIiBmb250LXNpemU9IjIyIiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjYzgxMDJlIiBsZXR0ZXItc3BhY2luZz0iNiI+5bu65aOrPC90ZXh0Pjwvc3ZnPg==">
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjMyIiBmaWxsPSIjMWExYTFhIi8+PHJlY3QgeD0iOCIgeT0iOCIgd2lkdGg9IjE3NiIgaGVpZ2h0PSIxNzYiIHJ4PSIyNiIgZmlsbD0iIzFhMWExYSIgc3Ryb2tlPSIjYzgxMDJlIiBzdHJva2Utd2lkdGg9IjQiLz48dGV4dCB4PSI5NiIgeT0iMTMwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2VyaWYiIGZvbnQtc2l6ZT0iMTEwIiBmb250LXdlaWdodD0iOTAwIiBmaWxsPSIjZmZmZmZmIj7lroU8L3RleHQ+PHRleHQgeD0iOTYiIHk9IjE3NSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InNlcmlmIiBmb250LXNpemU9IjIyIiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjYzgxMDJlIiBsZXR0ZXItc3BhY2luZz0iNiI+5bu65aOrPC90ZXh0Pjwvc3ZnPg==">
+
+<!-- Apple startup image (splash screen color) -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, #root { height: 100%; }
+body {
+  background: #faf7f2;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+/* iPhoneノッチ対応 */
+nav { padding-top: env(safe-area-inset-top); }
+.bottom-safe { padding-bottom: env(safe-area-inset-bottom); }
+/* スプラッシュ画面 */
+#splash {
+  position: fixed; inset: 0; background: #1a1a1a;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 9999; transition: opacity 0.4s ease;
+}
+#splash.hidden { opacity: 0; pointer-events: none; }
+#splash-title {
+  font-family: 'Shippori Mincho', serif;
+  font-size: 52px; font-weight: 800; color: white; line-height: 1;
+}
+#splash-red { color: #c8102e; }
+#splash-sub {
+  font-family: 'Shippori Mincho', serif;
+  font-size: 12px; letter-spacing: 0.3em; color: rgba(255,255,255,0.4);
+  margin-top: 12px;
+}
+#splash-bar {
+  width: 60px; height: 3px; background: #c8102e; margin-top: 32px;
+  animation: loading 1.2s ease-in-out infinite;
+}
+@keyframes loading {
+  0%,100% { transform: scaleX(0.3); opacity: 0.4; }
+  50% { transform: scaleX(1); opacity: 1; }
+}
+</style>
+</head>
+<body>
+
+<!-- スプラッシュ画面 -->
+<div id="splash">
+  <div id="splash-title">宅建士<span id="splash-red">合格</span></div>
+  <div id="splash-sub">2026年度合格目標 · 学習アプリ</div>
+  <div id="splash-bar"></div>
+</div>
+
+<div id="root"></div>
+
+<!-- React + Babel CDN -->
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState, useCallback, useEffect, useRef } = React;
+
+
+// ══════════════════════════════════════════════════
+// 定数
+// ══════════════════════════════════════════════════
+const EXAM_DATE  = new Date('2026-10-18');
+const PLAN_START = new Date('2026-05-07');
+
+const C = {
+  s:'#c8102e', sBg:'#fff0f2', sBd:'#e8b4ba',
+  a:'#1a5ca8', aBg:'#f0f4ff', aBd:'#b4c8e8',
+  b:'#5a5a5a', bBg:'#f4f4f2', bBd:'#cccccc',
+  done:'#2d5016', doneBg:'#e8f0d8', doneBd:'#5a8a2a',
+  hard:'#8b1a6b', hardBg:'#fdf0f9',
+  warn:'#c06000', warnBg:'#fff8e8',
+  review:'#7b3f00', reviewBg:'#fff3e0',
+  ink:'#1a1a1a', paper:'#faf7f2', muted:'#8a8580', line:'#d4cfc4',
+  o:'#d45000', x:'#1a5ca8',
+};
+const rankColor = r => r==='S'?C.s:r==='A'?C.a:C.b;
+const rankBg    = r => r==='S'?C.sBg:r==='A'?C.aBg:C.bBg;
+const rankBd    = r => r==='S'?C.sBd:r==='A'?C.aBd:C.bBd;
+function sg(k,fb){try{const v=localStorage.getItem(k);return v?JSON.parse(v):fb;}catch{return fb;}}
+function ss(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
+function today0(){const d=new Date();d.setHours(0,0,0,0);return d.getTime();}
+function getDaysLeft(){const t=new Date();t.setHours(0,0,0,0);const e=new Date(EXAM_DATE);e.setHours(0,0,0,0);return Math.ceil((e-t)/(864e5));}
+function dateToPlanDay(date){const d=new Date(date);d.setHours(0,0,0,0);const s=new Date(PLAN_START);s.setHours(0,0,0,0);const n=Math.floor((d-s)/864e5)+1;return(n>=1&&n<=29)?n:null;}
+function getTodayPlanDay(){return dateToPlanDay(new Date());}
+
+// ══════════════════════════════════════════════════
+// 忘却曲線 間隔（日数）
+// ══════════════════════════════════════════════════
+// 正解回数に応じた次回出題までの日数
+const SRS_INTERVALS = [1, 3, 7, 14, 30, 60, 90]; // 正解n回目→この日数後に出題
+// 問題IDの生成: category_index
+const qid = (cat, idx) => `${cat}::${idx}`;
+
+// ══════════════════════════════════════════════════
+// 学習計画
+// ══════════════════════════════════════════════════
+const SCHEDULE = [
+  {day:1,  week:'第1週',theme:'宅建業法（広告・重説）',    color:C.a,    task:'未完成物件の広告開始時期の制限を確認する（建築確認が下りていなければ広告不可）'},
+  {day:2,  week:'第1週',theme:'宅建業法（広告・重説）',    color:C.a,    task:'誇大広告の禁止や、手付金に関する貸付け等の禁止ルールを覚える'},
+  {day:3,  week:'第1週',theme:'宅建業法（広告・重説）',    color:C.a,    task:'免許取消し前の契約の扱いと、案内所等の標識掲示義務を整理する'},
+  {day:4,  week:'第1週',theme:'宅建業法（広告・重説）',    color:C.a,    task:'重要事項説明（35条書面）の基本ルールを復習する'},
+  {day:5,  week:'第1週',theme:'宅建業法（広告・重説）',    color:C.a,    task:'買主が宅建業者の場合の説明免除や、50万円以上の支払金・預り金の保全措置を確認する'},
+  {day:6,  week:'第1週',theme:'宅建業法（広告・重説）',    color:C.a,    task:'水害ハザードマップの説明義務や、マンション特有の追加説明事項を暗記する'},
+  {day:7,  week:'第1週',theme:'宅建業法（広告・重説）',    color:C.a,    task:'【第1週の総復習】該当範囲の過去問を解いて定着度をチェックする',review:true},
+  {day:8,  week:'第2週',theme:'権利関係（民法）',           color:C.s,    task:'売主の契約不適合責任の種類と、4つの請求（損害賠償・解除・追完・代金減額）を覚える'},
+  {day:9,  week:'第2週',theme:'権利関係（民法）',           color:C.s,    task:'「数量・権利は5年」「種類・品質は知った時から1年以内に通知」という期間制限を区別する'},
+  {day:10, week:'第2週',theme:'権利関係（民法）',           color:C.s,    task:'抵当権の基本性質と、利息は最後の2年分のみ行使可能という特徴を抑える'},
+  {day:11, week:'第2週',theme:'権利関係（民法）',           color:C.s,    task:'法定地上権が成立する4要件と、一括競売のルールを暗記する'},
+  {day:12, week:'第2週',theme:'権利関係（民法）',           color:C.s,    task:'取得時効・消滅時効の基本と、「援用権者」になる・ならないの判例を整理する'},
+  {day:13, week:'第2週',theme:'権利関係（民法）',           color:C.s,    task:'消滅時効の期間（権利行使できることを知った時から5年など）と占有の承継を覚える'},
+  {day:14, week:'第2週',theme:'権利関係（民法）',           color:C.s,    task:'【第2週の総復習】過去問演習で弱点を潰す',review:true},
+  {day:15, week:'第3週',theme:'法令上の制限（都市計画・建築）',color:'#2d7a3a',task:'都市計画法の区域区分（市街化区域は原則開発可能、市街化調整区域は原則禁止）を理解する'},
+  {day:16, week:'第3週',theme:'法令上の制限（都市計画・建築）',color:'#2d7a3a',task:'開発許可が必要な面積基準（市街化区域1,000㎡以上など）を暗記する'},
+  {day:17, week:'第3週',theme:'法令上の制限（都市計画・建築）',color:'#2d7a3a',task:'開発許可が「不要」になる例外ケース（駅舎など公益上必要な建築物）を整理する'},
+  {day:18, week:'第3週',theme:'法令上の制限（都市計画・建築）',color:'#2d7a3a',task:'建築基準法の用途地域（13種類）と主な建築制限を覚える'},
+  {day:19, week:'第3週',theme:'法令上の制限（都市計画・建築）',color:'#2d7a3a',task:'建蔽率と容積率の計算ルールと緩和措置を確認する'},
+  {day:20, week:'第3週',theme:'法令上の制限（都市計画・建築）',color:'#2d7a3a',task:'防火地域と準防火地域の構造制限の違いをマスターする'},
+  {day:21, week:'第3週',theme:'法令上の制限（都市計画・建築）',color:'#2d7a3a',task:'【第3週の総復習】過去問演習で知識を整理する',review:true},
+  {day:22, week:'第4週',theme:'税・その他（税法・農地法）',  color:C.hard, task:'不動産取得税の基本（原則4％、住宅軽減3％、相続は非課税）を暗記する'},
+  {day:23, week:'第4週',theme:'税・その他（税法・農地法）',  color:C.hard, task:'固定資産税の基本（1.4％、1月1日時点の所有者に課税）と免税点を覚える'},
+  {day:24, week:'第4週',theme:'税・その他（税法・農地法）',  color:C.hard, task:'農地法における「農地」と「採草放牧地」の定義を確認する'},
+  {day:25, week:'第4週',theme:'税・その他（税法・農地法）',  color:C.hard, task:'農地法3条・4条・5条の許可権者を区別する'},
+  {day:26, week:'第4週',theme:'税・その他（税法・農地法）',  color:C.hard, task:'市街化区域内での転用は農業委員会への「届出」で足りる例外ルールを覚える'},
+  {day:27, week:'第4週',theme:'税・その他（税法・農地法）',  color:C.hard, task:'印紙税・登録免許税・譲渡所得税などの頻出税金のポイントを見直す'},
+  {day:28, week:'第4週',theme:'税・その他（税法・農地法）',  color:C.hard, task:'【第4週の総復習】数字のひっかけ問題を重点的に復習する',review:true},
+  {day:29, week:'予備日',theme:'予備日・弱点補強',           color:C.b,    task:'計画の遅れを取り戻す。1〜4週の総復習で間違えたところを読み直す',extra:true},
+];
+
+// ══════════════════════════════════════════════════
+// 講義データ
+// ══════════════════════════════════════════════════
+const LECTURES=[
+  {n:70,t:'借地借家法1',m:14,cat:'借地借家法',rank:'S'},
+  {n:71,t:'借地借家法2',m:15,cat:'借地借家法',rank:'S'},
+  {n:72,t:'借地借家法3',m:11,cat:'借地借家法',rank:'S'},
+  {n:73,t:'借地借家法4',m:12,cat:'借地借家法',rank:'S'},
+  {n:74,t:'借地借家法5',m:18,cat:'借地借家法',rank:'S'},
+  {n:75,t:'借地借家法6',m:11,cat:'借地借家法',rank:'S'},
+  {n:31,t:'抵当権1',m:13,cat:'抵当権',rank:'S'},
+  {n:32,t:'抵当権2',m:20,cat:'抵当権',rank:'S'},
+  {n:33,t:'抵当権3',m:22,cat:'抵当権',rank:'S'},
+  {n:34,t:'抵当権4',m:16,cat:'抵当権',rank:'S'},
+  {n:35,t:'抵当権5',m:20,cat:'抵当権',rank:'S'},
+  {n:36,t:'根抵当権',m:11,cat:'抵当権',rank:'S'},
+  {n:66,t:'相続1',m:13,cat:'相続・親族法',rank:'S'},
+  {n:67,t:'相続2',m:16,cat:'相続・親族法',rank:'S'},
+  {n:68,t:'相続3',m:13,cat:'相続・親族法',rank:'S'},
+  {n:69,t:'相続4',m:15,cat:'相続・親族法',rank:'S'},
+  {n:64,t:'親族法1',m:15,cat:'相続・親族法',rank:'S'},
+  {n:65,t:'親族法2',m:8, cat:'相続・親族法',rank:'S'},
+  {n:5, t:'意思表示1',m:19,cat:'意思表示・代理',rank:'A'},
+  {n:6, t:'意思表示2',m:17,cat:'意思表示・代理',rank:'A'},
+  {n:7, t:'無効・取消し',m:15,cat:'意思表示・代理',rank:'A'},
+  {n:8, t:'代理1',m:11,cat:'意思表示・代理',rank:'A'},
+  {n:9, t:'代理2',m:14,cat:'意思表示・代理',rank:'A'},
+  {n:10,t:'代理3',m:13,cat:'意思表示・代理',rank:'A'},
+  {n:11,t:'代理4',m:17,cat:'意思表示・代理',rank:'A'},
+  {n:12,t:'代理5',m:12,cat:'意思表示・代理',rank:'A'},
+  {n:18,t:'物権総論',m:12,cat:'不動産物権変動',rank:'A'},
+  {n:19,t:'不動産物権変動1',m:16,cat:'不動産物権変動',rank:'A'},
+  {n:20,t:'不動産物権変動2',m:17,cat:'不動産物権変動',rank:'A'},
+  {n:21,t:'不動産物権変動3',m:12,cat:'不動産物権変動',rank:'A'},
+  {n:22,t:'不動産物権変動4',m:7, cat:'不動産物権変動',rank:'A'},
+  {n:23,t:'物権の混同',m:8, cat:'不動産物権変動',rank:'A'},
+  {n:39,t:'債務不履行・解除1',m:27,cat:'債務不履行・売買',rank:'A'},
+  {n:40,t:'債務不履行・解除2',m:9, cat:'債務不履行・売買',rank:'A'},
+  {n:49,t:'契約総論1',m:11,cat:'債務不履行・売買',rank:'A'},
+  {n:50,t:'契約総論2',m:11,cat:'債務不履行・売買',rank:'A'},
+  {n:51,t:'売買1',m:13,cat:'債務不履行・売買',rank:'A'},
+  {n:52,t:'売買2',m:17,cat:'債務不履行・売買',rank:'A'},
+  {n:76,t:'区分所有法1',m:18,cat:'区分所有法',rank:'B'},
+  {n:77,t:'区分所有法2',m:16,cat:'区分所有法',rank:'B'},
+  {n:78,t:'区分所有法3',m:27,cat:'区分所有法',rank:'B'},
+  {n:79,t:'区分所有法4',m:21,cat:'区分所有法',rank:'B'},
+  {n:80,t:'不動産登記法1',m:14,cat:'不動産登記法',rank:'B'},
+  {n:81,t:'不動産登記法2',m:13,cat:'不動産登記法',rank:'B'},
+  {n:82,t:'不動産登記法3',m:15,cat:'不動産登記法',rank:'B'},
+  {n:1, t:'制限行為能力者1',m:18,cat:'制限行為能力者',rank:'B'},
+  {n:2, t:'制限行為能力者2',m:14,cat:'制限行為能力者',rank:'B'},
+  {n:3, t:'制限行為能力者3',m:10,cat:'制限行為能力者',rank:'B'},
+  {n:4, t:'不在者の財産管理',m:16,cat:'制限行為能力者',rank:'B'},
+  {n:13,t:'条件・期限',m:18,cat:'時効・条件',rank:'B'},
+  {n:14,t:'期間',m:9, cat:'時効・条件',rank:'B'},
+  {n:15,t:'時効1',m:14,cat:'時効・条件',rank:'B'},
+  {n:16,t:'時効2',m:11,cat:'時効・条件',rank:'B'},
+  {n:17,t:'時効3',m:12,cat:'時効・条件',rank:'B'},
+  {n:24,t:'占有権1',m:10,cat:'占有権・所有権',rank:'B'},
+  {n:25,t:'占有権2',m:10,cat:'占有権・所有権',rank:'B'},
+  {n:26,t:'所有権1',m:16,cat:'占有権・所有権',rank:'B'},
+  {n:27,t:'所有権2',m:20,cat:'占有権・所有権',rank:'B'},
+  {n:28,t:'所有権3',m:13,cat:'占有権・所有権',rank:'B'},
+  {n:29,t:'所有権4',m:14,cat:'占有権・所有権',rank:'B'},
+  {n:30,t:'地上権・地役権',m:16,cat:'占有権・所有権',rank:'B'},
+  {n:37,t:'留置権',m:13,cat:'担保物権',rank:'B'},
+  {n:38,t:'先取特権・質権',m:16,cat:'担保物権',rank:'B'},
+  {n:41,t:'債権者代位権',m:15,cat:'債権総論',rank:'B'},
+  {n:42,t:'詐害行為取消権',m:16,cat:'債権総論',rank:'B'},
+  {n:43,t:'債権の消滅1',m:14,cat:'債権総論',rank:'B'},
+  {n:44,t:'債権の消滅2',m:17,cat:'債権総論',rank:'B'},
+  {n:45,t:'債権の消滅3',m:22,cat:'債権総論',rank:'B'},
+  {n:46,t:'連帯債務',m:21,cat:'債権総論',rank:'B'},
+  {n:47,t:'保証債務',m:23,cat:'債権総論',rank:'B'},
+  {n:48,t:'債権譲渡・債務引受',m:17,cat:'債権総論',rank:'B'},
+  {n:53,t:'贈与',m:11,cat:'契約各論',rank:'B'},
+  {n:54,t:'使用貸借',m:14,cat:'契約各論',rank:'B'},
+  {n:55,t:'賃貸借1',m:16,cat:'契約各論',rank:'B'},
+  {n:56,t:'賃貸借2',m:16,cat:'契約各論',rank:'B'},
+  {n:57,t:'賃貸借3',m:12,cat:'契約各論',rank:'B'},
+  {n:58,t:'請負',m:13,cat:'契約各論',rank:'B'},
+  {n:59,t:'委任',m:16,cat:'契約各論',rank:'B'},
+  {n:60,t:'寄託・組合',m:13,cat:'契約各論',rank:'B'},
+  {n:61,t:'事務管理・不当利得',m:15,cat:'不法行為等',rank:'B'},
+  {n:62,t:'不法行為1',m:13,cat:'不法行為等',rank:'B'},
+  {n:63,t:'不法行為2',m:13,cat:'不法行為等',rank:'B'},
+];
+const RANK_ORDER={S:0,A:1,B:2};
+const RANK_CONFIG=[
+  {id:'S',emoji:'👑',label:'S ランク — 最優先',desc:'借地借家法(2問)・抵当権(1問)・相続(1問)'},
+  {id:'A',emoji:'💎',label:'A ランク — 重要',  desc:'意思表示・代理(2問)・物権変動(1問)・売買(1問)'},
+  {id:'B',emoji:'⚠️', label:'B・C ランク',      desc:'区分所有法・登記法・時効・不法行為など'},
+];
+const INITIAL_DONE=[1,2,3,4,5,6,8,51,52];
+const CURRENT_N=9;
+const TOTAL_TIME=LECTURES.reduce((s,l)=>s+l.m,0);
+
+// ══════════════════════════════════════════════════
+// 問題バンク
+// ══════════════════════════════════════════════════
+const QB={
+  '借地借家法':[
+    {s:'借地権の存続期間は、契約で定めがない場合は30年となる。',a:true,e:'借地借家法上、借地権の存続期間は原則30年。30年より短い期間の定めは無効となり30年となる。'},
+    {s:'借地権者が借地上に建物を建築した場合、その建物の登記がなくても借地権を第三者に対抗できる。',a:false,e:'借地権の対抗要件は「借地権の登記」または「借地上の建物の登記（所有権保存登記）」。建物を建てただけでは対抗できない。'},
+    {s:'普通借地権において、地主は正当事由がなければ更新を拒絶できない。',a:true,e:'普通借地権は更新制度があり、地主が更新を拒絶するには「正当事由」（自己使用の必要性・立退料等）が必要。'},
+    {s:'定期借地権は、期間満了後に借地権者が請求すれば必ず更新される。',a:false,e:'定期借地権は更新がなく、期間満了で必ず終了する。一般定期借地権の存続期間は50年以上。'},
+    {s:'建物賃貸借において、賃借人は建物の引渡しを受ければ第三者に対抗できる。',a:true,e:'建物賃借権の対抗要件は「建物の引渡し」。登記がなくても引渡しを受けていれば対抗できる。'},
+    {s:'定期建物賃貸借契約は、書面（電磁的記録でも可）で締結しなければならない。',a:true,e:'定期建物賃貸借は必ず書面が必要。また契約前に「更新がなく期間満了で終了する」旨を別書面で説明しなければならない。'},
+    {s:'造作買取請求権は、賃貸人の同意なく設置した造作についても行使できる。',a:false,e:'造作買取請求権は「賃貸人の同意を得て設置した造作」が対象。無断設置した造作には請求権がない。'},
+    {s:'事業用定期借地権の存続期間は10年以上50年未満でなければならない。',a:true,e:'事業用定期借地権は10年以上50年未満。専ら事業用建物の所有を目的とし、公正証書で契約する必要がある。'},
+  ],
+  '抵当権':[
+    {s:'抵当権者は、被担保債権の利息について、最後の2年分を優先して回収できる。',a:true,e:'抵当権の優先弁済の範囲は元本＋最後の2年分の利息・遅延損害金。これを超える利息は後順位抵当権者等に劣後する。'},
+    {s:'法定地上権は、抵当権設定時に土地と建物が同一人物の所有であれば必ず成立する。',a:false,e:'法定地上権の成立要件は4つ全て必要：①設定時に建物存在②設定時に同一人所有③抵当権設定④競売による所有者分離。'},
+    {s:'物上代位とは、抵当権者が抵当不動産の賃料や保険金に対して抵当権を行使できる制度である。',a:true,e:'物上代位により、抵当権者は代替物（賃料・保険金など）に抵当権を行使できる。払渡し前に差押えが必要。'},
+    {s:'根抵当権は、確定前であれば極度額の範囲内で不特定の債権を担保する。',a:true,e:'根抵当権は極度額の範囲内で、一定の範囲に属する不特定多数の債権を担保する継続的取引向けの担保。'},
+    {s:'抵当権の順位は、登記の前後ではなく、設定契約の日時で決まる。',a:false,e:'抵当権の順位は「登記の前後」で決まる。設定契約が先でも登記が後であれば後順位になる。'},
+    {s:'一括競売とは、土地の抵当権者が建物も含めて競売し、土地の代価からのみ優先弁済を受ける制度である。',a:true,e:'土地に抵当権設定後に建物が築造された場合、抵当権者は土地と建物を一括競売できるが、優先弁済は土地の代価からのみ。'},
+    {s:'抵当権は、債務者以外の第三者が所有する不動産に設定することはできない。',a:false,e:'物上保証人（債務者以外の者）が所有する不動産にも抵当権を設定できる。'},
+  ],
+  '相続・親族法':[
+    {s:'被相続人の子と配偶者が相続人の場合、子と配偶者の法定相続分は各2分の1である。',a:true,e:'第1順位（子）と配偶者が相続人の場合、法定相続分は各2分の1。子が複数いれば2分の1を均等に分ける。'},
+    {s:'被相続人の兄弟姉妹が相続人になる場合、配偶者が4分の3、兄弟姉妹が4分の1となる。',a:true,e:'第3順位（兄弟姉妹）と配偶者：配偶者3/4、兄弟姉妹1/4。第2順位（直系尊属）と配偶者：配偶者2/3、直系尊属1/3。'},
+    {s:'自筆証書遺言は、全文・日付・氏名を自書し、押印しなければならない。',a:true,e:'自筆証書遺言の要件：①全文自書（財産目録はPC作成可）②日付の自書③氏名の自書④押印。一つでも欠けると無効。'},
+    {s:'遺留分を有するのは、配偶者・子・直系尊属であり、兄弟姉妹には遺留分がない。',a:true,e:'遺留分権利者：配偶者・子（代襲者含む）・直系尊属。兄弟姉妹には遺留分なし。'},
+    {s:'相続放棄をした者の子は、代襲相続をすることができる。',a:false,e:'代襲相続が発生するのは「死亡・欠格・廃除」の場合のみ。相続放棄をした者の子は代襲相続できない。'},
+    {s:'限定承認は、相続人全員が共同して行わなければならない。',a:true,e:'限定承認は相続人全員が共同して家庭裁判所に申述する必要がある。期限は相続を知ったときから3ヶ月。'},
+    {s:'遺産分割協議は、相続人全員の同意がなければ成立しない。',a:true,e:'遺産分割協議は相続人全員が合意することで成立する。一人でも欠けると無効。'},
+  ],
+  '意思表示・代理':[
+    {s:'詐欺による意思表示は、善意無過失の第三者に対しても取消しを対抗できる。',a:false,e:'詐欺による取消しは、善意無過失の第三者には対抗できない（民法96条3項）。強迫による取消しはすべての第三者に対抗できる。'},
+    {s:'錯誤による意思表示の取消しは、錯誤が表意者の重大な過失による場合は原則できない。',a:true,e:'錯誤取消しの要件のひとつが「表意者に重大な過失がないこと」。ただし相手方も悪意・重過失の場合は取消し可。'},
+    {s:'虚偽表示による無効は、善意の第三者に対抗できない。',a:true,e:'通謀虚偽表示（民法94条）による無効は、善意の第三者に対抗できない。第三者の善意は推定され、過失は問わない。'},
+    {s:'無権代理行為は、本人が追認すれば契約時に遡って有効となる。',a:true,e:'無権代理行為に本人が追認すると、契約時に遡って有効になる（遡及効）。ただし第三者の権利を害することはできない。'},
+    {s:'表見代理が成立した場合、本人は相手方に対して代理行為の効果の帰属を拒絶できる。',a:false,e:'表見代理が成立すると、本人は代理行為の責任を負わなければならず、効果の帰属を拒絶できない。'},
+    {s:'代理人は、本人の許可なく自己契約をすることができない。',a:true,e:'自己契約（代理人が相手方となる契約）は本人の利益を害するおそれがあるため禁止（民法108条）。'},
+  ],
+  '不動産物権変動':[
+    {s:'不動産の物権変動は、登記をしなければ第三者に対抗できない。',a:true,e:'民法177条：不動産の物権変動は登記しないと第三者に対抗できない。「第三者」は登記の欠缺を主張する正当な利益を持つ者。'},
+    {s:'不動産を時効取得した者は、時効完成前に所有権を取得した第三者に対し、登記なしに対抗できる。',a:true,e:'時効完成前の第三者に対しては登記不要で対抗可。時効完成後に所有権を取得した第三者との関係は対抗問題（登記の先後）となる。'},
+    {s:'背信的悪意者とは、単に登記がないことを知っているだけの悪意者のことである。',a:false,e:'背信的悪意者とは登記の欠缺を主張することが信義則上許されない者。単なる悪意者ではなく嫌がらせ目的等が要件。'},
+    {s:'二重譲渡において、第二買主が先に登記を得れば、たとえ悪意であっても所有権を取得する。',a:true,e:'民法177条は悪意の第三者も保護する（背信的悪意者は除く）。第二買主は先に登記を得れば悪意でも所有権を取得できる。'},
+    {s:'解除による原状回復義務は、解除前に登場した善意の第三者に主張できない。',a:true,e:'解除の遡及効があっても、解除前に権利を取得した善意の第三者は保護される。解除後の第三者との関係は登記で処理。'},
+  ],
+  '債務不履行・売買':[
+    {s:'売買の目的物に種類・品質に関する契約不適合があった場合、買主はその不適合を知った時から1年以内に売主に通知しなければならない。',a:true,e:'契約不適合責任の通知期間：種類・品質の不適合は「不適合を知った時から1年以内」に通知が必要。通知を怠ると担保請求権を失う。'},
+    {s:'解約手付がある場合、売主は手付の2倍を返還することで契約を解除できる。',a:true,e:'解約手付による解除：買主は手付を放棄して解除可、売主は手付の倍額を返還して解除可。ただし「履行の着手」後は解除不可。'},
+    {s:'売主の契約不適合責任は、売主が不適合を知らなかった場合でも生じる。',a:true,e:'契約不適合責任は無過失責任。売主が不適合を知らなくても責任を負う。'},
+    {s:'売買において、買主が代金を支払わない場合、売主は原則として相当期間の催告なしに直ちに契約を解除できる。',a:false,e:'催告解除が原則。相当期間を定めて履行を催告し、その期間内に履行がない場合に解除できる。履行不能等は催告不要。'},
+    {s:'危険負担において、引渡し前に売主の帰責事由なく目的物が滅失した場合、買主は代金支払いを拒絶できる。',a:true,e:'改正民法では「反対給付拒絶権」を採用。引渡し前に売主の帰責事由なく目的物が滅失した場合、買主は代金支払いを拒絶できる。'},
+  ],
+  '区分所有法':[
+    {s:'区分所有建物の共用部分の重大変更は、区分所有者及び議決権の各4分の3以上の決議が必要である。',a:true,e:'共用部分の重大変更（形状・効用の著しい変更）：区分所有者数と議決権の各3/4以上の特別多数決議。'},
+    {s:'区分所有建物の建替え決議は、区分所有者及び議決権の各5分の4以上の賛成が必要である。',a:true,e:'建替え決議は区分所有者数と議決権の各4/5以上。最も厳しい決議要件。'},
+    {s:'管理者は、区分所有者の中から選任しなければならない。',a:false,e:'管理者は区分所有者以外の者（管理会社など）でもなれる。管理者は集会の決議で選任・解任。'},
+    {s:'規約の設定・変更・廃止には、区分所有者及び議決権の各4分の3以上の決議が必要である。',a:true,e:'規約の設定・変更・廃止は特別決議（3/4以上）が必要。'},
+    {s:'滞納管理費は、特定承継人（区分所有権の購入者）に対しても請求できる。',a:true,e:'管理組合は、前の区分所有者が滞納した管理費を特定承継人（新しい所有者）に請求できる。'},
+  ],
+  '不動産登記法':[
+    {s:'不動産登記は、当事者の申請または官庁・公署の嘱託によって行われるのが原則である。',a:true,e:'登記は申請主義が原則。ただし表示に関する登記は登記官が職権でも行える。'},
+    {s:'所有権保存登記は、単独で申請することができる。',a:true,e:'単独申請できる登記の例：所有権保存登記・相続による所有権移転登記・判決による登記。'},
+    {s:'仮登記は、本登記の順位を保全するためにするものであり、本登記と同様の対抗力を持つ。',a:false,e:'仮登記は順位保全の効果はあるが、第三者対抗力はない。本登記をして初めて仮登記時の順位で対抗力が生じる（順位遡及効）。'},
+    {s:'表示に関する登記は、原則として所有者に申請義務がある。',a:true,e:'表示に関する登記は申請義務がある。建物新築後1ヶ月以内に建物表題登記を申請しなければならない。'},
+    {s:'権利に関する登記の申請は、原則として登記権利者と登記義務者が共同して行う。',a:true,e:'共同申請の原則：登記権利者（登記により権利を得る者）と登記義務者（権利を失う者）が共同申請する。'},
+  ],
+  '制限行為能力者':[
+    {s:'未成年者が親権者の同意なく行った法律行為は、未成年者本人または法定代理人が取り消すことができる。',a:true,e:'未成年者の単独行為は取消可（民法5条）。取消権者：未成年者本人・法定代理人（親権者・後見人）。'},
+    {s:'成年被後見人が行った法律行為は、日用品の購入その他日常生活に関する行為であっても取り消すことができる。',a:false,e:'成年被後見人が単独でできる行為：日用品購入など日常生活に関する行為（民法9条ただし書き）。これは取消不可。'},
+    {s:'被保佐人が保佐人の同意なく不動産を売却した場合、その売却は取り消すことができる。',a:true,e:'被保佐人は「重要な財産上の行為」（不動産売却等13類型）には保佐人の同意が必要。同意なしに行った場合は取消可。'},
+    {s:'制限行為能力者が詐術を用いて相手方を信じさせた場合、その行為は取り消すことができない。',a:true,e:'詐術を用いた場合、取消権を失う（民法21条）。単なる黙秘は詐術に当たらない。'},
+  ],
+  '時効・条件':[
+    {s:'取得時効は、他人の物を所有の意思をもって平穏・公然に10年間（善意無過失の場合）占有することで成立する。',a:true,e:'取得時効：善意無過失→10年、悪意または有過失→20年の占有が必要。'},
+    {s:'消滅時効は、権利を行使することができる時から進行を開始する。',a:true,e:'消滅時効の起算点：客観的起算点（権利行使できる時）から10年、主観的起算点（権利と義務者を知った時）から5年。'},
+    {s:'時効の援用権者には、時効によって直接利益を受ける者が含まれる。',a:true,e:'時効援用権者：主債務者・保証人・物上保証人・第三取得者など時効完成により直接利益を受ける者。'},
+    {s:'停止条件付き法律行為は、条件が成就するまで効力が生じない。',a:true,e:'停止条件：条件成就で効力発生。解除条件：条件成就で効力消滅。'},
+    {s:'時効の利益はあらかじめ放棄することができる。',a:false,e:'時効の利益のあらかじめの放棄は禁止（民法146条）。時効完成前の放棄は無効。'},
+  ],
+  '占有権・所有権':[
+    {s:'即時取得は、動産について善意無過失で取引した場合に成立する。',a:true,e:'即時取得（民法192条）：①動産②平穏・公然の取引行為③善意④無過失⑤引渡しを受けることで成立。不動産には適用なし。'},
+    {s:'共有物の変更（重大変更）には、共有者全員の同意が必要である。',a:true,e:'共有物の重大変更は全員同意が必要。管理行為は持分価格の過半数でよい。'},
+    {s:'共有者の一人が死亡して相続人がいない場合、その持分は他の共有者に帰属する。',a:true,e:'共有者の死亡・相続人不存在の場合、その持分は他の共有者に帰属する（民法255条）。'},
+  ],
+  '担保物権':[
+    {s:'留置権は、他人の物を占有する者が、その物に関して生じた債権を有する場合に成立する。',a:true,e:'留置権の成立要件：①他人の物の占有②物に関して生じた債権（牽連性）③弁済期の到来④占有が不法行為によって始まっていないこと。'},
+    {s:'留置権者は、留置物から生じる果実を収取し、他の債権者に先立って自己の債権の弁済に充当できる。',a:true,e:'留置権者は果実収取権あり。ただし競売権はあるが優先弁済権はない（留置のみで優先弁済不可）。'},
+    {s:'質権は、債権者が債務者から質物の引渡しを受けることで成立する。',a:true,e:'質権の成立：質権設定合意＋質物の引渡し（要物契約）。質権者は留置・優先弁済の両方の効力を持つ。'},
+  ],
+  '債権総論':[
+    {s:'債権者代位権は、債務者が無資力であることが要件となる。',a:true,e:'債権者代位権の要件：①被保全債権が履行期にある②債務者の無資力③債務者自身が権利を行使しないこと。転用型は無資力不要。'},
+    {s:'連帯債務者の一人に対して生じた事由は、絶対効として他の連帯債務者にも影響する。',a:false,e:'改正民法では、連帯債務における絶対効事由は「弁済・代物弁済・相殺・更改・混同」のみ。請求・免除・時効完成などは相対効。'},
+    {s:'保証債務には付従性があるため、主債務が消滅すれば保証債務も消滅する。',a:true,e:'保証債務の性質：①付従性（主債務に従属）②補充性（催告・検索の抗弁権）③随伴性（主債務の移転に伴い移転）。'},
+    {s:'連帯保証人には、催告の抗弁権と検索の抗弁権がある。',a:false,e:'連帯保証人には催告の抗弁権も検索の抗弁権もない。連帯保証は補充性がなく主債務者と同等の責任を負う。'},
+    {s:'債権譲渡の債務者への対抗要件は、譲渡人から債務者への通知または債務者の承諾である。',a:true,e:'債権譲渡の債務者対抗要件：譲渡人からの通知または債務者の承諾。第三者対抗要件：確定日付のある証書による通知または承諾。'},
+  ],
+  '契約各論':[
+    {s:'使用貸借は、貸主が目的物を無償で使用・収益させ、借主がこれを返還することを約束する契約である。',a:true,e:'使用貸借（民法593条）は無償契約。賃貸借との違い：①無償②対抗力なし③借主の死亡で終了。借地借家法の適用なし。'},
+    {s:'建物の賃借人が建物を転貸するには、賃貸人の承諾が必要である。',a:true,e:'賃借権の無断転貸は解除事由（民法612条）。ただし「背信的行為と認めるに足りない特段の事情」がある場合は解除不可（判例）。'},
+    {s:'賃貸借終了時、賃貸人は通常損耗についても原状回復を求めることができる。',a:false,e:'通常損耗（経年劣化・通常使用による消耗）の原状回復費用は賃貸人負担が原則。'},
+    {s:'委任契約は、受任者がいつでも解除することができる。',a:true,e:'委任は当事者の信頼関係に基づくため、各当事者はいつでも解除できる（651条）。ただし不利な時期の解除は損害賠償責任が生じる場合がある。'},
+  ],
+  '不法行為等':[
+    {s:'使用者は、被用者が事業の執行について第三者に加えた損害を賠償する責任を負う。',a:true,e:'使用者責任（715条）：使用者は被用者の事業執行中の不法行為について責任を負う。選任・監督に相当の注意をしたことを証明すれば免責可。'},
+    {s:'不法行為による損害賠償請求権は、損害を知った時から3年（人の生死身体は5年）で消滅時効にかかる。',a:true,e:'不法行為の消滅時効：損害・加害者を知った時から3年（生命・身体侵害は5年）または不法行為時から20年（除斥期間）。'},
+    {s:'共同不法行為者の損害賠償責任は、各自の過失割合に応じた分割責任となる。',a:false,e:'共同不法行為（719条）：複数の者が共同して不法行為を行った場合、各自が連帯して全損害を賠償する責任（不真正連帯債務）。'},
+    {s:'事務管理は、義務なく他人のために事務を管理した場合に成立し、管理者は善良な管理者の注意義務を負う。',a:true,e:'事務管理（697条）：法律上の義務なく他人の事務を管理する行為。管理者は善管注意義務を負い、本人は費用償還義務を負う。'},
+  ],
+};
+
+// ══════════════════════════════════════════════════
+// 問題のユーザー修正
+// ══════════════════════════════════════════════════
+function loadQEdits() { return sg('tk_q_edits_v1', {}); }
+function saveQEdits(data) { ss('tk_q_edits_v1', data); }
+
+function getBaseQ(id) {
+  const sep = id.indexOf('::');
+  if (sep < 0) return null;
+  const cat = id.slice(0, sep);
+  const idx = parseInt(id.slice(sep + 2), 10);
+  const q = QB[cat]?.[idx];
+  return q ? { ...q, id, cat } : null;
+}
+
+function applyQEdits(q, edits) {
+  if (!q?.id) return q;
+  const e = edits?.[q.id];
+  if (!e) return q;
+  return {
+    ...q,
+    ...(e.s !== undefined && { s: e.s }),
+    ...(e.a !== undefined && { a: e.a }),
+    ...(e.e !== undefined && { e: e.e }),
+  };
+}
+
+function buildQEditsDiff(base, updated) {
+  const diff = {};
+  if (updated.s !== base.s) diff.s = updated.s;
+  if (updated.a !== base.a) diff.a = updated.a;
+  if (updated.e !== base.e) diff.e = updated.e;
+  return diff;
+}
+
+// ══════════════════════════════════════════════════
+// SRS（間隔反復学習）ロジック
+// ══════════════════════════════════════════════════
+// qRecord の構造:
+// { streak: 連続正解数, nextDate: 次回出題日のtimestamp(ms), totalAns: 総回答数, correctAns: 正解数 }
+
+function loadSRS() { return sg('tk_srs_v1', {}); }
+function saveSRS(data) { ss('tk_srs_v1', data); }
+
+function getNextInterval(streak) {
+  const intervals = SRS_INTERVALS;
+  const idx = Math.min(streak, intervals.length - 1);
+  return intervals[idx];
+}
+
+function recordAnswer(srs, id, correct) {
+  const rec = srs[id] || { streak:0, nextDate:0, totalAns:0, correctAns:0 };
+  const newRec = {
+    streak:    correct ? rec.streak + 1 : 0,
+    totalAns:  rec.totalAns + 1,
+    correctAns:rec.correctAns + (correct ? 1 : 0),
+    nextDate:  today0() + getNextInterval(correct ? rec.streak + 1 : 0) * 864e5,
+  };
+  return { ...srs, [id]: newRec };
+}
+
+// 今日出題すべき問題を取得
+function getDueQuestions(srs, edits={}) {
+  const now = today0();
+  const due = [];
+  Object.entries(QB).forEach(([cat, qs]) => {
+    qs.forEach((q, idx) => {
+      const id = qid(cat, idx);
+      const rec = srs[id];
+      if (!rec || rec.nextDate <= now) {
+        due.push(applyQEdits({ ...q, id, cat, idx,
+          streak: rec?.streak || 0,
+          accuracy: rec ? Math.round(rec.correctAns / rec.totalAns * 100) : null,
+          totalAns: rec?.totalAns || 0,
+        }, edits));
+      }
+    });
+  });
+  return due;
+}
+
+// 問題を優先度順にソート
+// 優先度: ①未回答 ②正答率低い ③streakが低い ④期限切れ古い順
+function sortByPriority(questions, srs) {
+  return [...questions].sort((a, b) => {
+    const ra = srs[a.id], rb = srs[b.id];
+    // 未回答を最優先
+    if (!ra && rb) return -1;
+    if (ra && !rb) return 1;
+    if (!ra && !rb) return 0;
+    // 正答率が低い順
+    const accA = ra.correctAns / ra.totalAns;
+    const accB = rb.correctAns / rb.totalAns;
+    if (Math.abs(accA - accB) > 0.1) return accA - accB;
+    // streak が低い順
+    return ra.streak - rb.streak;
+  });
+}
+
+// 通常クイズ用ピック（SRS考慮）
+function pickQuestions(scope, count, srs, edits={}) {
+  let pool = scope === 'all'
+    ? Object.entries(QB).flatMap(([cat, qs]) => qs.map((q, idx) => applyQEdits({...q, id:qid(cat,idx), cat}, edits)))
+    : (QB[scope] || []).map((q, idx) => applyQEdits({...q, id:qid(scope,idx), cat:scope}, edits));
+
+  const now = today0();
+  // 期限切れ（今日出題すべき）を優先
+  const due    = sortByPriority(pool.filter(q => { const r=srs[q.id]; return !r || r.nextDate <= now; }), srs);
+  const notDue = pool.filter(q => { const r=srs[q.id]; return r && r.nextDate > now; }).sort(()=>Math.random()-0.5);
+
+  const selected = [...due, ...notDue].slice(0, count);
+  // 足りなければランダム補完
+  if (selected.length < count) {
+    const extra = pool.filter(q => !selected.find(s=>s.id===q.id)).sort(()=>Math.random()-0.5);
+    selected.push(...extra.slice(0, count - selected.length));
+  }
+  return selected.slice(0, count);
+}
+
+// ══════════════════════════════════════════════════
+// メインアプリ
+// ══════════════════════════════════════════════════
+function App() {
+  const [tab,setTab]             = useState('home');
+  const [done,setDone]           = useState(()=>new Set(sg('tk_done_v5',INITIAL_DONE)));
+  const [daysDone,setDaysDone]   = useState(()=>new Set(sg('tk_days_v5',[])));
+  const [srs,setSRS]             = useState(()=>loadSRS());
+  const [quizScope,setQuizScope] = useState('all');
+  const [quizDiff,setQuizDiff]   = useState(null);
+  const [quizCount,setQuizCount] = useState(null);
+  const [quizMode,setQuizMode]   = useState('normal'); // 'normal' | 'review'
+  const [quizPhase,setQuizPhase] = useState('setup');
+  const [questions,setQuestions] = useState([]);
+  const [qIdx,setQIdx]           = useState(0);
+  const [score,setScore]         = useState(0);
+  const [skipped,setSkipped]     = useState(0);
+  const [answered,setAnswered]   = useState(null);
+  const [history,setHistory]     = useState(()=>sg('tk_hist_v5',[]));
+  const [qEdits,setQEdits]       = useState(()=>loadQEdits());
+
+  const daysLeft     = getDaysLeft();
+  const todayPlanDay = getTodayPlanDay();
+  const todayTask    = todayPlanDay ? SCHEDULE.find(s=>s.day===todayPlanDay) : null;
+  const dueQuestions = getDueQuestions(srs, qEdits);
+  const dueCount     = dueQuestions.length;
+
+  const toggleDone = useCallback(n=>{
+    setDone(prev=>{const nx=new Set(prev);nx.has(n)?nx.delete(n):nx.add(n);ss('tk_done_v5',[...nx]);return nx;});
+  },[]);
+  const toggleDay = useCallback(d=>{
+    setDaysDone(prev=>{const nx=new Set(prev);nx.has(d)?nx.delete(d):nx.add(d);ss('tk_days_v5',[...nx]);return nx;});
+  },[]);
+  const goQuiz = useCallback((cat, mode='normal')=>{
+    setQuizScope(cat); setQuizMode(mode); setTab('quiz'); setQuizPhase('setup');
+    window.scrollTo({top:0,behavior:'smooth'});
+  },[]);
+  const startReviewNow = useCallback(()=>{
+    setQuizMode('review'); setTab('quiz'); setQuizPhase('setup');
+    window.scrollTo({top:0,behavior:'smooth'});
+  },[]);
+
+  const doneTime = LECTURES.filter(l=>done.has(l.n)).reduce((s,l)=>s+l.m,0);
+  const remTime  = TOTAL_TIME - doneTime;
+  const pct      = Math.round(done.size/LECTURES.length*100);
+
+  const startQuiz = useCallback(()=>{
+    if(!quizCount) return;
+    let qs;
+    if (quizMode === 'review') {
+      // 忘却曲線モード：期限切れ優先＋正答率低い順
+      const prioritized = sortByPriority(dueQuestions, srs);
+      qs = prioritized.slice(0, quizCount);
+      if (qs.length < quizCount) {
+        const extra = pickQuestions('all', quizCount - qs.length, srs, qEdits).filter(q=>!qs.find(x=>x.id===q.id));
+        qs = [...qs, ...extra];
+      }
+    } else {
+      qs = pickQuestions(quizScope, quizCount, srs, qEdits);
+    }
+    setQuestions(qs.map(q=>({...q}))); setQIdx(0); setScore(0); setSkipped(0); setAnswered(null); setQuizPhase('running');
+  },[quizCount, quizMode, quizScope, dueQuestions, srs, qEdits]);
+
+  const handleOX = useCallback(ans=>{
+    if(answered!==null) return;
+    setAnswered(ans);
+    const correct = ans === questions[qIdx]?.a;
+    if(correct) setScore(s=>s+1);
+    // SRS 更新
+    const q = questions[qIdx];
+    if (q?.id) {
+      const newSRS = recordAnswer(srs, q.id, correct);
+      setSRS(newSRS);
+      saveSRS(newSRS);
+    }
+  },[answered,questions,qIdx,srs]);
+
+  const editQuestion = useCallback((id, patch)=>{
+    const base=getBaseQ(id);
+    if(!base) return;
+    const prev=qEdits[id]||{};
+    const merged={s:base.s,a:base.a,e:base.e,...prev,...patch};
+    const diff=buildQEditsDiff(base,merged);
+    const nextEdits={...qEdits};
+    if(Object.keys(diff).length===0) delete nextEdits[id];
+    else nextEdits[id]=diff;
+    setQEdits(nextEdits);
+    saveQEdits(nextEdits);
+    setQuestions(prevQs=>prevQs.map(x=>x.id===id?applyQEdits(x,nextEdits):x));
+    if(answered!==null&&patch.a!==undefined){
+      const oldQ=questions[qIdx];
+      const wasCorrect=answered===oldQ?.a;
+      const nowCorrect=answered===merged.a;
+      if(wasCorrect&&!nowCorrect) setScore(s=>Math.max(0,s-1));
+      if(!wasCorrect&&nowCorrect) setScore(s=>s+1);
+    }
+  },[qEdits,questions,qIdx,answered]);
+
+  const saveSessionHistory = useCallback((opts={})=>{
+    const {interrupted=false,finalSkipped=skipped,finalScore=score}=opts;
+    let attempted,total;
+    if(interrupted){
+      const dealt=qIdx+(answered!==null?1:0);
+      attempted=dealt-finalSkipped;
+      if(dealt===0) return;
+      total=dealt;
+    } else {
+      attempted=quizCount-finalSkipped;
+      total=quizCount;
+    }
+    const p=attempted>0?Math.round(finalScore/attempted*100):0;
+    const entry={date:new Date().toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}),score:finalScore,total,pct:p,skipped:finalSkipped,interrupted,planned:quizCount,diff:quizDiff||'—',scope:quizMode==='review'?'📚復習モード':quizScope==='all'?'全分野':quizScope};
+    setHistory(prev=>{const nh=[entry,...prev].slice(0,15);ss('tk_hist_v5',nh);return nh;});
+  },[qIdx,answered,skipped,score,quizCount,quizDiff,quizMode,quizScope]);
+
+  const nextQ = useCallback(()=>{
+    if(qIdx+1>=quizCount){
+      setQuizPhase('result');
+      saveSessionHistory({interrupted:false});
+    } else { setQIdx(i=>i+1); setAnswered(null); }
+  },[qIdx,quizCount,saveSessionHistory]);
+
+  const skipQ = useCallback(()=>{
+    if(answered!==null) return;
+    const newSkipped=skipped+1;
+    setSkipped(newSkipped);
+    if(qIdx+1>=quizCount){
+      setQuizPhase('result');
+      saveSessionHistory({interrupted:false,finalSkipped:newSkipped});
+    } else { setQIdx(i=>i+1); setAnswered(null); }
+  },[answered,qIdx,quizCount,skipped,saveSessionHistory]);
+
+  const abortQuiz = useCallback(()=>{
+    if(quizPhase==='running') saveSessionHistory({interrupted:true});
+    setQuizPhase('setup');
+  },[quizPhase,saveSessionHistory]);
+
+  const q=questions[qIdx]; const totalQ=quizCount||5;
+  const barPct=quizPhase==='running'?Math.round(qIdx/totalQ*100):0;
+  const attempted=totalQ-skipped;
+  const finalPct=quizPhase==='result'?(attempted>0?Math.round(score/attempted*100):0):0;
+  const currentRec = q?.id ? srs[q.id] : null;
+
+  const TABS=[['home','🏠','ホーム'],['calendar','📅','計画'],['tracker','📋','進捗'],['quiz','✏️','問題集']];
+
+  return (
+    <div style={{fontFamily:"'Zen Kaku Gothic New',sans-serif",background:C.paper,minHeight:'100vh',color:C.ink}}>
+      <nav style={{position:'sticky',top:0,zIndex:100,background:C.ink,display:'flex'}}>
+        {TABS.map(([id,icon,label])=>(
+          <button key={id} onClick={()=>setTab(id)} style={{flex:1,padding:'10px 4px',border:'none',background:'transparent',color:tab===id?'white':'rgba(255,255,255,0.4)',fontFamily:"'Shippori Mincho',serif",cursor:'pointer',borderBottom:tab===id?`3px solid ${C.s}`:'3px solid transparent',transition:'all 0.2s',display:'flex',flexDirection:'column',alignItems:'center',gap:1}}>
+            <span style={{fontSize:16}}>{icon}</span>
+            <span style={{fontSize:9,fontWeight:700,letterSpacing:'0.04em'}}>{label}</span>
+          </button>
+        ))}
+      </nav>
+      <div style={{maxWidth:800,margin:'0 auto',padding:'0 14px 80px'}}>
+        {tab==='home'    &&<HomeTab daysLeft={daysLeft} todayTask={todayTask} todayPlanDay={todayPlanDay} done={done} pct={pct} doneTime={doneTime} remTime={remTime} daysDone={daysDone} dueCount={dueCount} srs={srs} setTab={setTab} goQuiz={goQuiz} startReviewNow={startReviewNow}/>}
+        {tab==='calendar'&&<CalendarTab daysDone={daysDone} toggleDay={toggleDay} goQuiz={goQuiz}/>}
+        {tab==='tracker' &&<TrackerTab done={done} toggleDone={toggleDone} goQuiz={goQuiz} doneTime={doneTime} remTime={remTime} pct={pct} srs={srs}/>}
+        {tab==='quiz'    &&<QuizTab quizPhase={quizPhase} quizScope={quizScope} setQuizScope={setQuizScope} quizDiff={quizDiff} setQuizDiff={setQuizDiff} quizCount={quizCount} setQuizCount={setQuizCount} quizMode={quizMode} setQuizMode={setQuizMode} dueCount={dueCount} q={q} qIdx={qIdx} score={score} skipped={skipped} totalQ={totalQ} answered={answered} barPct={barPct} finalPct={finalPct} currentRec={currentRec} handleOX={handleOX} nextQ={nextQ} skipQ={skipQ} editQuestion={editQuestion} startQuiz={startQuiz} backToSetup={abortQuiz} history={history} srs={srs}/>}
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════
+// HomeTab
+// ══════════════════════════════════════════════════
+function HomeTab({daysLeft,todayTask,todayPlanDay,done,pct,doneTime,remTime,daysDone,dueCount,srs,setTab,goQuiz,startReviewNow}) {
+  const urgencyColor = daysLeft<=30?'#ff4444':daysLeft<=90?'#ffaa00':'white';
+
+  // SRS統計
+  const allQs = Object.entries(QB).flatMap(([cat,qs])=>qs.map((q,i)=>({id:qid(cat,i)})));
+  const answered = allQs.filter(q=>srs[q.id]);
+  const weakQs   = answered.filter(q=>{const r=srs[q.id]; return r.totalAns>0&&r.correctAns/r.totalAns<0.5;});
+
+  return (
+    <div style={{paddingTop:20}}>
+      <div style={{borderBottom:`3px double ${C.ink}`,paddingBottom:14,marginBottom:18}}>
+        <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:38,fontWeight:800,lineHeight:1}}>宅建士<span style={{color:C.s}}>合格</span></div>
+        <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:11,letterSpacing:'0.3em',color:C.muted,marginTop:4}}>2026年度合格目標 · ダッシュボード</div>
+      </div>
+
+      {/* カウントダウン */}
+      <div style={{background:C.ink,color:'white',padding:'20px 16px',marginBottom:14,textAlign:'center',position:'relative',overflow:'hidden'}}>
+        <div style={{position:'absolute',top:0,left:0,right:0,height:3,background:`linear-gradient(90deg,${C.s},${C.a})`}}/>
+        <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:10,letterSpacing:'0.5em',color:'rgba(255,255,255,0.45)',marginBottom:6}}>宅 建 試 験 ま で</div>
+        <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:76,fontWeight:800,lineHeight:1,color:urgencyColor}}>{daysLeft}</div>
+        <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:16,color:'rgba(255,255,255,0.6)',marginTop:4}}>日</div>
+        <div style={{fontSize:11,color:'rgba(255,255,255,0.35)',marginTop:8}}>2026年10月18日（日）実施予定</div>
+      </div>
+
+      {/* 🔔 忘却曲線アラート */}
+      {dueCount > 0 && (
+        <div style={{border:`2px solid ${C.review}`,background:C.reviewBg,padding:'14px 16px',marginBottom:14}}>
+          <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10,flexWrap:'wrap'}}>
+            <span style={{fontSize:20}}>🔔</span>
+            <div style={{flex:1}}>
+              <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:14,fontWeight:800,color:C.review}}>
+                今日の復習問題 {dueCount}問
+              </div>
+              <div style={{fontSize:11,color:C.muted,marginTop:2}}>
+                忘れる前に復習しましょう！正答率・出題間隔を自動調整します
+              </div>
+            </div>
+          </div>
+          {weakQs.length > 0 && (
+            <div style={{fontSize:12,color:C.review,marginBottom:10}}>
+              ⚠️ 正答率50%未満の問題が <b>{weakQs.length}問</b> あります
+            </div>
+          )}
+          <button onClick={startReviewNow}
+            style={{width:'100%',padding:'10px',border:'none',background:C.review,color:'white',fontFamily:"'Shippori Mincho',serif",fontSize:14,fontWeight:700,letterSpacing:'0.1em',cursor:'pointer'}}>
+            今すぐ復習する →
+          </button>
+        </div>
+      )}
+
+      {/* 今日のタスク */}
+      {todayTask ? (
+        <div style={{border:`2px solid ${todayTask.color}`,background:'white',padding:'14px 16px',marginBottom:14}}>
+          <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8,flexWrap:'wrap'}}>
+            <span style={{fontSize:10,padding:'2px 8px',fontWeight:800,background:todayTask.color,color:'white'}}>TODAY · Day {todayPlanDay}</span>
+            <span style={{fontSize:11,color:C.muted}}>{todayTask.week} · {todayTask.theme}</span>
+          </div>
+          <div style={{fontSize:13,lineHeight:1.8}}>{todayTask.task}</div>
+        </div>
+      ) : (
+        <div style={{background:C.warnBg,borderLeft:`3px solid ${C.warn}`,padding:'12px 14px',marginBottom:14,fontSize:13}}>
+          📅 今日は計画期間外です。自由に問題演習や復習をしましょう！
+        </div>
+      )}
+
+      {/* Stats */}
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:14}}>
+        <StatCard label="講義の進捗"   big={`${done.size}`}                sub={`/ 82講義　${pct}%`}   bar={pct}                               color={C.s}/>
+        <StatCard label="計画の進捗"   big={`${daysDone.size}`}            sub={`/ 29日`}              bar={Math.round(daysDone.size/29*100)}  color={C.a}/>
+        <StatCard label="問題演習"     big={`${answered.length}`}          sub={`/ ${allQs.length}問 回答済`}/>
+        <StatCard label="今日の復習"   big={`${dueCount}`}                 sub="問が期限切れ"          color={dueCount>0?C.review:C.done}/>
+      </div>
+
+      {/* クイックリンク */}
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:14}}>
+        {[
+          {label:'🔔 忘却曲線で復習',  desc:`${dueCount}問が待っています`,    act:startReviewNow,       color:C.review},
+          {label:'📋 進捗トラッカー',  desc:'権利関係82講義',                  act:()=>setTab('tracker'),color:C.s},
+          {label:'✏️ 全分野○×問題',   desc:'SRS優先選択',                     act:()=>goQuiz('all'),    color:C.a},
+          {label:'📅 カレンダーを見る',desc:'28日間の計画表',                   act:()=>setTab('calendar'),color:'#2d7a3a'},
+        ].map((x,i)=>(
+          <button key={i} onClick={x.act} style={{padding:'12px 14px',border:`1.5px solid ${x.color}`,background:'white',textAlign:'left',cursor:'pointer',transition:'all 0.15s'}}
+            onMouseEnter={e=>{e.currentTarget.style.background=x.color;e.currentTarget.style.color='white';}}
+            onMouseLeave={e=>{e.currentTarget.style.background='white';e.currentTarget.style.color=C.ink;}}>
+            <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:12,fontWeight:700,marginBottom:2}}>{x.label}</div>
+            <div style={{fontSize:10,color:C.muted}}>{x.desc}</div>
+          </button>
+        ))}
+      </div>
+
+      {/* 分野別正答率 */}
+      <SRSStats srs={srs}/>
+
+      {/* ホーム画面に保存 */}
+      <HomeScreenGuide/>
+
+      <div style={{textAlign:'center',fontFamily:"'Shippori Mincho',serif",fontSize:10,color:C.muted,letterSpacing:'0.3em',paddingTop:16,borderTop:`1px solid ${C.line}`}}>合 格 へ の 道 · 一 歩 ず つ</div>
+    </div>
+  );
+}
+
+// 分野別正答率パネル
+function SRSStats({srs}) {
+  const cats = Object.keys(QB);
+  const stats = cats.map(cat=>{
+    const qs = QB[cat].map((q,i)=>srs[qid(cat,i)]).filter(Boolean);
+    if(!qs.length) return {cat, acc:null, total:0, correct:0, count:qs.length};
+    const total   = qs.reduce((s,r)=>s+r.totalAns,0);
+    const correct = qs.reduce((s,r)=>s+r.correctAns,0);
+    return {cat, acc:total?Math.round(correct/total*100):null, total, correct, count:qs.length};
+  }).filter(s=>s.total>0).sort((a,b)=>a.acc-b.acc);
+
+  if(!stats.length) return null;
+  return (
+    <div style={{marginBottom:16}}>
+      <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:12,fontWeight:700,letterSpacing:'0.1em',color:C.muted,marginBottom:10,borderBottom:`1px dashed ${C.line}`,paddingBottom:6}}>📊 分野別正答率</div>
+      {stats.map(s=>{
+        const col = s.acc<50?C.s:s.acc<75?C.warn:C.done;
+        const rank = LECTURES.find(l=>l.cat===s.cat)?.rank||'B';
+        return(
+          <div key={s.cat} style={{display:'flex',alignItems:'center',gap:10,marginBottom:7}}>
+            <span style={{fontSize:9,padding:'1px 5px',fontWeight:800,background:rankColor(rank),color:'white',minWidth:16,textAlign:'center'}}>{rank}</span>
+            <span style={{fontSize:11,minWidth:110,fontWeight:s.acc<50?700:400,color:s.acc<50?C.s:C.ink}}>{s.cat}</span>
+            <div style={{flex:1,height:8,background:'#f0ece3',overflow:'hidden',borderRadius:0}}>
+              <div style={{height:'100%',width:`${s.acc}%`,background:col,transition:'width 0.5s'}}/>
+            </div>
+            <span style={{fontSize:11,fontWeight:700,color:col,minWidth:36,textAlign:'right'}}>{s.acc}%</span>
+            <span style={{fontSize:10,color:C.muted,minWidth:40,textAlign:'right'}}>{s.correct}/{s.total}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════
+// ホーム画面に保存ガイド
+// ══════════════════════════════════════════════════
+function HomeScreenGuide() {
+  const [open, setOpen] = useState(false);
+  const [tab,  setTab]  = useState('iphone'); // 'iphone' | 'android' | 'pc'
+
+  const STEPS = {
+    iphone: [
+      { icon:'1️⃣', text:'Safari でこのページ（claude.ai）を開く' },
+      { icon:'2️⃣', text:'画面下の「共有ボタン」（□↑）をタップ' },
+      { icon:'3️⃣', text:'メニューを下にスクロールして「ホーム画面に追加」をタップ' },
+      { icon:'4️⃣', text:'右上の「追加」をタップして完了！' },
+    ],
+    android: [
+      { icon:'1️⃣', text:'Chrome でこのページ（claude.ai）を開く' },
+      { icon:'2️⃣', text:'右上の「︙（三点メニュー）」をタップ' },
+      { icon:'3️⃣', text:'「ホーム画面に追加」をタップ' },
+      { icon:'4️⃣', text:'「追加」をタップして完了！' },
+    ],
+    pc: [
+      { icon:'1️⃣', text:'Chrome でこのページ（claude.ai）を開く' },
+      { icon:'2️⃣', text:'アドレスバー右の「⊕」アイコンをクリック（またはメニュー→「ショートカットを作成」）' },
+      { icon:'3️⃣', text:'「ウィンドウとして開く」にチェックしてインストール' },
+      { icon:'4️⃣', text:'デスクトップにアイコンが追加されます！' },
+    ],
+  };
+
+  const NOTE_ITEMS = [
+    '📊 学習の進捗・正答率データはブラウザに自動保存されます',
+    '🔄 同じブラウザ・同じデバイスなら次回も引き継がれます',
+    '⚠️ ブラウザのキャッシュ削除や別ブラウザでは引き継がれません',
+    '📱 スマホとPCで別々にデータが保存されます',
+  ];
+
+  return (
+    <div style={{marginBottom:20}}>
+      {/* 折りたたみヘッダー */}
+      <button
+        onClick={()=>setOpen(o=>!o)}
+        style={{width:'100%',display:'flex',alignItems:'center',gap:10,padding:'12px 16px',border:`1.5px solid ${C.a}`,background:open?C.aBg:'white',cursor:'pointer',transition:'all 0.2s',textAlign:'left'}}>
+        <span style={{fontSize:18}}>📱</span>
+        <div style={{flex:1}}>
+          <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:13,fontWeight:800,color:C.a}}>ホーム画面に保存する方法</div>
+          <div style={{fontSize:11,color:C.muted,marginTop:1}}>アイコンからすぐ開けるように設定しよう</div>
+        </div>
+        <span style={{fontSize:18,color:C.a,transition:'transform 0.2s',transform:open?'rotate(180deg)':'none'}}>⌄</span>
+      </button>
+
+      {open && (
+        <div style={{border:`1.5px solid ${C.a}`,borderTop:'none',background:'white',padding:'18px 16px'}}>
+
+          {/* データ保存の注意 */}
+          <div style={{background:C.warnBg,borderLeft:`3px solid ${C.warn}`,padding:'10px 14px',marginBottom:16,fontSize:12}}>
+            <div style={{fontFamily:"'Shippori Mincho',serif",fontWeight:700,color:C.warn,marginBottom:6}}>💾 データの保存について</div>
+            {NOTE_ITEMS.map((n,i)=>(
+              <div key={i} style={{fontSize:11,color:C.ink,lineHeight:1.7}}>{n}</div>
+            ))}
+          </div>
+
+          {/* OS タブ切り替え */}
+          <div style={{display:'flex',gap:0,marginBottom:16,border:`1px solid ${C.line}`,overflow:'hidden'}}>
+            {[['iphone','🍎 iPhone'],['android','🤖 Android'],['pc','💻 PC']].map(([id,label])=>(
+              <button key={id} onClick={()=>setTab(id)}
+                style={{flex:1,padding:'8px 4px',border:'none',background:tab===id?C.ink:'white',color:tab===id?'white':C.muted,fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:11,fontWeight:700,cursor:'pointer',transition:'all 0.15s',borderRight:`1px solid ${C.line}`}}>
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* 手順 */}
+          <div style={{marginBottom:16}}>
+            {STEPS[tab].map((s,i)=>(
+              <div key={i} style={{display:'flex',gap:12,alignItems:'flex-start',padding:'10px 12px',marginBottom:6,background:C.paper,border:`1px solid ${C.line}`}}>
+                <span style={{fontSize:18,flexShrink:0}}>{s.icon}</span>
+                <span style={{fontSize:13,lineHeight:1.7,color:C.ink}}>{s.text}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* 追加ヒント */}
+          <div style={{background:C.aBg,borderLeft:`3px solid ${C.a}`,padding:'10px 14px',fontSize:12,lineHeight:1.7}}>
+            <div style={{fontFamily:"'Shippori Mincho',serif",fontWeight:700,color:C.a,marginBottom:4}}>💡 ヒント</div>
+            {tab==='iphone'&&<div>Safari のみ対応。Chrome・Firefox アプリからは「ホーム画面に追加」が使えません。</div>}
+            {tab==='android'&&<div>追加すると PWA として動作し、ネイティブアプリのように全画面で開けます。</div>}
+            {tab==='pc'&&<div>Chrome の「ショートカットを作成」で追加するとタスクバーやデスクトップからすぐ開けます。</div>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StatCard({label,big,sub,bar,color}) {
+  return(
+    <div style={{background:'white',border:`1px solid ${C.line}`,padding:'12px 14px'}}>
+      <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:10,letterSpacing:'0.2em',color:C.muted,marginBottom:4}}>{label}</div>
+      <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:26,fontWeight:800,color:color||C.s,lineHeight:1}}>{big}</div>
+      <div style={{fontSize:11,color:C.muted,marginTop:3}}>{sub}</div>
+      {bar!=null&&<div style={{height:4,background:'#f0ece3',marginTop:7,overflow:'hidden'}}><div style={{height:'100%',width:`${bar}%`,background:color||C.s,transition:'width 0.5s'}}/></div>}
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════
+// CalendarTab
+// ══════════════════════════════════════════════════
+function CalendarTab({daysDone,toggleDay,goQuiz}) {
+  const today=new Date();today.setHours(0,0,0,0);
+  const MONTHS=[{year:2026,month:4,label:'2026年 5月'},{year:2026,month:5,label:'2026年 6月'}];
+  const [selectedDay,setSelectedDay]=useState(null);
+  const DOW=['日','月','火','水','木','金','土'];
+  const weekColors={'第1週':C.a,'第2週':C.s,'第3週':'#2d7a3a','第4週':C.hard,'予備日':C.b};
+
+  function buildCalendar(year,month){
+    const first=new Date(year,month,1);
+    const last=new Date(year,month+1,0);
+    const cells=[];
+    for(let i=0;i<first.getDay();i++) cells.push(null);
+    for(let d=1;d<=last.getDate();d++){
+      const date=new Date(year,month,d);date.setHours(0,0,0,0);
+      const planDay=dateToPlanDay(date);
+      const sched=planDay?SCHEDULE.find(s=>s.day===planDay):null;
+      const isToday=date.getTime()===today.getTime();
+      cells.push({d,date,planDay,sched,isToday});
+    }
+    return cells;
+  }
+  const selectedSched=selectedDay?SCHEDULE.find(s=>s.day===selectedDay):null;
+
+  return(
+    <div style={{paddingTop:20}}>
+      <div style={{borderBottom:`3px double ${C.ink}`,paddingBottom:14,marginBottom:18}}>
+        <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:38,fontWeight:800,lineHeight:1}}>学習<span style={{color:C.s}}>カレンダー</span></div>
+        <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:11,letterSpacing:'0.3em',color:C.muted,marginTop:4}}>5月〜6月 · 28日間学習計画</div>
+      </div>
+      <div style={{display:'flex',gap:10,flexWrap:'wrap',marginBottom:14,fontSize:11}}>
+        {Object.entries(weekColors).map(([w,col])=>(
+          <div key={w} style={{display:'flex',alignItems:'center',gap:4}}>
+            <div style={{width:10,height:10,background:col}}/><span style={{color:C.muted}}>{w}</span>
+          </div>
+        ))}
+        <div style={{display:'flex',alignItems:'center',gap:4}}><div style={{width:10,height:10,border:`2px solid ${C.ink}`}}/><span style={{color:C.muted}}>今日</span></div>
+        <div style={{display:'flex',alignItems:'center',gap:4}}><div style={{width:10,height:10,background:C.done}}/><span style={{color:C.muted}}>完了</span></div>
+      </div>
+      {MONTHS.map(({year,month,label})=>{
+        const cells=buildCalendar(year,month);
+        return(
+          <div key={label} style={{marginBottom:24}}>
+            <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:15,fontWeight:800,marginBottom:10,letterSpacing:'0.1em'}}>{label}</div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:2,marginBottom:2}}>
+              {DOW.map((d,i)=><div key={d} style={{textAlign:'center',fontSize:11,fontWeight:700,color:i===0?C.s:i===6?C.a:C.muted,padding:'4px 0'}}>{d}</div>)}
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:2}}>
+              {cells.map((cell,i)=>{
+                if(!cell) return <div key={`e${i}`}/>;
+                const{d,planDay,sched,isToday}=cell;
+                const isDone=planDay&&daysDone.has(planDay);
+                const isSelected=planDay&&selectedDay===planDay;
+                const col=sched?weekColors[sched.week]:null;
+                const dow=cell.date.getDay();
+                return(
+                  <div key={d} onClick={()=>{if(planDay)setSelectedDay(isSelected?null:planDay);}}
+                    style={{minHeight:46,border:isToday?`2px solid ${C.ink}`:isSelected?`2px solid ${col||C.ink}`:`1px solid ${C.line}`,background:isDone?C.doneBg:sched?`${col}18`:'white',cursor:planDay?'pointer':'default',padding:'3px 4px',position:'relative',transition:'all 0.15s'}}>
+                    <div style={{fontFamily:"'Shippori Mincho',serif",fontWeight:800,fontSize:13,color:dow===0?C.s:dow===6?C.a:isDone?C.done:sched?col:C.muted,lineHeight:1}}>{d}</div>
+                    {planDay&&<div style={{fontSize:9,fontWeight:700,color:isDone?C.done:col||C.muted,marginTop:2}}>D{planDay}</div>}
+                    {isDone&&<div style={{position:'absolute',bottom:2,right:3,fontSize:11,color:C.done}}>✓</div>}
+                    {sched?.review&&<div style={{position:'absolute',top:1,right:2,fontSize:8,color:col}}>復</div>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+      {selectedSched&&(
+        <div style={{border:`2px solid ${selectedSched.color}`,background:'white',padding:'16px 18px',marginBottom:20}}>
+          <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10,flexWrap:'wrap'}}>
+            <span style={{fontSize:10,padding:'2px 8px',fontWeight:800,background:selectedSched.color,color:'white'}}>Day {selectedSched.day}</span>
+            <span style={{fontFamily:"'Shippori Mincho',serif",fontSize:13,fontWeight:700,color:selectedSched.color}}>{selectedSched.week} · {selectedSched.theme}</span>
+          </div>
+          <div style={{fontSize:13,lineHeight:1.8,marginBottom:14}}>{selectedSched.task}</div>
+          <button onClick={()=>toggleDay(selectedSched.day)}
+            style={{padding:'8px 16px',border:`2px solid ${daysDone.has(selectedSched.day)?C.done:C.line}`,background:daysDone.has(selectedSched.day)?C.doneBg:'white',color:daysDone.has(selectedSched.day)?C.done:C.muted,fontWeight:700,fontSize:12,cursor:'pointer',transition:'all 0.15s',fontFamily:"'Zen Kaku Gothic New',sans-serif"}}>
+            {daysDone.has(selectedSched.day)?'✓ 完了済み':'完了にする'}
+          </button>
+        </div>
+      )}
+      <div style={{marginTop:10}}>
+        <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:12,fontWeight:700,letterSpacing:'0.1em',color:C.muted,marginBottom:10,borderBottom:`1px dashed ${C.line}`,paddingBottom:6}}>全タスク一覧</div>
+        {['第1週','第2週','第3週','第4週','予備日'].map(week=>{
+          const days=SCHEDULE.filter(s=>s.week===week);
+          const wDone=days.filter(d=>daysDone.has(d.day)).length;
+          const col=weekColors[week];
+          return(
+            <div key={week} style={{marginBottom:14}}>
+              <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6,paddingBottom:5,borderBottom:`2px solid ${col}`}}>
+                <span style={{fontFamily:"'Shippori Mincho',serif",fontWeight:800,fontSize:12,color:col}}>{week}</span>
+                <span style={{fontSize:11,color:C.muted,flex:1}}>{days[0]?.theme}</span>
+                <span style={{fontSize:11,color:C.muted}}>{wDone}/{days.length}</span>
+              </div>
+              {days.map(d=>{
+                const isDone=daysDone.has(d.day);
+                return(
+                  <div key={d.day} onClick={()=>{toggleDay(d.day);setSelectedDay(d.day);}}
+                    style={{display:'flex',gap:10,alignItems:'flex-start',padding:'9px 11px',marginBottom:3,background:isDone?C.doneBg:'white',border:`1px solid ${isDone?C.doneBd:C.line}`,cursor:'pointer',transition:'all 0.15s'}}>
+                    <div style={{width:16,height:16,border:`2px solid ${isDone?C.done:C.line}`,background:isDone?C.done:'white',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:2}}>
+                      {isDone&&<span style={{color:'white',fontSize:10,fontWeight:900}}>✓</span>}
+                    </div>
+                    <div style={{flex:1}}>
+                      {d.review&&<span style={{fontSize:9,padding:'1px 5px',background:col,color:'white',fontWeight:800,marginRight:5,display:'inline-block',marginBottom:2}}>復習</span>}
+                      {d.extra&&<span style={{fontSize:9,padding:'1px 5px',background:C.b,color:'white',fontWeight:800,marginRight:5,display:'inline-block',marginBottom:2}}>予備</span>}
+                      <span style={{fontSize:10,color:C.muted,marginRight:6}}>Day {d.day}</span>
+                      <span style={{fontSize:12,lineHeight:1.7,color:isDone?C.done:C.ink,textDecoration:isDone?'line-through':'none'}}>{d.task}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════
+// TrackerTab
+// ══════════════════════════════════════════════════
+function TrackerTab({done,toggleDone,goQuiz,doneTime,remTime,pct,srs}) {
+  const undone=LECTURES.filter(l=>!done.has(l.n)).sort((a,b)=>RANK_ORDER[a.rank]-RANK_ORDER[b.rank]);
+  return(
+    <div style={{paddingTop:20}}>
+      <div style={{borderBottom:`3px double ${C.ink}`,paddingBottom:14,marginBottom:18}}>
+        <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:38,fontWeight:800,lineHeight:1}}>権利<span style={{color:C.s}}>関係</span></div>
+        <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:11,letterSpacing:'0.3em',color:C.muted,marginTop:4}}>講義進捗トラッカー · 82講義</div>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,marginBottom:14}}>
+        {[{l:'全体',b:`${done.size}`,s:`/ 82　${pct}%`,bar:true},{l:'完了',b:`${(doneTime/60).toFixed(1)}h`,s:`${doneTime}分`},{l:'残り',b:`${(remTime/60).toFixed(1)}h`,s:`${remTime}分`}].map(x=>(
+          <div key={x.l} style={{background:'white',border:`1px solid ${C.line}`,padding:'10px 12px'}}>
+            <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:10,letterSpacing:'0.2em',color:C.muted,marginBottom:3}}>{x.l}</div>
+            <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:24,fontWeight:800,color:C.s,lineHeight:1}}>{x.b}</div>
+            <div style={{fontSize:10,color:C.muted,marginTop:2}}>{x.s}</div>
+            {x.bar&&<div style={{height:3,background:'#f0ece3',marginTop:5,overflow:'hidden'}}><div style={{height:'100%',width:`${pct}%`,background:`linear-gradient(90deg,${C.s},#e86030)`,transition:'width 0.5s'}}/></div>}
+          </div>
+        ))}
+      </div>
+      <div style={{background:'#fffbe8',borderLeft:'3px solid #e8b800',padding:'7px 11px',marginBottom:12,fontSize:11}}>
+        💡 タスク行タップ→完了切替　／　<b>クイズ</b>ボタン→問題集へ
+      </div>
+      {undone.length>0&&(
+        <div style={{background:'white',border:`1px solid ${C.line}`,padding:12,marginBottom:16}}>
+          <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:10,letterSpacing:'0.2em',color:C.muted,marginBottom:8,borderBottom:`1px dashed ${C.line}`,paddingBottom:6}}>📚 次におすすめ</div>
+          {undone.slice(0,3).map(l=>(
+            <div key={l.n} onClick={()=>goQuiz(l.cat)} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 8px',borderLeft:`3px solid ${rankColor(l.rank)}`,background:rankBg(l.rank),cursor:'pointer',fontSize:12,marginBottom:4,transition:'transform 0.15s'}}
+              onMouseEnter={e=>e.currentTarget.style.transform='translateX(3px)'} onMouseLeave={e=>e.currentTarget.style.transform='none'}>
+              <span style={{fontFamily:"'Shippori Mincho',serif",fontWeight:800,fontSize:13,color:rankColor(l.rank),minWidth:18}}>{l.n}</span>
+              <span style={{flex:1,fontSize:11}}>{l.t}</span>
+              <span style={{fontSize:10,color:C.muted}}>{l.m}分</span>
+            </div>
+          ))}
+        </div>
+      )}
+      {RANK_CONFIG.map(rc=>{
+        const rl=LECTURES.filter(l=>l.rank===rc.id);
+        const rd=rl.filter(l=>done.has(l.n)).length;
+        const cats=[...new Set(rl.map(l=>l.cat))];
+        return(
+          <div key={rc.id} style={{marginBottom:22}}>
+            <div style={{display:'flex',alignItems:'center',gap:8,padding:'9px 12px',marginBottom:8,background:rankBg(rc.id),borderLeft:`4px solid ${rankColor(rc.id)}`}}>
+              <span style={{fontFamily:"'Shippori Mincho',serif",fontWeight:800,fontSize:16,color:rankColor(rc.id)}}>{rc.emoji} {rc.id}</span>
+              <div style={{flex:1}}>
+                <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:12,fontWeight:700}}>{rc.label}</div>
+                <div style={{fontSize:10,color:C.muted}}>{rc.desc}</div>
+              </div>
+              <span style={{fontSize:11,whiteSpace:'nowrap'}}>{rd}/{rl.length}</span>
+            </div>
+            {cats.map(cat=>{
+              const items=rl.filter(l=>l.cat===cat);
+              const cd=items.filter(l=>done.has(l.n)).length;
+              // 分野の正答率
+              const catQs=QB[cat]||[];
+              const catRecs=catQs.map((_,i)=>srs[qid(cat,i)]).filter(Boolean);
+              const catAcc=catRecs.length?Math.round(catRecs.reduce((s,r)=>s+r.correctAns,0)/catRecs.reduce((s,r)=>s+r.totalAns,0)*100):null;
+              const accColor=catAcc===null?C.muted:catAcc<50?C.s:catAcc<75?C.warn:C.done;
+              return(
+                <div key={cat} style={{marginBottom:10}}>
+                  <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:5}}>
+                    <span style={{fontSize:9,padding:'1px 5px',fontWeight:800,background:rankColor(rc.id),color:'white'}}>{rc.id}</span>
+                    <span style={{fontFamily:"'Shippori Mincho',serif",fontSize:12,fontWeight:700}}>{cat}</span>
+                    {catAcc!==null&&<span style={{fontSize:10,padding:'1px 5px',background:accColor,color:'white',fontWeight:700}}>{catAcc}%</span>}
+                    <div style={{flex:1,height:1,background:C.line}}/>
+                    <span style={{fontSize:10,color:C.muted}}>{cd}/{items.length}</span>
+                    {QB[cat]&&<SmBtn onClick={()=>goQuiz(cat)}>✏️クイズ</SmBtn>}
+                  </div>
+                  <div style={{display:'flex',flexDirection:'column',gap:3}}>
+                    {items.map(l=>{
+                      const isDone=done.has(l.n),isCurr=l.n===CURRENT_N&&!isDone;
+                      return(
+                        <div key={l.n} onClick={()=>toggleDone(l.n)}
+                          style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',border:isCurr?`2px solid ${C.s}`:`1px solid ${isDone?C.doneBd:rankBd(rc.id)}`,background:isDone?C.doneBg:isCurr?'#fff8f9':'white',cursor:'pointer',transition:'all 0.15s'}}
+                          onMouseEnter={e=>{if(!isDone&&!isCurr)e.currentTarget.style.background=rankBg(rc.id);}}
+                          onMouseLeave={e=>{if(!isDone&&!isCurr)e.currentTarget.style.background='white';}}>
+                          <div style={{width:16,height:16,border:`2px solid ${isDone?C.done:C.line}`,background:isDone?C.done:'white',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                            {isDone&&<span style={{color:'white',fontSize:10,fontWeight:900}}>✓</span>}
+                          </div>
+                          <span style={{fontFamily:"'Shippori Mincho',serif",fontWeight:800,fontSize:12,color:isDone?C.done:rankColor(rc.id),minWidth:28}}>権{l.n}</span>
+                          <span style={{flex:1,fontSize:11,color:isDone?C.done:C.ink}}>{l.t}</span>
+                          <span style={{fontSize:10,color:C.muted,whiteSpace:'nowrap'}}>{l.m}分</span>
+                          {isCurr&&<span style={{fontSize:8,padding:'1px 4px',background:C.s,color:'white',fontWeight:700}}>学習中</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
+      <div style={{textAlign:'center',fontFamily:"'Shippori Mincho',serif",fontSize:10,color:C.muted,letterSpacing:'0.3em',paddingTop:20,borderTop:`1px solid ${C.line}`}}>合 格 へ の 道 · 一 歩 ず つ</div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════
+// QuizTab
+// ══════════════════════════════════════════════════
+function QuestionEditor({q,onSave,onCancel,onReset}) {
+  const base=getBaseQ(q.id);
+  const [s,setS]=useState(q.s);
+  const [a,setA]=useState(q.a);
+  const [e,setE]=useState(q.e);
+  useEffect(()=>{setS(q.s);setA(q.a);setE(q.e);},[q.id,q.s,q.a,q.e]);
+  const isEdited=base&&(q.s!==base.s||q.a!==base.a||q.e!==base.e);
+  const ta={width:'100%',padding:'10px 12px',border:`1px solid ${C.line}`,fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:13,lineHeight:1.7,resize:'vertical',marginBottom:12};
+  return(
+    <div style={{background:'#fffef8',border:`2px solid ${C.warn}`,padding:'16px',marginBottom:14}}>
+      <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:12,fontWeight:700,color:C.warn,marginBottom:12}}>✏️ 問題を修正</div>
+      <Lbl>問題文</Lbl>
+      <textarea value={s} onChange={ev=>setS(ev.target.value)} rows={4} style={ta}/>
+      <Lbl>正解</Lbl>
+      <div style={{display:'flex',gap:10,marginBottom:12}}>
+        {[{v:true,label:'○ 正しい',col:C.o},{v:false,label:'× 誤り',col:C.x}].map(x=>(
+          <button key={String(x.v)} onClick={()=>setA(x.v)} style={{flex:1,padding:'10px',border:`2px solid ${a===x.v?x.col:C.line}`,background:a===x.v?x.col+'18':'white',color:a===x.v?x.col:C.muted,fontFamily:"'Shippori Mincho',serif",fontSize:14,fontWeight:700,cursor:'pointer'}}>{x.label}</button>
+        ))}
+      </div>
+      <Lbl>解説</Lbl>
+      <textarea value={e} onChange={ev=>setE(ev.target.value)} rows={4} style={ta}/>
+      <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+        <button onClick={()=>onSave({s,a,e})} style={{padding:'9px 18px',border:'none',background:C.ink,color:'white',fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:12,fontWeight:700,cursor:'pointer'}}>保存</button>
+        <button onClick={onCancel} style={{padding:'9px 18px',border:`1px solid ${C.line}`,background:'white',color:C.muted,fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:12,cursor:'pointer'}}>キャンセル</button>
+        {isEdited&&base&&<button onClick={onReset} style={{padding:'9px 18px',border:`1px solid ${C.warn}`,background:C.warnBg,color:C.warn,fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:12,cursor:'pointer'}}>元の問題に戻す</button>}
+      </div>
+      <div style={{fontSize:11,color:C.muted,marginTop:10,lineHeight:1.6}}>修正はこの端末に保存され、次回以降の出題にも反映されます</div>
+    </div>
+  );
+}
+
+function QuizTab({quizPhase,quizScope,setQuizScope,quizDiff,setQuizDiff,quizCount,setQuizCount,quizMode,setQuizMode,dueCount,q,qIdx,score,skipped,totalQ,answered,barPct,finalPct,currentRec,handleOX,nextQ,skipQ,editQuestion,startQuiz,backToSetup,history,srs}) {
+  const [editing,setEditing]=useState(false);
+  useEffect(()=>setEditing(false),[q?.id]);
+  const allCats=[...new Set(LECTURES.map(l=>l.cat))].filter(c=>QB[c]).sort((a,b)=>RANK_ORDER[LECTURES.find(l=>l.cat===a).rank]-RANK_ORDER[LECTURES.find(l=>l.cat===b).rank]);
+  const ready = quizMode==='review' ? !!quizCount : (!!quizDiff && !!quizCount);
+  const qAcc  = currentRec && currentRec.totalAns>0 ? Math.round(currentRec.correctAns/currentRec.totalAns*100) : null;
+  const qBase = q?.id ? getBaseQ(q.id) : null;
+  const isQEdited = qBase && q && (q.s!==qBase.s||q.a!==qBase.a||q.e!==qBase.e);
+
+  return(
+    <div style={{paddingTop:20}}>
+      <div style={{borderBottom:`3px double ${C.ink}`,paddingBottom:14,marginBottom:20}}>
+        <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:38,fontWeight:800,lineHeight:1}}>○×<span style={{color:C.s}}>問題集</span></div>
+        <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:11,letterSpacing:'0.3em',color:C.muted,marginTop:4}}>権利関係 · 忘却曲線対応</div>
+      </div>
+
+      {quizPhase==='setup'&&(
+        <div>
+          {/* モード選択 */}
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:20}}>
+            <div onClick={()=>setQuizMode('review')} style={{border:`2px solid ${quizMode==='review'?C.review:C.line}`,background:quizMode==='review'?C.reviewBg:'white',padding:'14px 16px',cursor:'pointer',position:'relative',transition:'all 0.15s'}}>
+              <div style={{fontSize:22,marginBottom:5}}>🔔</div>
+              <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:14,fontWeight:800,color:quizMode==='review'?C.review:C.ink}}>忘却曲線復習</div>
+              <div style={{fontSize:11,color:C.muted,marginTop:2,lineHeight:1.5}}>期限切れ＋苦手問題<br/>を自動で優先出題</div>
+              {dueCount>0&&<div style={{marginTop:6,fontSize:12,fontWeight:700,color:C.review}}>{dueCount}問が待機中</div>}
+              {quizMode==='review'&&<span style={{position:'absolute',top:8,right:10,fontSize:16}}>✓</span>}
+            </div>
+            <div onClick={()=>setQuizMode('normal')} style={{border:`2px solid ${quizMode==='normal'?C.ink:C.line}`,background:quizMode==='normal'?'#f8f8f6':'white',padding:'14px 16px',cursor:'pointer',position:'relative',transition:'all 0.15s'}}>
+              <div style={{fontSize:22,marginBottom:5}}>✏️</div>
+              <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:14,fontWeight:800,color:quizMode==='normal'?C.ink:C.ink}}>分野別練習</div>
+              <div style={{fontSize:11,color:C.muted,marginTop:2,lineHeight:1.5}}>分野・難易度を選んで<br/>自由に問題を解く</div>
+              {quizMode==='normal'&&<span style={{position:'absolute',top:8,right:10,fontSize:16}}>✓</span>}
+            </div>
+          </div>
+
+          <div style={{background:'white',border:`1px solid ${C.line}`,padding:20,marginBottom:18}}>
+            {quizMode==='review'?(
+              <div style={{marginBottom:16}}>
+                <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:13,fontWeight:700,color:C.review,marginBottom:8}}>🔔 忘却曲線モード</div>
+                <div style={{fontSize:12,color:C.muted,lineHeight:1.7,marginBottom:10}}>
+                  正答率・出題間隔を自動計算して、<b>今日忘れそうな問題</b>を優先的に出題します。<br/>
+                  正解するたびに次回出題までの間隔が延びます（1日→3日→7日→14日→30日）。
+                </div>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:4}}>
+                  {[
+                    {label:'新出問題',count:Object.keys(QB).flatMap(c=>QB[c].map((_,i)=>srs[qid(c,i)])).filter(r=>!r).length,color:C.a},
+                    {label:'期限切れ',count:dueCount,color:C.review},
+                    {label:'正答率<50%',count:Object.entries(QB).flatMap(([c,qs])=>qs.map((_,i)=>srs[qid(c,i)])).filter(r=>r&&r.totalAns>0&&r.correctAns/r.totalAns<0.5).length,color:C.s},
+                  ].map(s=>(
+                    <div key={s.label} style={{background:s.color+'15',border:`1px solid ${s.color}`,padding:'8px',textAlign:'center'}}>
+                      <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:20,fontWeight:800,color:s.color}}>{s.count}</div>
+                      <div style={{fontSize:10,color:C.muted}}>{s.label}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ):(
+              <>
+                <Lbl>出題分野</Lbl>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(148px,1fr))',gap:6,marginBottom:20}}>
+                  {[{scope:'all',label:'📚 全分野ランダム',rank:null},...allCats.map(c=>({scope:c,label:c,rank:LECTURES.find(l=>l.cat===c).rank}))].map(x=>{
+                    const catQs=x.scope!=='all'&&QB[x.scope]?QB[x.scope].map((_,i)=>srs[qid(x.scope,i)]).filter(Boolean):null;
+                    const catAcc=catQs&&catQs.length?Math.round(catQs.reduce((s,r)=>s+r.correctAns,0)/catQs.reduce((s,r)=>s+r.totalAns,0)*100):null;
+                    return(
+                      <button key={x.scope} onClick={()=>setQuizScope(x.scope)} style={{padding:'8px 10px',border:`1.5px solid ${quizScope===x.scope?C.ink:C.line}`,background:quizScope===x.scope?C.ink:'white',color:quizScope===x.scope?'white':C.ink,fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:11,fontWeight:600,cursor:'pointer',textAlign:'left',display:'flex',alignItems:'center',gap:4,transition:'all 0.15s'}}>
+                        {x.rank&&<span style={{fontSize:9,padding:'1px 4px',fontWeight:800,background:quizScope===x.scope?'rgba(255,255,255,0.25)':rankColor(x.rank),color:'white'}}>{x.rank}</span>}
+                        <span style={{flex:1}}>{x.label}</span>
+                        {catAcc!==null&&<span style={{fontSize:10,color:quizScope===x.scope?'rgba(255,255,255,0.7)':(catAcc<50?C.s:catAcc<75?C.warn:C.done)}}>{catAcc}%</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+                <Lbl>難易度</Lbl>
+                <div style={{display:'flex',gap:10,marginBottom:20,flexWrap:'wrap'}}>
+                  {[{id:'normal',icon:'📖',name:'普通',desc:'基本ルール・典型パターン'},{id:'hard',icon:'🔥',name:'難しい',desc:'本試験レベル・例外・判例'}].map(d=>(
+                    <div key={d.id} onClick={()=>setQuizDiff(d.id)} style={{flex:1,minWidth:130,border:`2px solid ${quizDiff===d.id?(d.id==='hard'?C.hard:C.a):C.line}`,background:quizDiff===d.id?(d.id==='hard'?C.hardBg:'#f0f4ff'):'white',padding:'12px 14px',cursor:'pointer',position:'relative',transition:'all 0.15s'}}>
+                      <div style={{fontSize:18,marginBottom:4}}>{d.icon}</div>
+                      <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:14,fontWeight:800,color:quizDiff===d.id?(d.id==='hard'?C.hard:C.a):C.ink}}>{d.name}</div>
+                      <div style={{fontSize:11,color:C.muted,marginTop:2}}>{d.desc}</div>
+                      {quizDiff===d.id&&<span style={{position:'absolute',top:8,right:10,fontSize:15}}>✓</span>}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+            <Lbl>問題数</Lbl>
+            <div style={{display:'flex',gap:10,marginBottom:20}}>
+              {[5,10].map(n=>(
+                <button key={n} onClick={()=>setQuizCount(n)} style={{padding:'9px 24px',border:`2px solid ${quizCount===n?C.ink:C.line}`,background:quizCount===n?C.ink:'white',color:quizCount===n?'white':C.muted,fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:14,fontWeight:700,cursor:'pointer',transition:'all 0.15s'}}>{n} 問</button>
+              ))}
+            </div>
+            <button onClick={startQuiz} disabled={!ready} style={{width:'100%',padding:14,border:'none',background:ready?(quizMode==='review'?C.review:C.ink):'#ccc',color:'white',fontFamily:"'Shippori Mincho',serif",fontSize:14,fontWeight:700,letterSpacing:'0.2em',cursor:ready?'pointer':'not-allowed',transition:'background 0.2s'}}>
+              {ready?(quizMode==='review'?`🔔 復習スタート →（${quizCount}問）`:`スタート →（${quizCount}問・${quizDiff==='hard'?'難しい':'普通'}）`):'問題数を選択'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {quizPhase==='running'&&(
+        <div>
+          <div style={{height:5,background:'#f0ece3',marginBottom:14,overflow:'hidden'}}>
+            <div style={{height:'100%',width:`${barPct}%`,background:quizMode==='review'?C.review:C.ink,transition:'width 0.4s'}}/>
+          </div>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12,flexWrap:'wrap',gap:6,fontSize:12}}>
+            <span style={{fontFamily:"'Shippori Mincho',serif",fontSize:14,fontWeight:700}}>{qIdx+1} / {totalQ}</span>
+            {quizMode==='review'
+              ?<span style={{fontSize:11,padding:'2px 8px',fontWeight:700,background:C.reviewBg,color:C.review,border:`1px solid ${C.review}`}}>🔔 忘却曲線</span>
+              :<span style={{fontSize:11,padding:'2px 8px',fontWeight:700,background:quizDiff==='hard'?C.hardBg:'#f0f4ff',color:quizDiff==='hard'?C.hard:C.a,border:`1px solid ${quizDiff==='hard'?'#d4a0c8':C.aBd}`}}>{quizDiff==='hard'?'🔥 難しい':'📖 普通'}</span>
+            }
+            <span style={{fontSize:11,color:C.muted}}>🎯 {quizMode==='review'?'復習':quizScope==='all'?'全分野':quizScope}</span>
+            <span style={{fontSize:12}}>正解: {score}{skipped>0&&<span style={{color:C.muted,marginLeft:6}}>スキップ: {skipped}</span>}</span>
+          </div>
+
+          {/* この問題のSRS情報 */}
+          {currentRec&&currentRec.totalAns>0&&(
+            <div style={{display:'flex',gap:10,alignItems:'center',padding:'6px 12px',background:'#f8f8f8',border:`1px solid ${C.line}`,marginBottom:10,fontSize:11,flexWrap:'wrap'}}>
+              <span style={{color:C.muted}}>この問題の履歴：</span>
+              <span style={{fontWeight:700,color:qAcc<50?C.s:qAcc<75?C.warn:C.done}}>正答率 {qAcc}%</span>
+              <span style={{color:C.muted}}>({currentRec.correctAns}/{currentRec.totalAns}回)</span>
+              <span style={{color:C.muted}}>連続正解: {currentRec.streak}回</span>
+            </div>
+          )}
+
+          <div style={{background:'white',border:`1px solid ${C.line}`,padding:'20px',marginBottom:10,minHeight:90}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10,flexWrap:'wrap',gap:6}}>
+              <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:10,letterSpacing:'0.3em',color:C.muted}}>問 {qIdx+1}　{q?.cat||''}</div>
+              {!editing&&q?.id&&(
+                <button onClick={()=>setEditing(true)} style={{padding:'4px 10px',border:`1px solid ${C.line}`,background:'white',color:C.muted,fontSize:11,cursor:'pointer',fontFamily:"'Zen Kaku Gothic New',sans-serif"}}>✏️ 問題を修正</button>
+              )}
+            </div>
+            {isQEdited&&!editing&&<div style={{fontSize:10,color:C.warn,marginBottom:8}}>※ この問題は修正済みです</div>}
+            <div style={{fontSize:15,lineHeight:1.9,fontWeight:500}}>{q?.s}</div>
+          </div>
+
+          {editing&&q&&(
+            <QuestionEditor
+              q={q}
+              onSave={patch=>{editQuestion(q.id,patch);setEditing(false);}}
+              onCancel={()=>setEditing(false)}
+              onReset={()=>{const b=getBaseQ(q.id);if(b)editQuestion(q.id,{s:b.s,a:b.a,e:b.e});setEditing(false);}}
+            />
+          )}
+
+          {!editing&&answered===null&&(
+            <>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:10}}>
+                <OXBtn type="O" onClick={()=>handleOX(true)}/>
+                <OXBtn type="X" onClick={()=>handleOX(false)}/>
+              </div>
+              <button onClick={skipQ} style={{width:'100%',padding:10,border:`1px solid ${C.line}`,background:'white',color:C.muted,fontSize:12,cursor:'pointer',fontFamily:"'Zen Kaku Gothic New',sans-serif",marginBottom:14}}>
+                わからない（スキップ →）
+              </button>
+            </>
+          )}
+
+          {!editing&&answered!==null&&q&&(
+            <>
+              <div style={{padding:'16px',marginBottom:12,textAlign:'center',background:answered===q.a?C.doneBg:'#ffeaea',border:`2px solid ${answered===q.a?C.doneBd:'#e08080'}`}}>
+                <div style={{fontSize:40,marginBottom:5}}>{answered===q.a?'⭕':'❌'}</div>
+                <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:15,fontWeight:800,color:answered===q.a?C.done:C.s}}>{answered===q.a?'正解！':'不正解'}</div>
+                <div style={{fontSize:13,color:C.muted,marginTop:3}}>正解は　<span style={{fontFamily:"'Shippori Mincho',serif",fontWeight:800,fontSize:20,color:q.a?C.o:C.x}}>{q.a?'○':'×'}</span></div>
+                {/* 次回出題日 */}
+                {q.id&&srs[q.id]&&(
+                  <div style={{fontSize:11,color:C.muted,marginTop:8}}>
+                    次回出題：{Math.round((srs[q.id].nextDate-today0())/864e5)}日後
+                    　連続正解：{srs[q.id].streak}回
+                  </div>
+                )}
+              </div>
+              <div style={{background:'#f0ece3',borderLeft:`3px solid ${C.ink}`,padding:'12px 14px',marginBottom:12,fontSize:13,lineHeight:1.9}}>
+                <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:10,letterSpacing:'0.2em',color:C.muted,marginBottom:6}}>解 説</div>
+                <div>{q.e}</div>
+              </div>
+              <button onClick={nextQ} style={{width:'100%',padding:13,border:'none',background:quizMode==='review'?C.review:C.ink,color:'white',fontFamily:"'Shippori Mincho',serif",fontSize:13,fontWeight:700,letterSpacing:'0.2em',cursor:'pointer',marginBottom:8,transition:'background 0.2s'}}
+                onMouseEnter={e=>e.target.style.opacity='0.85'} onMouseLeave={e=>e.target.style.opacity='1'}>
+                {qIdx>=totalQ-1?'結果を見る →':'次の問題 →'}
+              </button>
+            </>
+          )}
+          <button onClick={backToSetup} style={{width:'100%',padding:9,border:`1px solid ${C.line}`,background:'white',color:C.muted,fontSize:12,cursor:'pointer',fontFamily:"'Zen Kaku Gothic New',sans-serif"}}>中止して設定に戻る</button>
+        </div>
+      )}
+
+      {quizPhase==='result'&&(
+        <div style={{background:'white',border:`1px solid ${C.line}`,padding:'30px 20px',textAlign:'center',marginBottom:20}}>
+          <div style={{fontSize:48,marginBottom:12}}>{finalPct>=80?'🏆':finalPct>=60?'📚':'💪'}</div>
+          <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:18,fontWeight:800,marginBottom:5}}>{finalPct>=80?'合格圏内！':finalPct>=60?'もう一息！':'復習が必要'}</div>
+          <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:48,fontWeight:800,color:C.s,lineHeight:1,margin:'14px 0'}}>{score} <span style={{fontSize:16,color:C.muted}}>/ {totalQ-skipped}</span></div>
+          <div style={{fontSize:13,color:C.muted,marginBottom:8,lineHeight:1.8}}>
+            正答率 {finalPct}%{skipped>0&&`（スキップ ${skipped}問）`}
+            {finalPct>=80&&' この調子で仕上げましょう！'}{finalPct>=60&&finalPct<80&&' 解説を読み返しましょう。'}{finalPct<60&&skipped<totalQ&&' 基本から確認し直しましょう。'}
+          </div>
+          {quizMode==='review'&&<div style={{fontSize:12,color:C.review,marginBottom:16}}>🔔 回答結果は忘却曲線に記録されました</div>}
+          <div style={{display:'flex',gap:10,justifyContent:'center',flexWrap:'wrap'}}>
+            <button onClick={startQuiz} style={{padding:'11px 22px',border:`2px solid ${C.ink}`,background:'white',fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:12,fontWeight:700,cursor:'pointer'}}>もう一度</button>
+            <button onClick={backToSetup} style={{padding:'11px 22px',border:'none',background:C.ink,color:'white',fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:12,fontWeight:700,cursor:'pointer'}}>設定に戻る</button>
+          </div>
+        </div>
+      )}
+
+      {quizPhase!=='running'&&(
+        <div style={{marginTop:18}}>
+          <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:11,letterSpacing:'0.2em',color:C.muted,marginBottom:8,borderBottom:`1px dashed ${C.line}`,paddingBottom:6}}>📊 最近の成績</div>
+          {history.length===0?<div style={{fontSize:12,color:C.muted,padding:8}}>まだ記録がありません</div>
+            :history.map((h,i)=>(
+              <div key={i} style={{display:'flex',gap:8,alignItems:'center',padding:'8px 11px',background:'white',border:`1px solid ${C.line}`,marginBottom:4,fontSize:12,flexWrap:'wrap'}}>
+                <span style={{color:C.muted,minWidth:75}}>{h.date}</span>
+                <span style={{fontFamily:"'Shippori Mincho',serif",fontWeight:700,fontSize:14,color:h.pct>=80?C.done:h.pct>=60?C.a:C.s}}>{h.score}/{h.total-(h.skipped||0)}（{h.pct}%）</span>
+                <span style={{fontSize:11}}>{h.scope}</span>
+                {h.interrupted&&<span style={{fontSize:10,padding:'1px 6px',fontWeight:700,background:C.warnBg,color:C.warn,border:`1px solid ${C.warn}`}}>中断</span>}
+                <span style={{marginLeft:'auto',fontSize:11,color:C.muted}}>{h.diff} {h.interrupted?`${h.total}/${h.planned||h.total}問（中断）`: `${h.total}問`}{h.skipped>0&&` · スキップ${h.skipped}`}</span>
+              </div>
+            ))
+          }
+        </div>
+      )}
+    </div>
+  );
+}
+
+function OXBtn({type,onClick}){
+  const[hov,setHov]=useState(false);const isO=type==='O';
+  return(
+    <button onClick={onClick} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
+      style={{padding:'20px 10px',border:`3px solid ${isO?C.o:C.x}`,background:hov?(isO?C.o:C.x):'white',color:hov?'white':(isO?C.o:C.x),cursor:'pointer',transition:'all 0.15s',display:'flex',flexDirection:'column',alignItems:'center',gap:5}}>
+      <span style={{fontSize:44,lineHeight:1,fontFamily:"'Shippori Mincho',serif",fontWeight:800}}>{isO?'○':'×'}</span>
+      <span style={{fontSize:12,fontWeight:700,letterSpacing:'0.1em',fontFamily:"'Shippori Mincho',serif"}}>{isO?'正しい':'誤り'}</span>
+    </button>
+  );
+}
+function Lbl({children}){return <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:11,fontWeight:700,letterSpacing:'0.1em',color:C.muted,marginBottom:8}}>{children}</div>;}
+function SmBtn({onClick,children}){
+  const[hov,setHov]=useState(false);
+  return <button onClick={onClick} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)} style={{fontSize:10,padding:'2px 7px',border:`1px solid ${C.ink}`,background:hov?C.ink:'white',color:hov?'white':C.ink,cursor:'pointer',fontWeight:700,transition:'all 0.15s',fontFamily:"'Zen Kaku Gothic New',sans-serif"}}>{children}</button>;
+}
+
+
+// マウント
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(React.createElement(App));
+
+// スプラッシュ非表示
+setTimeout(() => {
+  const splash = document.getElementById('splash');
+  if (splash) splash.classList.add('hidden');
+  setTimeout(() => { if (splash) splash.remove(); }, 500);
+}, 1200);
+</script>
+
+<!-- Service Worker登録 (PWA オフライン対応) -->
+<script>
+if ('serviceWorker' in navigator) {
+  const swCode = `
+const CACHE_NAME = 'takken-v1';
+const ASSETS = ['./'];
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)));
+  self.skipWaiting();
+});
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(keys =>
+    Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+  ));
+  self.clients.claim();
+});
+self.addEventListener('fetch', e => {
+  e.respondWith(
+    caches.match(e.request).then(cached => cached || fetch(e.request).catch(() => caches.match('./')))
+  );
+});
+`;
+  const blob = new Blob([swCode], {type: 'application/javascript'});
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).then(reg => {
+    console.log('SW registered:', reg.scope);
+  }).catch(err => console.log('SW error:', err));
+}
+</script>
+
+</body>
+</html>
