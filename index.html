@@ -79,39 +79,72 @@ nav { padding-top: env(safe-area-inset-top); }
 
 <div id="root"></div>
 <div id="open-hint" style="display:none;position:fixed;inset:0;z-index:99999;background:#faf7f2;padding:24px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;overflow:auto;">
-  <div style="max-width:520px;margin:40px auto;background:white;border:2px solid #1a1a1a;padding:24px;line-height:1.7;">
-    <div style="font-size:22px;font-weight:800;margin-bottom:12px;">宅建アプリの開き方</div>
-    <p style="font-size:14px;color:#444;margin-bottom:16px;">HTMLを直接ダブルクリックしたか、読み込みに失敗した可能性があります。Netlify では <b>/index.html</b> のURLで開いてください。</p>
-    <ol style="font-size:14px;color:#222;padding-left:20px;margin-bottom:16px;">
-      <li style="margin-bottom:8px;"><b>ローカルで開く.command</b> をダブルクリック（Downloads/宅建アプリ/）</li>
-      <li style="margin-bottom:8px;">Netlify なら <b>https://あなたのサイト.netlify.app/index.html</b></li>
-      <li style="margin-bottom:8px;">正しいURLは <b>http://127.0.0.1:18765/index.html</b>（8765・19080 は古いサーバーの可能性あり）</li>
-      <li style="margin-bottom:8px;">容量オーバーなら <b>ビルド_Netlify.command slim</b> で再デプロイ</li>
-    </ol>
-    <p style="font-size:13px;color:#666;margin-bottom:12px;">手動で開く場合：ターミナルで次を実行</p>
-    <code style="display:block;background:#f4f4f2;padding:12px;font-size:12px;word-break:break-all;">cd ~/Downloads/宅建アプリ/Netlifyデプロイ_最新 && python3 -m http.server 18765</code>
-    <p style="font-size:13px;color:#666;margin:12px 0;">その後ブラウザで</p>
-    <code style="display:block;background:#f4f4f2;padding:12px;font-size:12px;">http://127.0.0.1:18765/index.html</code>
+  <div id="open-hint-inner" style="max-width:520px;margin:40px auto;background:white;border:2px solid #1a1a1a;padding:24px;line-height:1.7;">
+    <div id="open-hint-title" style="font-size:22px;font-weight:800;margin-bottom:12px;">宅建アプリの開き方</div>
+    <div id="open-hint-body"></div>
     <button onclick="location.reload()" style="margin-top:16px;padding:10px 16px;border:1px solid #1a1a1a;background:#1a1a1a;color:white;font-weight:700;cursor:pointer;">再読み込み</button>
   </div>
 </div>
 <script>
 (function(){
   var hint=document.getElementById('open-hint');
-  function showHint(){ if(hint) hint.style.display='block'; }
-  if(location.protocol==='file:') showHint();
+  var body=document.getElementById('open-hint-body');
+  var title=document.getElementById('open-hint-title');
+  var hosted=/^https?:$/i.test(location.protocol) && /github\.io|netlify\.app|localhost|127\.0\.0\.1/i.test(location.host);
+  var mobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  var loadMs=hosted?(mobile?240000:120000):60000;
+  function hideHint(){ if(hint) hint.style.display='none'; }
+  function fillHostedSlow(){
+    if(title) title.textContent='読み込みに時間がかかっています';
+    if(body) body.innerHTML=[
+      '<p style="font-size:14px;color:#444;margin-bottom:12px;">スマホでは初回の読み込みに<b>2〜4分</b>かかることがあります。この画面が出ても、しばらく待つか「再読み込み」を押してください。</p>',
+      '<p style="font-size:14px;color:#222;margin-bottom:12px;"><b>すぐ使いたい場合</b>は、いつも使っている Netlify のURLを開いてください：</p>',
+      '<p style="margin-bottom:12px;"><a href="https://reliable-mousse-e94d97.netlify.app/index.html" style="color:#1a5ca8;font-weight:700;word-break:break-all;">reliable-mousse-e94d97.netlify.app/index.html</a></p>',
+      '<p style="font-size:13px;color:#666;">バックアップJSONの復元も、Netlify のホーム画面下「データのバックアップ・復元」から行えます。</p>'
+    ].join('');
+  }
+  function fillLocal(){
+    if(title) title.textContent='宅建アプリの開き方';
+    if(body) body.innerHTML=[
+      '<p style="font-size:14px;color:#444;margin-bottom:16px;">HTMLを直接ダブルクリックしたか、読み込みに失敗した可能性があります。Netlify では <b>/index.html</b> のURLで開いてください。</p>',
+      '<ol style="font-size:14px;color:#222;padding-left:20px;margin-bottom:16px;">',
+      '<li style="margin-bottom:8px;"><b>ローカルで開く.command</b> をダブルクリック（Downloads/宅建アプリ/）</li>',
+      '<li style="margin-bottom:8px;">Netlify なら <b>https://あなたのサイト.netlify.app/index.html</b></li>',
+      '<li style="margin-bottom:8px;">正しいURLは <b>http://127.0.0.1:18765/index.html</b></li>',
+      '</ol>',
+      '<p style="font-size:13px;color:#666;margin-bottom:12px;">オンラインで使う: <a href="https://reliable-mousse-e94d97.netlify.app/index.html" style="color:#1a5ca8;font-weight:700;">Netlifyで開く</a></p>'
+    ].join('');
+  }
+  function showHint(reason){
+    if(!hint) return;
+    if(hosted) fillHostedSlow(); else fillLocal();
+    hint.style.display='block';
+    var splash=document.getElementById('splash');
+    if(splash) splash.classList.add('hidden');
+  }
+  if(location.protocol==='file:') showHint('file');
   window.addEventListener('error', function(e){
     var root=document.getElementById('root');
     if(!root || root.childElementCount) return;
-    if(e && e.message && /SyntaxError|Unexpected token|Invalid or unexpected token/i.test(e.message)) showHint();
+    if(e && e.message && /SyntaxError|Unexpected token|Invalid or unexpected token/i.test(e.message)) showHint('syntax');
   });
+  var root=document.getElementById('root');
+  if(root){
+    var obs=new MutationObserver(function(){
+      if(root.childElementCount){ hideHint(); obs.disconnect(); }
+    });
+    obs.observe(root,{childList:true});
+  }
   setTimeout(function(){
-    var root=document.getElementById('root');
-    if(root && !root.childElementCount) showHint();
-  }, 60000);
+    var r=document.getElementById('root');
+    if(r && !r.childElementCount) showHint('timeout');
+  }, loadMs);
   setTimeout(function(){
     var sub=document.getElementById('splash-sub');
-    if(sub) sub.textContent='読み込み中…（初回は30〜60秒かかることがあります。そのままお待ちください）';
+    if(!sub) return;
+    if(hosted && mobile) sub.textContent='読み込み中…（スマホ初回は2〜4分かかることがあります）';
+    else if(hosted) sub.textContent='読み込み中…（初回は30〜60秒かかることがあります）';
+    else sub.textContent='読み込み中…（初回は30〜60秒かかることがあります。そのままお待ちください）';
   }, 3000);
 })();
 </script>
