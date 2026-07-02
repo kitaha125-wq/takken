@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>宅建アプリ · バックアップ復元</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#faf7f2;color:#1a1a1a;padding:20px;line-height:1.7}
+.wrap{max-width:520px;margin:0 auto}
+.card{background:#fff;border:2px solid #1a5ca8;padding:20px;margin-bottom:16px}
+h1{font-size:20px;margin-bottom:8px}
+.sub{font-size:13px;color:#666;margin-bottom:16px}
+.stat{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.stat div{background:#faf7f2;border:1px solid #d4cfc4;padding:10px;font-size:12px}
+.stat b{display:block;font-size:18px;margin-top:4px}
+.btn{display:block;width:100%;padding:14px;border:none;font-size:15px;font-weight:800;cursor:pointer;margin-top:8px}
+.btn-main{background:#1a5ca8;color:#fff}
+.btn-sub{background:#fff;color:#1a1a1a;border:2px solid #1a1a1a}
+textarea{width:100%;min-height:120px;padding:10px;border:1px solid #d4cfc4;font-family:monospace;font-size:11px;margin-top:8px}
+.ok{color:#2d5016;font-weight:700;margin-top:12px}
+.err{color:#c8102e;font-weight:700;margin-top:12px;white-space:pre-wrap}
+.preview{background:#f0f4ff;border:1px solid #b4c8e8;padding:12px;margin-top:12px;font-size:13px}
+a{color:#1a5ca8}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>💾 バックアップ復元（軽量版）</h1>
+    <p class="sub">メインアプリ（2.4MB）がスマホで開けないとき用です。このページはすぐ開きます。JSONを復元してからメインアプリを開いてください。</p>
+    <div class="stat" id="current"></div>
+    <button class="btn btn-main" id="pickBtn">📁 JSONファイルを選ぶ</button>
+    <button class="btn btn-sub" id="pasteBtn">📋 貼り付けて復元</button>
+    <input type="file" id="file" accept=".json,application/json,text/plain,*/*" hidden>
+    <div id="pasteBox" style="display:none">
+      <textarea id="paste" placeholder='{"app":"takken-pwa","keys":{...}}'></textarea>
+      <button class="btn btn-main" id="pasteGo">貼り付け内容を復元</button>
+    </div>
+    <div id="preview" class="preview" style="display:none"></div>
+    <button class="btn btn-main" id="confirmBtn" style="display:none">この内容で復元する</button>
+    <div id="msg"></div>
+  </div>
+  <div class="card">
+    <h1>復元後に開くURL</h1>
+    <p class="sub">復元が終わったら、同じブラウザで次を開いてください（初回は2〜4分かかることがあります）。</p>
+    <p><a id="netlifyLink" href="https://reliable-mousse-e94d97.netlify.app/index.html">Netlify（いつものURL）</a></p>
+    <p style="margin-top:8px"><a id="ghLink" href="https://kitaha125-wq.github.io/takken/index.html">GitHub Pages（更新版）</a></p>
+    <p style="margin-top:12px;font-size:12px;color:#666">それでも開けない → PCのSafari/Chromeで試すか、下の接続テストを確認</p>
+    <p style="margin-top:8px"><a href="./start.html">接続テスト・トラブルシュート</a></p>
+  </div>
+</div>
+<script>
+const BACKUP_KEYS = [
+  'tk_done_v5','tk_days_v5','tk_schedule_v1','tk_plan_start_v1','tk_plan_daily_min_v1',
+  'tk_srs_v1','tk_hist_v5','tk_activity_v1','tk_daily_journal_v1','tk_last_visit_v1',
+  'tk_notify_v1','tk_review_count_v1','tk_gemini_notes_v1','tk_chatgpt_notes_v1','tk_ai_quiz_v1',
+  'tk_career_vision_v1','tk_tracker_filter_v1','tk_tracker_collapsed_v1','tk_tracker_sort_v1',
+  'tk_docs_collapsed_v1','tk_q_edits_v1','tk_seen_version',
+];
+function coerceBackupValue(v){
+  if(v==null)return null;
+  if(typeof v==='string'){const t=v.trim();if(!t)return null;try{return JSON.parse(t);}catch{return v;}}
+  return v;
+}
+function normalizeBackupPayload(raw){
+  if(typeof raw==='string'){
+    const text=raw.trim().replace(/^\uFEFF/,'');
+    if(!text||text.startsWith('%PDF'))throw new Error('PDFは使えません。JSONを選んでください');
+    try{raw=JSON.parse(text);}catch{throw new Error('JSONの形式が正しくありません');}
+  }
+  const keys=raw.keys&&typeof raw.keys==='object'?raw.keys:raw;
+  if(!keys||typeof keys!=='object'||Array.isArray(keys))throw new Error('バックアップにデータがありません');
+  return keys;
+}
+function summarizeBackupKeys(keys){
+  const pick=k=>coerceBackupValue(keys[k]);
+  const done=pick('tk_done_v5'), days=pick('tk_days_v5'), srs=pick('tk_srs_v1'), hist=pick('tk_hist_v5');
+  return{
+    keyCount:Object.keys(keys).filter(k=>k.startsWith('tk_')).length,
+    lectures:Array.isArray(done)?done.length:0,
+    planDays:Array.isArray(days)?days.length:0,
+    srsCount:srs&&typeof srs==='object'&&!Array.isArray(srs)?Object.keys(srs).length:0,
+    quizSessions:Array.isArray(hist)?hist.length:0,
+  };
+}
+function importBackupPayload(payload){
+  const keys=normalizeBackupPayload(payload);
+  const summary=summarizeBackupKeys(keys);
+  if(summary.keyCount===0)throw new Error('tk_データがありません');
+  if(!summary.lectures&&!summary.planDays&&!summary.srsCount&&!summary.quizSessions)throw new Error('バックアップが空です');
+  let count=0;
+  Object.entries(keys).forEach(([k,v])=>{
+    if(!k.startsWith('tk_'))return;
+    const val=coerceBackupValue(v);
+    if(val==null)return;
+    localStorage.setItem(k,JSON.stringify(val));
+    count++;
+  });
+  if(!count)throw new Error('復元できませんでした');
+  return {count,summary};
+}
+function currentSummary(){
+  const sg=(k,fb)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):fb;}catch{return fb;}};
+  const done=sg('tk_done_v5',[]), days=sg('tk_days_v5',[]), srs=sg('tk_srs_v1',{}), hist=sg('tk_hist_v5',[]);
+  return{
+    lectures:Array.isArray(done)?done.length:0,
+    planDays:Array.isArray(days)?days.length:0,
+    srsCount:Object.keys(srs).length,
+    quizSessions:Array.isArray(hist)?hist.length:0,
+  };
+}
+function renderCurrent(){
+  const s=currentSummary();
+  document.getElementById('current').innerHTML=[
+    '<div>今の講義<b>'+s.lectures+'</b></div>',
+    '<div>計画日<b>'+s.planDays+'</b></div>',
+    '<div>問題記録<b>'+s.srsCount+'</b></div>',
+    '<div>演習<b>'+s.quizSessions+'</b></div>',
+  ].join('');
+}
+let pending=null;
+function showPreview(name,summary){
+  const el=document.getElementById('preview');
+  el.style.display='block';
+  el.innerHTML='<b>📂 '+name+'</b><br>講義 '+summary.lectures+'・計画 '+summary.planDays+'・問題 '+summary.srsCount+'・演習 '+summary.quizSessions;
+  document.getElementById('confirmBtn').style.display='block';
+}
+function showMsg(text,ok){
+  const el=document.getElementById('msg');
+  el.className=ok?'ok':'err';
+  el.textContent=text;
+}
+document.getElementById('pickBtn').onclick=()=>document.getElementById('file').click();
+document.getElementById('pasteBtn').onclick=()=>{
+  const b=document.getElementById('pasteBox');
+  b.style.display=b.style.display==='none'?'block':'none';
+};
+document.getElementById('file').onchange=async(e)=>{
+  const f=e.target.files[0]; if(!f)return;
+  try{
+    pending=await f.text();
+    showPreview(f.name,summarizeBackupKeys(normalizeBackupPayload(pending)));
+    showMsg('',true);
+  }catch(ex){showMsg(ex.message,false);pending=null;}
+  e.target.value='';
+};
+document.getElementById('pasteGo').onclick=()=>{
+  try{
+    pending=document.getElementById('paste').value;
+    showPreview('貼り付けJSON',summarizeBackupKeys(normalizeBackupPayload(pending)));
+    showMsg('',true);
+  }catch(ex){showMsg(ex.message,false);pending=null;}
+};
+document.getElementById('confirmBtn').onclick=()=>{
+  if(!pending)return;
+  try{
+    const r=importBackupPayload(pending);
+    renderCurrent();
+    showMsg('✅ 復元しました（'+r.count+'項目）。上のURLからメインアプリを開いてください。',true);
+    document.getElementById('preview').style.display='none';
+    document.getElementById('confirmBtn').style.display='none';
+    pending=null;
+  }catch(ex){showMsg(ex.message,false);}
+};
+(function(){
+  const base=location.origin+location.pathname.replace(/[^/]+$/,'');
+  document.getElementById('netlifyLink').href='https://reliable-mousse-e94d97.netlify.app/index.html';
+  document.getElementById('ghLink').href=base+'index.html';
+  renderCurrent();
+})();
+</script>
+</body>
+</html>
