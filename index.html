@@ -409,8 +409,19 @@ function sg(k,fb){try{const v=localStorage.getItem(k);return v?JSON.parse(v):fb;
 function ss(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
 const BACKUP_KEYS = [
   'tk_done_v5', 'tk_days_v5', 'tk_schedule_v1', 'tk_plan_start_v1', 'tk_plan_daily_min_v1',
-  'tk_srs_v1', 'tk_hist_v5', 'tk_activity_v1', 'tk_daily_journal_v1', 'tk_last_visit_v1', 'tk_notify_v1', 'tk_review_count_v1', 'tk_gemini_notes_v1', 'tk_chatgpt_notes_v1', 'tk_ai_quiz_v1', 'tk_career_vision_v1', 'tk_tracker_filter_v1', 'tk_tracker_collapsed_v1', 'tk_tracker_sort_v1', 'tk_docs_collapsed_v1',
+  'tk_srs_v1', 'tk_hist_v5', 'tk_activity_v1', 'tk_daily_journal_v1', 'tk_last_visit_v1', 'tk_notify_v1', 'tk_review_count_v1', 'tk_gemini_notes_v1', 'tk_chatgpt_notes_v1', 'tk_ai_quiz_v1', 'tk_career_vision_v1', 'tk_tracker_filter_v1', 'tk_tracker_collapsed_v1', 'tk_tracker_sort_v1', 'tk_docs_collapsed_v1', 'tk_q_edits_v1', 'tk_seen_version',
 ];
+function normalizeBackupPayload(raw) {
+  if (typeof raw === 'string') {
+    const text = raw.trim().replace(/^\uFEFF/, '');
+    if (!text || text.startsWith('%PDF')) throw new Error('PDFファイルは使えません。JSON（.json）を選んでください');
+    try { raw = JSON.parse(text); } catch { throw new Error('JSONの形式が正しくありません。バックアップファイルを確認してください'); }
+  }
+  if (!raw || typeof raw !== 'object') throw new Error('バックアップ形式が正しくありません');
+  const keys = raw.keys && typeof raw.keys === 'object' ? raw.keys : raw;
+  if (!keys || typeof keys !== 'object' || Array.isArray(keys)) throw new Error('バックアップにデータが含まれていません');
+  return keys;
+}
 function exportBackupPayload() {
   const keys = {};
   BACKUP_KEYS.forEach(k => {
@@ -440,13 +451,21 @@ function downloadBackupFile() {
   return payload;
 }
 function importBackupPayload(payload) {
-  const keys = payload?.keys || payload;
-  if (!keys || typeof keys !== 'object') throw new Error('バックアップ形式が正しくありません');
+  const keys = normalizeBackupPayload(payload);
   const known = new Set(BACKUP_KEYS);
+  let count = 0;
   Object.entries(keys).forEach(([k, v]) => {
-    if (!known.has(k)) return;
-    ss(k, v);
+    if (!k.startsWith('tk_') && !known.has(k)) return;
+    if (v === undefined || v === null) return;
+    try {
+      localStorage.setItem(k, JSON.stringify(v));
+      count++;
+    } catch (e) {
+      throw new Error('保存容量が足りません。ブラウザのキャッシュを削除してから再試行してください');
+    }
   });
+  if (count === 0) throw new Error('復元できるデータがありませんでした。別のバックアップファイルを試してください');
+  return count;
 }
 function backupSummary() {
   const done = sg('tk_done_v5', []);
@@ -8121,8 +8140,16 @@ function ReviewNotifyPanel({ settings, setSettings, dueCount, srs, onStartReview
 function DataBackupPanel() {
   const [msg, setMsg] = useState('');
   const [err, setErr] = useState('');
+  const [pasteOpen, setPasteOpen] = useState(false);
+  const [pasteText, setPasteText] = useState('');
   const fileRef = useRef(null);
   const sum = backupSummary();
+
+  const doImport = (payload) => {
+    const count = importBackupPayload(payload);
+    setMsg(`復元しました（${count}項目）。再読み込みします…`);
+    setTimeout(() => { window.location.href = window.location.pathname + window.location.search; }, 800);
+  };
 
   const handleDownload = () => {
     setErr('');
@@ -8137,10 +8164,8 @@ function DataBackupPanel() {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const data = JSON.parse(await file.text());
-      importBackupPayload(data);
-      setMsg('復元しました。再読み込みします…');
-      setTimeout(() => window.location.reload(), 700);
+      const text = await file.text();
+      doImport(text);
     } catch (ex) {
       setErr(ex.message || '読み込みに失敗しました');
     } finally {
@@ -8148,14 +8173,23 @@ function DataBackupPanel() {
     }
   };
 
+  const handlePasteImport = () => {
+    setErr('');
+    setMsg('');
+    try {
+      doImport(pasteText);
+    } catch (ex) {
+      setErr(ex.message || '読み込みに失敗しました');
+    }
+  };
+
   return (
-    <div style={{border:`1px solid ${C.line}`,background:'white',padding:'14px 16px',marginBottom:16}}>
-      <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:13,fontWeight:800,marginBottom:6}}>💾 データのバックアップ</div>
+    <div style={{border:`2px solid ${C.a}`,background:'white',padding:'14px 16px',marginBottom:16}}>
+      <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:13,fontWeight:800,marginBottom:6}}>💾 データのバックアップ・復元</div>
       <div style={{fontSize:11,color:C.muted,lineHeight:1.7,marginBottom:10}}>
-        アプリ更新前に、進捗・計画・忘却曲線のデータをJSONファイルで保存できます。更新後は「復元」で読み込んでください。
+        URLを変えたときは、<b>昔のURLでバックアップ</b> → <b>今のURLで復元</b> が必要です。
         <div style={{marginTop:6}}>
-          ワンタップ保存: <a href="?backup=1" style={{color:C.a,fontWeight:700}}>?backup=1</a>
-          {' '}または Downloads の <code style={{fontSize:10}}>takken_backup.command</code>
+          昔のURLで保存: <a href="https://reliable-mousse-e94d97.netlify.app/index.html?backup=1" style={{color:C.a,fontWeight:700}}>Netlifyでバックアップ</a>
         </div>
       </div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:8,marginBottom:10,fontSize:11}}>
@@ -8171,19 +8205,35 @@ function DataBackupPanel() {
           </div>
         ))}
       </div>
-      <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+      <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:pasteOpen?10:0}}>
         <button onClick={handleDownload}
           style={{flex:1,minWidth:140,padding:'10px 14px',border:'none',background:C.a,color:'white',fontWeight:800,fontSize:12,cursor:'pointer',fontFamily:"'Zen Kaku Gothic New',sans-serif"}}>
-          ⬇️ バックアップをダウンロード
+          ⬇️ バックアップを保存
         </button>
         <button onClick={()=>fileRef.current?.click()}
           style={{flex:1,minWidth:140,padding:'10px 14px',border:`2px solid ${C.ink}`,background:'white',fontWeight:800,fontSize:12,cursor:'pointer',fontFamily:"'Zen Kaku Gothic New',sans-serif"}}>
-          ⬆️ バックアップから復元
+          📁 JSONファイルから復元
         </button>
-        <input ref={fileRef} type="file" accept=".json,application/json" onChange={handleImport} style={{display:'none'}}/>
+        <button onClick={()=>setPasteOpen(v=>!v)}
+          style={{flex:1,minWidth:140,padding:'10px 14px',border:`2px solid ${C.a}`,background:C.aBg,color:C.a,fontWeight:800,fontSize:12,cursor:'pointer',fontFamily:"'Zen Kaku Gothic New',sans-serif"}}>
+          📋 貼り付けて復元
+        </button>
+        <input ref={fileRef} type="file" accept=".json,application/json,text/json,text/plain" onChange={handleImport} style={{display:'none'}}/>
       </div>
-      {msg&&<div style={{marginTop:10,fontSize:11,color:C.done,fontWeight:700}}>{msg}</div>}
-      {err&&<div style={{marginTop:10,fontSize:11,color:C.s,fontWeight:700}}>{err}</div>}
+      {pasteOpen&&(
+        <div style={{marginBottom:10}}>
+          <div style={{fontSize:11,color:C.muted,marginBottom:6}}>バックアップJSONの中身をすべて貼り付けてください（ファイルアプリ→JSON→共有→コピー でも可）</div>
+          <textarea value={pasteText} onChange={e=>setPasteText(e.target.value)} rows={5}
+            style={{width:'100%',padding:10,border:`1px solid ${C.line}`,fontFamily:'monospace',fontSize:11,lineHeight:1.5,marginBottom:8}}
+            placeholder='{"app":"takken-pwa","keys":{...}}'/>
+          <button onClick={handlePasteImport} disabled={!pasteText.trim()}
+            style={{width:'100%',padding:10,border:'none',background:pasteText.trim()?C.ink:'#ccc',color:'white',fontWeight:700,fontSize:12,cursor:pasteText.trim()?'pointer':'not-allowed'}}>
+            貼り付けた内容で復元する
+          </button>
+        </div>
+      )}
+      {msg&&<div style={{marginTop:10,fontSize:12,color:C.done,fontWeight:700}}>{msg}</div>}
+      {err&&<div style={{marginTop:10,fontSize:12,color:C.s,fontWeight:700,lineHeight:1.6}}>{err}</div>}
     </div>
   );
 }
