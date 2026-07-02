@@ -710,8 +710,8 @@ function HomeTab({daysLeft,todayTask,todayPlanDay,done,pct,doneTime,remTime,days
           <div style={{fontSize:13,lineHeight:1.8}}>{todayTask.task}</div>
         </div>
       ) : (
-        <div style={{background:C.warnBg,borderLeft:`3px solid ${C.warn}`,padding:'12px 14px',marginBottom:14,fontSize:13}}>
-          📅 今日は計画期間外です。自由に問題演習や復習をしましょう！
+        <div style={{background:C.warnBg,borderLeft:`3px solid ${C.warn}`,padding:'12px 14px',marginBottom:14,fontSize:13,lineHeight:1.7}}>
+          📅 今日は28日計画の対象外です。上部タブの <b>「📅 計画」</b> でカレンダー、<b>「📋 進捗」</b> で講義82本の進捗を確認できます。
         </div>
       )}
 
@@ -889,12 +889,26 @@ function StatCard({label,big,sub,bar,color}) {
   );
 }
 
+function getCalendarMonths() {
+  const months = [];
+  const start = new Date(PLAN_START);
+  const end = new Date(EXAM_DATE);
+  let y = start.getFullYear(), m = start.getMonth();
+  const endY = end.getFullYear(), endM = end.getMonth();
+  while (y < endY || (y === endY && m <= endM)) {
+    months.push({ year: y, month: m, label: `${y}年 ${m + 1}月` });
+    m++;
+    if (m > 11) { m = 0; y++; }
+  }
+  return months;
+}
+
 // ══════════════════════════════════════════════════
 // CalendarTab
 // ══════════════════════════════════════════════════
 function CalendarTab({daysDone,toggleDay,goQuiz}) {
   const today=new Date();today.setHours(0,0,0,0);
-  const MONTHS=[{year:2026,month:4,label:'2026年 5月'},{year:2026,month:5,label:'2026年 6月'}];
+  const MONTHS=getCalendarMonths();
   const [selectedDay,setSelectedDay]=useState(null);
   const DOW=['日','月','火','水','木','金','土'];
   const weekColors={'第1週':C.a,'第2週':C.s,'第3週':'#2d7a3a','第4週':C.hard,'予備日':C.b};
@@ -919,7 +933,7 @@ function CalendarTab({daysDone,toggleDay,goQuiz}) {
     <div style={{paddingTop:20}}>
       <div style={{borderBottom:`3px double ${C.ink}`,paddingBottom:14,marginBottom:18}}>
         <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:38,fontWeight:800,lineHeight:1}}>学習<span style={{color:C.s}}>カレンダー</span></div>
-        <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:11,letterSpacing:'0.3em',color:C.muted,marginTop:4}}>5月〜6月 · 28日間学習計画</div>
+        <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:11,letterSpacing:'0.3em',color:C.muted,marginTop:4}}>学習計画カレンダー · 試験日まで</div>
       </div>
       <div style={{display:'flex',gap:10,flexWrap:'wrap',marginBottom:14,fontSize:11}}>
         {Object.entries(weekColors).map(([w,col])=>(
