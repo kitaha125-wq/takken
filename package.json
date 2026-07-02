@@ -1,0 +1,25 @@
+{
+  "name": "workspace",
+  "version": "1.0.0",
+  "description": "**https://kitaha125-wq.github.io/takken/start.html**（接続テスト・すぐ開く）",
+  "main": "index.js",
+  "scripts": {
+    "build": "node scripts/compile-app.mjs && node scripts/patch-index.mjs",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kitaha125-wq/takken.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kitaha125-wq/takken/issues"
+  },
+  "homepage": "https://github.com/kitaha125-wq/takken#readme",
+  "devDependencies": {
+    "@babel/core": "^7.29.7",
+    "@babel/preset-react": "^7.29.7"
+  }
+}
