@@ -99,8 +99,10 @@ nav { padding-top: env(safe-area-inset-top); }
     if(body) body.innerHTML=[
       '<p style="font-size:14px;color:#444;margin-bottom:12px;">スマホでは初回の読み込みに<b>2〜4分</b>かかることがあります。この画面が出ても、しばらく待つか「再読み込み」を押してください。</p>',
       '<p style="font-size:14px;color:#222;margin-bottom:12px;"><b>すぐ使いたい場合</b>は、いつも使っている Netlify のURLを開いてください：</p>',
-      '<p style="margin-bottom:12px;"><a href="https://reliable-mousse-e94d97.netlify.app/index.html" style="color:#1a5ca8;font-weight:700;word-break:break-all;">reliable-mousse-e94d97.netlify.app/index.html</a></p>',
-      '<p style="font-size:13px;color:#666;">バックアップJSONの復元も、Netlify のホーム画面下「データのバックアップ・復元」から行えます。</p>'
+      '<p style="margin-bottom:8px;"><a href="https://reliable-mousse-e94d97.netlify.app/index.html" style="color:#1a5ca8;font-weight:700;word-break:break-all;">reliable-mousse-e94d97.netlify.app/index.html</a></p>',
+      '<p style="font-size:14px;color:#222;margin-bottom:8px;"><b>バックアップ復元だけ</b>なら軽量ページ（すぐ開きます）：</p>',
+      '<p style="margin-bottom:12px;"><a href="./restore.html" style="color:#1a5ca8;font-weight:700;">restore.html（バックアップ復元）</a> · <a href="./start.html" style="color:#1a5ca8;font-weight:700;">start.html（接続テスト）</a></p>',
+      '<p style="font-size:13px;color:#666;">バックアップJSONの復元も、上の restore.html または Netlify のホーム画面下「データのバックアップ・復元」から行えます。</p>'
     ].join('');
   }
   function fillLocal(){

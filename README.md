@@ -2,7 +2,17 @@
 
 ## いちばん簡単：URLを開くだけ（ダウンロード不要）
 
-**https://kitaha125-wq.github.io/takken/index.html**
+### スマホで開けないとき（まずここ）
+
+**https://kitaha125-wq.github.io/takken/start.html**（接続テスト・すぐ開く）
+
+**https://kitaha125-wq.github.io/takken/restore.html**（バックアップ復元だけ・すぐ開く）
+
+### メインアプリ（2.4MB・初回2〜4分かかることがある）
+
+**https://reliable-mousse-e94d97.netlify.app/index.html**（いつものURL・データあり）
+
+**https://kitaha125-wq.github.io/takken/index.html**（更新版）
 
 Safari で開く → ホーム画面に追加
 
