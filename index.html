@@ -411,6 +411,38 @@ const BACKUP_KEYS = [
   'tk_done_v5', 'tk_days_v5', 'tk_schedule_v1', 'tk_plan_start_v1', 'tk_plan_daily_min_v1',
   'tk_srs_v1', 'tk_hist_v5', 'tk_activity_v1', 'tk_daily_journal_v1', 'tk_last_visit_v1', 'tk_notify_v1', 'tk_review_count_v1', 'tk_gemini_notes_v1', 'tk_chatgpt_notes_v1', 'tk_ai_quiz_v1', 'tk_career_vision_v1', 'tk_tracker_filter_v1', 'tk_tracker_collapsed_v1', 'tk_tracker_sort_v1', 'tk_docs_collapsed_v1', 'tk_q_edits_v1', 'tk_seen_version',
 ];
+function coerceBackupValue(v) {
+  if (v === undefined || v === null) return null;
+  if (typeof v === 'string') {
+    const t = v.trim();
+    if (!t) return null;
+    try { return JSON.parse(t); } catch { return v; }
+  }
+  return v;
+}
+function summarizeBackupKeys(keys) {
+  const pick = k => coerceBackupValue(keys[k]);
+  const done = pick('tk_done_v5');
+  const days = pick('tk_days_v5');
+  const srs = pick('tk_srs_v1');
+  const hist = pick('tk_hist_v5');
+  return {
+    keyCount: Object.keys(keys).filter(k => k.startsWith('tk_')).length,
+    lectures: Array.isArray(done) ? done.length : 0,
+    planDays: Array.isArray(days) ? days.length : 0,
+    srsCount: srs && typeof srs === 'object' && !Array.isArray(srs) ? Object.keys(srs).length : 0,
+    quizSessions: Array.isArray(hist) ? hist.length : 0,
+  };
+}
+function inspectBackupPayload(raw) {
+  const keys = normalizeBackupPayload(raw);
+  const summary = summarizeBackupKeys(keys);
+  if (summary.keyCount === 0) throw new Error('バックアップに tk_ データがありません。別のファイルか、Netlifyの旧URLで取り直してください');
+  if (summary.lectures === 0 && summary.planDays === 0 && summary.srsCount === 0 && summary.quizSessions === 0) {
+    throw new Error('バックアップは空です（講義0・計画0・問題0）。GitHub Pages ではなく Netlify（reliable-mousse-e94d97.netlify.app）でバックアップを取り直してください');
+  }
+  return summary;
+}
 function normalizeBackupPayload(raw) {
   if (typeof raw === 'string') {
     const text = raw.trim().replace(/^\uFEFF/, '');
@@ -439,6 +471,7 @@ function exportBackupPayload() {
 }
 function downloadBackupFile() {
   const payload = exportBackupPayload();
+  const summary = summarizeBackupKeys(payload.keys || {});
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -448,17 +481,24 @@ function downloadBackupFile() {
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
+  if (summary.lectures === 0 && summary.planDays === 0 && summary.srsCount === 0 && summary.quizSessions === 0) {
+    setTimeout(() => {
+      alert('⚠️ このページには保存データがありません。\n\n進捗がある Netlify のURLでバックアップを取ってください:\nhttps://reliable-mousse-e94d97.netlify.app/index.html?backup=1');
+    }, 300);
+  }
   return payload;
 }
 function importBackupPayload(payload) {
   const keys = normalizeBackupPayload(payload);
+  inspectBackupPayload({ keys });
   const known = new Set(BACKUP_KEYS);
   let count = 0;
   Object.entries(keys).forEach(([k, v]) => {
     if (!k.startsWith('tk_') && !known.has(k)) return;
-    if (v === undefined || v === null) return;
+    const val = coerceBackupValue(v);
+    if (val === null) return;
     try {
-      localStorage.setItem(k, JSON.stringify(v));
+      localStorage.setItem(k, JSON.stringify(val));
       count++;
     } catch (e) {
       throw new Error('保存容量が足りません。ブラウザのキャッシュを削除してから再試行してください');
@@ -466,6 +506,15 @@ function importBackupPayload(payload) {
   });
   if (count === 0) throw new Error('復元できるデータがありませんでした。別のバックアップファイルを試してください');
   return count;
+}
+function reloadAfterBackupRestore() {
+  try {
+    const u = new URL(window.location.href);
+    u.searchParams.delete('backup');
+    window.location.replace(u.pathname + u.search + u.hash);
+  } catch {
+    window.location.replace(window.location.pathname);
+  }
 }
 function backupSummary() {
   const done = sg('tk_done_v5', []);
@@ -8142,13 +8191,18 @@ function DataBackupPanel() {
   const [err, setErr] = useState('');
   const [pasteOpen, setPasteOpen] = useState(false);
   const [pasteText, setPasteText] = useState('');
+  const [pendingFile, setPendingFile] = useState(null);
+  const [pendingPreview, setPendingPreview] = useState(null);
   const fileRef = useRef(null);
   const sum = backupSummary();
 
   const doImport = (payload) => {
+    const preview = inspectBackupPayload(payload);
     const count = importBackupPayload(payload);
-    setMsg(`復元しました（${count}項目）。再読み込みします…`);
-    setTimeout(() => { window.location.href = window.location.pathname + window.location.search; }, 800);
+    setPendingFile(null);
+    setPendingPreview(null);
+    setMsg(`復元しました（${count}項目・講義${preview.lectures}・問題${preview.srsCount}）。再読み込みします…`);
+    setTimeout(() => reloadAfterBackupRestore(), 800);
   };
 
   const handleDownload = () => {
@@ -8161,11 +8215,15 @@ function DataBackupPanel() {
   const handleImport = async (e) => {
     setErr('');
     setMsg('');
+    setPendingFile(null);
+    setPendingPreview(null);
     const file = e.target.files?.[0];
     if (!file) return;
     try {
       const text = await file.text();
-      doImport(text);
+      const preview = inspectBackupPayload(text);
+      setPendingFile(text);
+      setPendingPreview({ name: file.name, ...preview });
     } catch (ex) {
       setErr(ex.message || '読み込みに失敗しました');
     } finally {
@@ -8173,11 +8231,25 @@ function DataBackupPanel() {
     }
   };
 
-  const handlePasteImport = () => {
+  const handlePastePreview = () => {
     setErr('');
     setMsg('');
+    setPendingFile(null);
+    setPendingPreview(null);
     try {
-      doImport(pasteText);
+      const preview = inspectBackupPayload(pasteText);
+      setPendingFile(pasteText);
+      setPendingPreview({ name: '貼り付けたJSON', ...preview });
+    } catch (ex) {
+      setErr(ex.message || '読み込みに失敗しました');
+    }
+  };
+
+  const handleConfirmImport = () => {
+    if (!pendingFile) return;
+    setErr('');
+    try {
+      doImport(pendingFile);
     } catch (ex) {
       setErr(ex.message || '読み込みに失敗しました');
     }
@@ -8218,17 +8290,35 @@ function DataBackupPanel() {
           style={{flex:1,minWidth:140,padding:'10px 14px',border:`2px solid ${C.a}`,background:C.aBg,color:C.a,fontWeight:800,fontSize:12,cursor:'pointer',fontFamily:"'Zen Kaku Gothic New',sans-serif"}}>
           📋 貼り付けて復元
         </button>
-        <input ref={fileRef} type="file" accept=".json,application/json,text/json,text/plain" onChange={handleImport} style={{display:'none'}}/>
+        <input ref={fileRef} type="file" accept=".json,application/json,text/json,text/plain,*/*" onChange={handleImport} style={{display:'none'}}/>
       </div>
+      {pendingPreview&&(
+        <div style={{marginTop:10,padding:12,background:C.aBg,border:`1px solid ${C.aBd}`}}>
+          <div style={{fontSize:12,fontWeight:800,marginBottom:6}}>📂 {pendingPreview.name}</div>
+          <div style={{fontSize:11,color:C.muted,lineHeight:1.7,marginBottom:10}}>
+            講義 {pendingPreview.lectures}・計画日 {pendingPreview.planDays}・問題記録 {pendingPreview.srsCount}・演習 {pendingPreview.quizSessions}（{pendingPreview.keyCount}項目）
+          </div>
+          <div style={{display:'flex',gap:8}}>
+            <button onClick={handleConfirmImport}
+              style={{flex:1,padding:10,border:'none',background:C.a,color:'white',fontWeight:800,fontSize:12,cursor:'pointer'}}>
+              この内容で復元する
+            </button>
+            <button onClick={()=>{setPendingFile(null);setPendingPreview(null);}}
+              style={{padding:'10px 14px',border:`1px solid ${C.line}`,background:'white',fontWeight:700,fontSize:12,cursor:'pointer'}}>
+              取消
+            </button>
+          </div>
+        </div>
+      )}
       {pasteOpen&&(
         <div style={{marginBottom:10}}>
           <div style={{fontSize:11,color:C.muted,marginBottom:6}}>バックアップJSONの中身をすべて貼り付けてください（ファイルアプリ→JSON→共有→コピー でも可）</div>
           <textarea value={pasteText} onChange={e=>setPasteText(e.target.value)} rows={5}
             style={{width:'100%',padding:10,border:`1px solid ${C.line}`,fontFamily:'monospace',fontSize:11,lineHeight:1.5,marginBottom:8}}
             placeholder='{"app":"takken-pwa","keys":{...}}'/>
-          <button onClick={handlePasteImport} disabled={!pasteText.trim()}
+          <button onClick={handlePastePreview} disabled={!pasteText.trim()}
             style={{width:'100%',padding:10,border:'none',background:pasteText.trim()?C.ink:'#ccc',color:'white',fontWeight:700,fontSize:12,cursor:pasteText.trim()?'pointer':'not-allowed'}}>
-            貼り付けた内容で復元する
+            貼り付け内容を確認する
           </button>
         </div>
       )}
