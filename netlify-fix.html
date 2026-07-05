@@ -3,47 +3,38 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NetlifyをiPhoneで開けるようにする（1回だけ）</title>
+<title>NetlifyをiPhoneで開けるようにする</title>
 <style>
-body{font-family:-apple-system,sans-serif;background:#faf7f2;padding:20px;line-height:1.8;color:#1a1a1a;max-width:520px;margin:0 auto}
-h1{font-size:20px;margin-bottom:8px}
-.box{background:#fff;border:2px solid #c8102e;padding:16px;margin:16px 0}
-.ok{background:#e8f0d8;border-color:#5a8a2a}
+body{font-family:-apple-system,sans-serif;background:#faf7f2;padding:20px;line-height:1.8;max-width:520px;margin:0 auto}
+h1{font-size:20px}
+.box{background:#fff;border:2px solid #1a5ca8;padding:16px;margin:16px 0}
 .warn{color:#c8102e;font-weight:700}
-.step{margin:12px 0;padding-left:1.2em}
-.step b{display:block;margin-left:-1.2em}
 a{color:#1a5ca8;font-weight:700;word-break:break-all}
-.btn{display:block;background:#1a5ca8;color:#fff;text-align:center;padding:14px;border-radius:8px;text-decoration:none;font-weight:800;margin:12px 0}
+.step{margin:10px 0}
 </style>
 </head>
 <body>
-<h1>📱 NetlifyがiPhoneで開けない理由</h1>
+<h1>📱 あなたのNetlifyをiPhoneで開く</h1>
 <div class="box">
-  <p class="warn">あなたのNetlifyは「古い版」のままです。</p>
-  <p>スマホでは重すぎて起動できません。<br><b>1回だけ更新</b>すれば、同じURLで開けるようになります。</p>
-  <p>※ 進捗データは消えません（同じURLのまま中身だけ新しくします）</p>
+  <p class="warn">今のサイトは機能は新しいですが、スマホで開けない形式でアップされています。</p>
+  <p><b>1回だけ</b> GitHub と連携すれば直ります。URLはそのまま、データも残ります。</p>
 </div>
 
-<h2>方法A：Git連携（いちばん簡単・おすすめ）</h2>
-<div class="box ok">
-  <div class="step"><b>①</b> iPhoneのSafariで <a href="https://app.netlify.com">app.netlify.com</a> にログイン</div>
-  <div class="step"><b>②</b> サイト <b>reliable-mousse-e94d97</b> をタップ</div>
-  <div class="step"><b>③</b> <b>Site configuration</b> → <b>Build & deploy</b></div>
-  <div class="step"><b>④</b> <b>Link repository</b> → GitHub → <b>kitaha125-wq/takken</b> を選ぶ</div>
-  <div class="step"><b>⑤</b> Branch: <b>main</b> → <b>Deploy</b></div>
-  <div class="step"><b>⑥</b> 2〜3分待ってから開く：<br>
-    <a href="https://reliable-mousse-e94d97.netlify.app/index.html">reliable-mousse-e94d97.netlify.app/index.html</a>
+<h2>手順（iPhoneのSafariでOK）</h2>
+<div class="box">
+  <div class="step">① <a href="https://app.netlify.com">app.netlify.com</a> にログイン</div>
+  <div class="step">② サイト <b>classy-kleicha-030356</b> を開く</div>
+  <div class="step">③ <b>Site configuration</b> → <b>Build & deploy</b></div>
+  <div class="step">④ <b>Link repository</b> → GitHub → <b>kitaha125-wq/takken</b></div>
+  <div class="step">⑤ Branch: <b>main</b> → <b>Deploy site</b></div>
+  <div class="step">⑥ 3分後に開く：<br>
+    <a href="https://classy-kleicha-030356.netlify.app/index.html">classy-kleicha-030356.netlify.app/index.html</a>
   </div>
 </div>
 
-<h2>方法B：今すぐ勉強したい（更新を待たない）</h2>
-<div class="box">
-  <p>GitHub版（スマホ対応済み）を使います。JSONを1回復元してください。</p>
-  <a class="btn" href="https://kitaha125-wq.github.io/takken/restore.html">バックアップ復元を開く</a>
-  <a class="btn" href="https://kitaha125-wq.github.io/takken/index.html">アプリを開く（更新版）</a>
-</div>
-
-<h2>更新できたか確認</h2>
-<p>問題を始めて <b>「わからない（スキップ）」</b> が出れば成功です。</p>
+<h2>昔の進捗を戻す（必要なら）</h2>
+<p>URLが変わった場合は、JSONバックアップを復元してください。</p>
+<p><a href="https://classy-kleicha-030356.netlify.app/restore.html">restore.html（復元）</a></p>
+<p>※ Git連携後に restore.html が正しく開けるようになります。</p>
 </body>
 </html>

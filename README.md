@@ -11,9 +11,9 @@
 ### いちばん簡単な更新（Git連携・1回だけ）
 
 1. https://app.netlify.com にログイン
-2. サイト **reliable-mousse-e94d97** → **Site configuration** → **Build & deploy**
+2. サイト **classy-kleicha-030356** → **Site configuration** → **Build & deploy**
 3. **Link repository** → GitHub → **kitaha125-wq/takken** → branch **main** → Deploy
-4. 3分後に https://reliable-mousse-e94d97.netlify.app/index.html を開く
+4. 3分後に https://classy-kleicha-030356.netlify.app/index.html を開く
 
 ---
 
@@ -27,7 +27,7 @@
 
 ### メインアプリ（2.4MB・初回2〜4分かかることがある）
 
-**https://reliable-mousse-e94d97.netlify.app/index.html**（いつものURL・データあり）
+**https://classy-kleicha-030356.netlify.app/index.html**（いつものURL・データあり）
 
 **https://kitaha125-wq.github.io/takken/index.html**（更新版）
 
@@ -45,7 +45,7 @@ Safari で開く → ホーム画面に追加
 4. 設定はそのまま **Deploy site**
 5. 以降、`main` を更新するたびに自動デプロイ
 
-※ 既存サイト `reliable-mousse-e94d97` がある場合：
+※ 既存サイト `classy-kleicha-030356` がある場合：
 - そのサイトの **Site configuration** → **Build & deploy** → **Link repository**
 - 同じ `takken` リポジトリを選ぶ
 

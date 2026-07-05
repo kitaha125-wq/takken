@@ -2,6 +2,7 @@
   publish = "."
   command = "echo 'Static site — no build'"
 
+# トップだけ index.html へ（app.js や restore.html はそのまま配信）
 [[redirects]]
   from = "/"
   to = "/index.html"

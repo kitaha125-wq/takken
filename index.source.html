@@ -99,7 +99,7 @@ nav { padding-top: env(safe-area-inset-top); }
     if(body) body.innerHTML=[
       '<p style="font-size:14px;color:#444;margin-bottom:12px;">スマホでは初回の読み込みに<b>2〜4分</b>かかることがあります。この画面が出ても、しばらく待つか「再読み込み」を押してください。</p>',
       '<p style="font-size:14px;color:#222;margin-bottom:12px;"><b>すぐ使いたい場合</b>は、いつも使っている Netlify のURLを開いてください：</p>',
-      '<p style="margin-bottom:8px;"><a href="https://reliable-mousse-e94d97.netlify.app/index.html" style="color:#1a5ca8;font-weight:700;word-break:break-all;">reliable-mousse-e94d97.netlify.app/index.html</a></p>',
+      '<p style="margin-bottom:8px;"><a href="https://classy-kleicha-030356.netlify.app/index.html" style="color:#1a5ca8;font-weight:700;word-break:break-all;">classy-kleicha-030356.netlify.app/index.html</a></p>',
       '<p style="font-size:14px;color:#222;margin-bottom:8px;"><b>バックアップ復元だけ</b>なら軽量ページ（すぐ開きます）：</p>',
       '<p style="margin-bottom:12px;"><a href="./restore.html" style="color:#1a5ca8;font-weight:700;">restore.html（バックアップ復元）</a> · <a href="./start.html" style="color:#1a5ca8;font-weight:700;">start.html（接続テスト）</a></p>',
       '<p style="font-size:13px;color:#666;">バックアップJSONの復元も、上の restore.html または Netlify のホーム画面下「データのバックアップ・復元」から行えます。</p>'
@@ -114,7 +114,7 @@ nav { padding-top: env(safe-area-inset-top); }
       '<li style="margin-bottom:8px;">Netlify なら <b>https://あなたのサイト.netlify.app/index.html</b></li>',
       '<li style="margin-bottom:8px;">正しいURLは <b>http://127.0.0.1:18765/index.html</b></li>',
       '</ol>',
-      '<p style="font-size:13px;color:#666;margin-bottom:12px;">オンラインで使う: <a href="https://reliable-mousse-e94d97.netlify.app/index.html" style="color:#1a5ca8;font-weight:700;">Netlifyで開く</a></p>'
+      '<p style="font-size:13px;color:#666;margin-bottom:12px;">オンラインで使う: <a href="https://classy-kleicha-030356.netlify.app/index.html" style="color:#1a5ca8;font-weight:700;">Netlifyで開く</a></p>'
     ].join('');
   }
   function showHint(reason){
@@ -474,7 +474,7 @@ function inspectBackupPayload(raw) {
   const summary = summarizeBackupKeys(keys);
   if (summary.keyCount === 0) throw new Error('バックアップに tk_ データがありません。別のファイルか、Netlifyの旧URLで取り直してください');
   if (summary.lectures === 0 && summary.planDays === 0 && summary.srsCount === 0 && summary.quizSessions === 0) {
-    throw new Error('バックアップは空です（講義0・計画0・問題0）。GitHub Pages ではなく Netlify（reliable-mousse-e94d97.netlify.app）でバックアップを取り直してください');
+    throw new Error('バックアップは空です（講義0・計画0・問題0）。GitHub Pages ではなく Netlify（classy-kleicha-030356.netlify.app）でバックアップを取り直してください');
   }
   return summary;
 }
@@ -518,7 +518,7 @@ function downloadBackupFile() {
   URL.revokeObjectURL(url);
   if (summary.lectures === 0 && summary.planDays === 0 && summary.srsCount === 0 && summary.quizSessions === 0) {
     setTimeout(() => {
-      alert('⚠️ このページには保存データがありません。\n\n進捗がある Netlify のURLでバックアップを取ってください:\nhttps://reliable-mousse-e94d97.netlify.app/index.html?backup=1');
+      alert('⚠️ このページには保存データがありません。\n\n進捗がある Netlify のURLでバックアップを取ってください:\nhttps://classy-kleicha-030356.netlify.app/index.html?backup=1');
     }, 300);
   }
   return payload;
@@ -8296,7 +8296,7 @@ function DataBackupPanel() {
       <div style={{fontSize:11,color:C.muted,lineHeight:1.7,marginBottom:10}}>
         URLを変えたときは、<b>昔のURLでバックアップ</b> → <b>今のURLで復元</b> が必要です。
         <div style={{marginTop:6}}>
-          昔のURLで保存: <a href="https://reliable-mousse-e94d97.netlify.app/index.html?backup=1" style={{color:C.a,fontWeight:700}}>Netlifyでバックアップ</a>
+          昔のURLで保存: <a href="https://classy-kleicha-030356.netlify.app/index.html?backup=1" style={{color:C.a,fontWeight:700}}>Netlifyでバックアップ</a>
         </div>
       </div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:8,marginBottom:10,fontSize:11}}>
