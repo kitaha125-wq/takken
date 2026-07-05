@@ -1,5 +1,22 @@
 # 宅建士合格アプリ
 
+## ⚠️ Netlify が iPhone で開けないとき
+
+**原因：** Netlify はまだ古い版のまま。スマホでは起動できません。  
+**解決：** 1回だけ更新すれば、同じ URL で開けます（データは残ります）。
+
+👉 **手順ページ（iPhoneで開く）：**  
+**https://kitaha125-wq.github.io/takken/netlify-fix.html**
+
+### いちばん簡単な更新（Git連携・1回だけ）
+
+1. https://app.netlify.com にログイン
+2. サイト **reliable-mousse-e94d97** → **Site configuration** → **Build & deploy**
+3. **Link repository** → GitHub → **kitaha125-wq/takken** → branch **main** → Deploy
+4. 3分後に https://reliable-mousse-e94d97.netlify.app/index.html を開く
+
+---
+
 ## いちばん簡単：URLを開くだけ（ダウンロード不要）
 
 ### スマホで開けないとき（まずここ）
