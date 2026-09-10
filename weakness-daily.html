@@ -204,24 +204,33 @@ function escapeHtml(s) {
 
 function renderDaily(checks) {
   const idx = todayIndex();
-  let html = '';
-  DATA.daily.forEach((day, i) => {
-    const isToday = i === idx;
-    html += `<div class="day-card" id="day-${i}">
-      <h2>${isToday ? '▶ ' : ''}${day.label}曜日コース${isToday ? '（今日）' : ''}</h2>
-      <p class="focus">フォーカス：${escapeHtml(day.focus)}</p>
-      <div>${day.cats.map(c => `<span class="pill">${escapeHtml(c)}</span>`).join('')}</div>
-    </div>`;
-    day.cats.forEach(catName => {
-      const cat = catByName(catName);
-      if (!cat) return;
-      html += `<div class="sec-title"><h2>${escapeHtml(cat.cat)}</h2><span class="meta">${cat.wrong}件の誤答メモ / ${cat.count}件</span></div>`;
-      cat.items.forEach((item, j) => {
-        const id = `d${i}:${catName}:${j}`;
-        html += renderItem(item, id, checks);
-      });
+  const today = DATA.daily[idx];
+  let html = `<div class="day-card" id="day-${idx}">
+      <h2>▶ ${today.label}曜日コース（今日）</h2>
+      <p class="focus">フォーカス：${escapeHtml(today.focus)}</p>
+      <div>${today.cats.map(c => `<span class="pill">${escapeHtml(c)}</span>`).join('')}</div>
+    </div>
+    <p class="focus">記憶フックを声に出してチェック。迷ったら比較表を開く。</p>`;
+
+  today.cats.forEach(catName => {
+    const cat = catByName(catName);
+    if (!cat) return;
+    html += `<div class="sec-title"><h2>${escapeHtml(cat.cat)}</h2><span class="meta">誤答 ${cat.wrong} / ${cat.count}</span></div>`;
+    cat.items.forEach((item, j) => {
+      const id = `today:${catName}:${j}`;
+      html += renderItem(item, id, checks);
     });
   });
+
+  html += `<details style="margin-top:18px"><summary>週のローテ一覧を見る</summary>`;
+  DATA.daily.forEach((day, i) => {
+    const isToday = i === idx;
+    html += `<div class="day-card" style="opacity:${isToday ? 1 : .75}">
+      <h2 style="font-size:.95rem">${isToday ? '▶ ' : ''}${day.label}曜日 · ${escapeHtml(day.focus)}</h2>
+      <div>${day.cats.map(c => `<span class="pill">${escapeHtml(c)}</span>`).join('')}</div>
+    </div>`;
+  });
+  html += `</details>`;
   return html;
 }
 
