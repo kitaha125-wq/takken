@@ -25,6 +25,8 @@
 
 **https://kitaha125-wq.github.io/takken/restore.html**（バックアップ復元だけ・すぐ開く）
 
+**https://kitaha125-wq.github.io/takken/weakness-daily.html**（弱点ノートの毎日振り返り）
+
 ### メインアプリ（2.4MB・初回2〜4分かかることがある）
 
 **https://classy-kleicha-030356.netlify.app/index.html**（いつものURL・データあり）
