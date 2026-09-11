@@ -424,7 +424,7 @@ function buildSmartPlan({ doneSet, days, dailyMinutes = 90, srs }) {
   }
   return buildPlan(tasks.slice(0, days));
 }
-const APP_VERSION = '2026.06.14-20';
+const APP_VERSION = '2026.09.11-1';
 
 const C = {
   s:'#c8102e', sBg:'#fff0f2', sBd:'#e8b4ba',
@@ -445,7 +445,13 @@ function ss(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
 const BACKUP_KEYS = [
   'tk_done_v5', 'tk_days_v5', 'tk_schedule_v1', 'tk_plan_start_v1', 'tk_plan_daily_min_v1',
   'tk_srs_v1', 'tk_hist_v5', 'tk_activity_v1', 'tk_daily_journal_v1', 'tk_last_visit_v1', 'tk_notify_v1', 'tk_review_count_v1', 'tk_gemini_notes_v1', 'tk_chatgpt_notes_v1', 'tk_ai_quiz_v1', 'tk_career_vision_v1', 'tk_tracker_filter_v1', 'tk_tracker_collapsed_v1', 'tk_tracker_sort_v1', 'tk_docs_collapsed_v1', 'tk_q_edits_v1', 'tk_seen_version',
+  // 弱点ノート・目標・除外など（実機バックアップで確認済み）
+  'tk_question_corrections_v1', 'tk_question_review_notes_v1', 'tk_daily_question_goal_v1', 'tk_daily_question_count_v1', 'tk_review_exclusions_v1',
+  // 毎日振り返りページのチェック状態
+  'tk_weakness_daily_checks_v1',
 ];
+const BACKUP_SNAPSHOT_KEY = 'tk_backup_snapshots_v1';
+const BACKUP_SNAPSHOT_MAX = 3;
 function coerceBackupValue(v) {
   if (v === undefined || v === null) return null;
   if (typeof v === 'string') {
@@ -461,19 +467,21 @@ function summarizeBackupKeys(keys) {
   const days = pick('tk_days_v5');
   const srs = pick('tk_srs_v1');
   const hist = pick('tk_hist_v5');
+  const notes = pick('tk_question_review_notes_v1');
   return {
-    keyCount: Object.keys(keys).filter(k => k.startsWith('tk_')).length,
+    keyCount: Object.keys(keys).filter(k => k.startsWith('tk_') && k !== BACKUP_SNAPSHOT_KEY).length,
     lectures: Array.isArray(done) ? done.length : 0,
     planDays: Array.isArray(days) ? days.length : 0,
     srsCount: srs && typeof srs === 'object' && !Array.isArray(srs) ? Object.keys(srs).length : 0,
     quizSessions: Array.isArray(hist) ? hist.length : 0,
+    reviewNotes: notes && typeof notes === 'object' && !Array.isArray(notes) ? Object.keys(notes).length : 0,
   };
 }
 function inspectBackupPayload(raw) {
   const keys = normalizeBackupPayload(raw);
   const summary = summarizeBackupKeys(keys);
   if (summary.keyCount === 0) throw new Error('バックアップに tk_ データがありません。別のファイルか、Netlifyの旧URLで取り直してください');
-  if (summary.lectures === 0 && summary.planDays === 0 && summary.srsCount === 0 && summary.quizSessions === 0) {
+  if (summary.lectures === 0 && summary.planDays === 0 && summary.srsCount === 0 && summary.quizSessions === 0 && summary.reviewNotes === 0) {
     throw new Error('バックアップは空です（講義0・計画0・問題0）。GitHub Pages ではなく Netlify（classy-kleicha-030356.netlify.app）でバックアップを取り直してください');
   }
   return summary;
@@ -489,24 +497,43 @@ function normalizeBackupPayload(raw) {
   if (!keys || typeof keys !== 'object' || Array.isArray(keys)) throw new Error('バックアップにデータが含まれていません');
   return keys;
 }
-function exportBackupPayload() {
+function collectAllBackupKeys() {
   const keys = {};
+  const seen = new Set();
+  // まず既知キー
   BACKUP_KEYS.forEach(k => {
+    if (k === BACKUP_SNAPSHOT_KEY) return;
+    try {
+      const raw = localStorage.getItem(k);
+      if (raw !== null) {
+        keys[k] = JSON.parse(raw);
+        seen.add(k);
+      }
+    } catch {}
+  });
+  // 将来追加分も含め、端末内の tk_* をすべて拾う
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (!k || !k.startsWith('tk_') || k === BACKUP_SNAPSHOT_KEY || seen.has(k)) continue;
     try {
       const raw = localStorage.getItem(k);
       if (raw !== null) keys[k] = JSON.parse(raw);
     } catch {}
-  });
+  }
+  return keys;
+}
+function exportBackupPayload() {
   return {
     app: 'takken-pwa',
     version: APP_VERSION,
     exportedAt: new Date().toISOString(),
-    keys,
+    keys: collectAllBackupKeys(),
   };
 }
 function downloadBackupFile() {
   const payload = exportBackupPayload();
   const summary = summarizeBackupKeys(payload.keys || {});
+  try { saveLocalSnapshot('ダウンロード時', payload); } catch {}
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -516,20 +543,66 @@ function downloadBackupFile() {
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
-  if (summary.lectures === 0 && summary.planDays === 0 && summary.srsCount === 0 && summary.quizSessions === 0) {
+  if (summary.lectures === 0 && summary.planDays === 0 && summary.srsCount === 0 && summary.quizSessions === 0 && summary.reviewNotes === 0) {
     setTimeout(() => {
       alert('⚠️ このページには保存データがありません。\n\n進捗がある Netlify のURLでバックアップを取ってください:\nhttps://classy-kleicha-030356.netlify.app/index.html?backup=1');
     }, 300);
   }
   return payload;
 }
+async function copyBackupToClipboard() {
+  const payload = exportBackupPayload();
+  const text = JSON.stringify(payload, null, 2);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    await navigator.clipboard.writeText(text);
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+  }
+  try { saveLocalSnapshot('コピー時', payload); } catch {}
+  return summarizeBackupKeys(payload.keys || {});
+}
+function loadLocalSnapshots() {
+  const list = sg(BACKUP_SNAPSHOT_KEY, []);
+  return Array.isArray(list) ? list : [];
+}
+function saveLocalSnapshot(label, payload) {
+  const p = payload || exportBackupPayload();
+  const summary = summarizeBackupKeys(p.keys || {});
+  const entry = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    label: label || '手動退避',
+    savedAt: new Date().toISOString(),
+    summary,
+    payload: p,
+  };
+  const next = [entry, ...loadLocalSnapshots().filter(x => x && x.payload)].slice(0, BACKUP_SNAPSHOT_MAX);
+  try {
+    ss(BACKUP_SNAPSHOT_KEY, next);
+  } catch (e) {
+    // 容量不足なら古いものから削って再試行
+    const slim = next.slice(0, 1);
+    try { ss(BACKUP_SNAPSHOT_KEY, slim); } catch {
+      throw new Error('端末内退避の保存容量が足りません。JSONダウンロードを使ってください');
+    }
+  }
+  return entry;
+}
+function deleteLocalSnapshot(id) {
+  ss(BACKUP_SNAPSHOT_KEY, loadLocalSnapshots().filter(x => x.id !== id));
+}
 function importBackupPayload(payload) {
   const keys = normalizeBackupPayload(payload);
   inspectBackupPayload({ keys });
-  const known = new Set(BACKUP_KEYS);
+  // 復元前に現状を端末へ退避（失敗しても続行）
+  try { saveLocalSnapshot('復元前の自動退避'); } catch {}
   let count = 0;
   Object.entries(keys).forEach(([k, v]) => {
-    if (!k.startsWith('tk_') && !known.has(k)) return;
+    if (!k.startsWith('tk_') || k === BACKUP_SNAPSHOT_KEY) return;
     const val = coerceBackupValue(v);
     if (val === null) return;
     try {
@@ -552,16 +625,7 @@ function reloadAfterBackupRestore() {
   }
 }
 function backupSummary() {
-  const done = sg('tk_done_v5', []);
-  const days = sg('tk_days_v5', []);
-  const srs = sg('tk_srs_v1', {});
-  const hist = sg('tk_hist_v5', []);
-  return {
-    lectures: Array.isArray(done) ? done.length : 0,
-    planDays: Array.isArray(days) ? days.length : 0,
-    srsCount: Object.keys(srs).length,
-    quizSessions: Array.isArray(hist) ? hist.length : 0,
-  };
+  return summarizeBackupKeys(collectAllBackupKeys());
 }
 function today0(){const d=new Date();d.setHours(0,0,0,0);return d.getTime();}
 function getDaysLeft(){const t=new Date();t.setHours(0,0,0,0);const e=new Date(EXAM_DATE);e.setHours(0,0,0,0);return Math.ceil((e-t)/(864e5));}
@@ -8228,30 +8292,55 @@ function DataBackupPanel() {
   const [pasteText, setPasteText] = useState('');
   const [pendingFile, setPendingFile] = useState(null);
   const [pendingPreview, setPendingPreview] = useState(null);
+  const [snapshots, setSnapshots] = useState(() => loadLocalSnapshots());
   const fileRef = useRef(null);
   const sum = backupSummary();
+  const refreshSnapshots = () => setSnapshots(loadLocalSnapshots());
 
   const doImport = (payload) => {
     const preview = inspectBackupPayload(payload);
     const count = importBackupPayload(payload);
     setPendingFile(null);
     setPendingPreview(null);
-    setMsg(`復元しました（${count}項目・講義${preview.lectures}・問題${preview.srsCount}）。再読み込みします…`);
+    refreshSnapshots();
+    setMsg(`復元しました（${count}項目・講義${preview.lectures}・問題${preview.srsCount}・弱点ノート${preview.reviewNotes || 0}）。再読み込みします…`);
     setTimeout(() => reloadAfterBackupRestore(), 800);
   };
 
   const handleDownload = () => {
     setErr('');
     downloadBackupFile();
-    setMsg(`バックアップをダウンロードしました（講義${sum.lectures}・計画${sum.planDays}日・問題記録${sum.srsCount}）`);
+    refreshSnapshots();
+    setMsg(`バックアップをダウンロードしました（講義${sum.lectures}・計画${sum.planDays}日・問題${sum.srsCount}・弱点ノート${sum.reviewNotes || 0}）`);
     setTimeout(() => setMsg(''), 4000);
   };
 
-  const handleImport = async (e) => {
+  const handleCopy = async () => {
     setErr('');
-    setMsg('');
-    setPendingFile(null);
-    setPendingPreview(null);
+    try {
+      await copyBackupToClipboard();
+      refreshSnapshots();
+      setMsg('クリップボードにコピーしました');
+      setTimeout(() => setMsg(''), 4000);
+    } catch (ex) {
+      setErr(ex.message || 'コピーに失敗しました');
+    }
+  };
+
+  const handleSnapshot = () => {
+    setErr('');
+    try {
+      saveLocalSnapshot('手動退避');
+      refreshSnapshots();
+      setMsg('この端末に退避しました（最大3件）');
+      setTimeout(() => setMsg(''), 4000);
+    } catch (ex) {
+      setErr(ex.message || '端末内退避に失敗しました');
+    }
+  };
+
+  const handleImport = async (e) => {
+    setErr(''); setMsg(''); setPendingFile(null); setPendingPreview(null);
     const file = e.target.files?.[0];
     if (!file) return;
     try {
@@ -8267,10 +8356,7 @@ function DataBackupPanel() {
   };
 
   const handlePastePreview = () => {
-    setErr('');
-    setMsg('');
-    setPendingFile(null);
-    setPendingPreview(null);
+    setErr(''); setMsg(''); setPendingFile(null); setPendingPreview(null);
     try {
       const preview = inspectBackupPayload(pasteText);
       setPendingFile(pasteText);
@@ -8283,20 +8369,23 @@ function DataBackupPanel() {
   const handleConfirmImport = () => {
     if (!pendingFile) return;
     setErr('');
-    try {
-      doImport(pendingFile);
-    } catch (ex) {
-      setErr(ex.message || '読み込みに失敗しました');
-    }
+    try { doImport(pendingFile); } catch (ex) { setErr(ex.message || '読み込みに失敗しました'); }
+  };
+
+  const fmtWhen = (iso) => {
+    try { return new Date(iso).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+    catch { return iso || ''; }
   };
 
   return (
     <div style={{border:`2px solid ${C.a}`,background:'white',padding:'14px 16px',marginBottom:16}}>
       <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:13,fontWeight:800,marginBottom:6}}>💾 データのバックアップ・復元</div>
       <div style={{fontSize:11,color:C.muted,lineHeight:1.7,marginBottom:10}}>
-        URLを変えたときは、<b>昔のURLでバックアップ</b> → <b>今のURLで復元</b> が必要です。
+        URL変更・更新の前に必ず保存。<b>全 tk_* データ</b>（弱点ノート含む）を対象にします。
         <div style={{marginTop:6}}>
-          昔のURLで保存: <a href="https://classy-kleicha-030356.netlify.app/index.html?backup=1" style={{color:C.a,fontWeight:700}}>Netlifyでバックアップ</a>
+          軽量ページ: <a href="./restore.html" style={{color:C.a,fontWeight:700}}>restore.html</a>
+          {' · '}
+          旧URL: <a href="https://classy-kleicha-030356.netlify.app/index.html?backup=1" style={{color:C.a,fontWeight:700}}>Netlifyでバックアップ</a>
         </div>
       </div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:8,marginBottom:10,fontSize:11}}>
@@ -8304,7 +8393,7 @@ function DataBackupPanel() {
           {label:'完了講義',val:sum.lectures},
           {label:'計画完了日',val:sum.planDays},
           {label:'問題回答記録',val:sum.srsCount},
-          {label:'演習セッション',val:sum.quizSessions},
+          {label:'弱点ノート',val:sum.reviewNotes||0},
         ].map(x=>(
           <div key={x.label} style={{background:C.paper,padding:'8px 10px',border:`1px solid ${C.line}`}}>
             <div style={{color:C.muted,fontSize:10}}>{x.label}</div>
@@ -8312,42 +8401,48 @@ function DataBackupPanel() {
           </div>
         ))}
       </div>
-      <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:pasteOpen?10:0}}>
-        <button onClick={handleDownload}
-          style={{flex:1,minWidth:140,padding:'10px 14px',border:'none',background:C.a,color:'white',fontWeight:800,fontSize:12,cursor:'pointer',fontFamily:"'Zen Kaku Gothic New',sans-serif"}}>
-          ⬇️ バックアップを保存
-        </button>
-        <button onClick={()=>fileRef.current?.click()}
-          style={{flex:1,minWidth:140,padding:'10px 14px',border:`2px solid ${C.ink}`,background:'white',fontWeight:800,fontSize:12,cursor:'pointer',fontFamily:"'Zen Kaku Gothic New',sans-serif"}}>
-          📁 JSONファイルから復元
-        </button>
-        <button onClick={()=>setPasteOpen(v=>!v)}
-          style={{flex:1,minWidth:140,padding:'10px 14px',border:`2px solid ${C.a}`,background:C.aBg,color:C.a,fontWeight:800,fontSize:12,cursor:'pointer',fontFamily:"'Zen Kaku Gothic New',sans-serif"}}>
-          📋 貼り付けて復元
-        </button>
+      <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:10}}>
+        <button onClick={handleDownload} style={{flex:1,minWidth:130,padding:'10px 12px',border:'none',background:C.a,color:'white',fontWeight:800,fontSize:12,cursor:'pointer'}}>⬇️ JSON保存</button>
+        <button onClick={handleCopy} style={{flex:1,minWidth:130,padding:'10px 12px',border:`2px solid ${C.a}`,background:C.aBg,color:C.a,fontWeight:800,fontSize:12,cursor:'pointer'}}>📋 コピー</button>
+        <button onClick={handleSnapshot} style={{flex:1,minWidth:130,padding:'10px 12px',border:`2px solid ${C.ink}`,background:'white',fontWeight:800,fontSize:12,cursor:'pointer'}}>📱 端末に退避</button>
+        <button onClick={()=>fileRef.current?.click()} style={{flex:1,minWidth:130,padding:'10px 12px',border:`2px solid ${C.ink}`,background:'white',fontWeight:800,fontSize:12,cursor:'pointer'}}>📁 ファイル復元</button>
+        <button onClick={()=>setPasteOpen(v=>!v)} style={{flex:1,minWidth:130,padding:'10px 12px',border:`2px solid ${C.a}`,background:C.aBg,color:C.a,fontWeight:800,fontSize:12,cursor:'pointer'}}>📝 貼付復元</button>
         <input ref={fileRef} type="file" accept=".json,application/json,text/json,text/plain,*/*" onChange={handleImport} style={{display:'none'}}/>
       </div>
+      {snapshots.length>0 && (
+        <div style={{marginBottom:10,padding:12,background:C.paper,border:`1px solid ${C.line}`}}>
+          <div style={{fontSize:12,fontWeight:800,marginBottom:8}}>端末内スナップショット（最大{BACKUP_SNAPSHOT_MAX}件）</div>
+          {snapshots.map(s => (
+            <div key={s.id} style={{display:'flex',gap:8,alignItems:'center',justifyContent:'space-between',padding:'8px 0',borderTop:`1px solid ${C.line}`,flexWrap:'wrap'}}>
+              <div style={{fontSize:11,lineHeight:1.5,flex:1,minWidth:160}}>
+                <b>{s.label}</b> · {fmtWhen(s.savedAt)}
+                <div style={{color:C.muted}}>講義{s.summary?.lectures||0}・問題{s.summary?.srsCount||0}・弱点{s.summary?.reviewNotes||0}</div>
+              </div>
+              <div style={{display:'flex',gap:6}}>
+                <button onClick={()=>{ setErr(''); try { doImport(s.payload); } catch(ex){ setErr(ex.message||'復元失敗'); } }}
+                  style={{padding:'7px 10px',border:`1.5px solid ${C.a}`,background:'white',color:C.a,fontWeight:800,fontSize:11,cursor:'pointer'}}>復元</button>
+                <button onClick={()=>{ deleteLocalSnapshot(s.id); refreshSnapshots(); }}
+                  style={{padding:'7px 10px',border:`1px solid ${C.line}`,background:'white',fontSize:11,cursor:'pointer'}}>削除</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       {pendingPreview&&(
         <div style={{marginTop:10,padding:12,background:C.aBg,border:`1px solid ${C.aBd}`}}>
           <div style={{fontSize:12,fontWeight:800,marginBottom:6}}>📂 {pendingPreview.name}</div>
           <div style={{fontSize:11,color:C.muted,lineHeight:1.7,marginBottom:10}}>
-            講義 {pendingPreview.lectures}・計画日 {pendingPreview.planDays}・問題記録 {pendingPreview.srsCount}・演習 {pendingPreview.quizSessions}（{pendingPreview.keyCount}項目）
+            講義 {pendingPreview.lectures}・計画日 {pendingPreview.planDays}・問題記録 {pendingPreview.srsCount}・弱点ノート {pendingPreview.reviewNotes||0}（{pendingPreview.keyCount}項目）
           </div>
           <div style={{display:'flex',gap:8}}>
-            <button onClick={handleConfirmImport}
-              style={{flex:1,padding:10,border:'none',background:C.a,color:'white',fontWeight:800,fontSize:12,cursor:'pointer'}}>
-              この内容で復元する
-            </button>
-            <button onClick={()=>{setPendingFile(null);setPendingPreview(null);}}
-              style={{padding:'10px 14px',border:`1px solid ${C.line}`,background:'white',fontWeight:700,fontSize:12,cursor:'pointer'}}>
-              取消
-            </button>
+            <button onClick={handleConfirmImport} style={{flex:1,padding:10,border:'none',background:C.a,color:'white',fontWeight:800,fontSize:12,cursor:'pointer'}}>この内容で復元する</button>
+            <button onClick={()=>{setPendingFile(null);setPendingPreview(null);}} style={{padding:'10px 14px',border:`1px solid ${C.line}`,background:'white',fontWeight:700,fontSize:12,cursor:'pointer'}}>取消</button>
           </div>
         </div>
       )}
       {pasteOpen&&(
         <div style={{marginBottom:10}}>
-          <div style={{fontSize:11,color:C.muted,marginBottom:6}}>バックアップJSONの中身をすべて貼り付けてください（ファイルアプリ→JSON→共有→コピー でも可）</div>
+          <div style={{fontSize:11,color:C.muted,marginBottom:6}}>バックアップJSONの中身をすべて貼り付けてください</div>
           <textarea value={pasteText} onChange={e=>setPasteText(e.target.value)} rows={5}
             style={{width:'100%',padding:10,border:`1px solid ${C.line}`,fontFamily:'monospace',fontSize:11,lineHeight:1.5,marginBottom:8}}
             placeholder='{"app":"takken-pwa","keys":{...}}'/>

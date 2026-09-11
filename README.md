@@ -23,7 +23,7 @@
 
 **https://kitaha125-wq.github.io/takken/start.html**（接続テスト・すぐ開く）
 
-**https://kitaha125-wq.github.io/takken/restore.html**（バックアップ復元だけ・すぐ開く）
+**https://kitaha125-wq.github.io/takken/restore.html**（バックアップセンター：保存・復元・端末退避）
 
 **https://kitaha125-wq.github.io/takken/weakness-daily.html**（弱点ノートの毎日振り返り）
 
