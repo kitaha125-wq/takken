@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#1a2332"/>
+<title>PDF全文ノート｜宅建</title>
+<style>
+:root {
+  --bg:#171e2a; --bg2:#1f2a3a; --card:#243246; --text:#f2f5f8; --muted:#9aadc4;
+  --accent:#e8a54b; --accent2:#5eb8a8; --line:rgba(255,255,255,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+  font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.75; -webkit-text-size-adjust:100%}
+body{min-height:100dvh;padding-bottom:96px}
+.top{
+  position:sticky;top:0;z-index:30;
+  background:linear-gradient(180deg,#121926 0%,rgba(23,30,42,.97) 100%);
+  border-bottom:1px solid var(--line);backdrop-filter:blur(8px);
+  padding:12px 16px 10px;
+}
+.top h1{margin:0;font-size:1.1rem}
+.top .sub{color:var(--muted);font-size:.75rem;margin-top:4px}
+.top-links{margin-top:6px;font-size:.75rem}
+.top-links a{color:var(--accent2);text-decoration:none;margin-right:12px}
+.search{
+  width:100%;margin-top:10px;padding:11px 12px;border-radius:12px;
+  border:1px solid var(--line);background:var(--bg2);color:var(--text);font-size:.92rem;
+}
+.mode-row,.filters,.note-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.mode-row{padding:8px 16px 0}
+.filters{padding:10px 16px 4px}
+.note-tabs{padding:6px 16px 10px}
+.mode-row::-webkit-scrollbar,.filters::-webkit-scrollbar,.note-tabs::-webkit-scrollbar{display:none}
+.mode-btn,.ftab,.ntab{
+  flex:0 0 auto;border:1px solid var(--line);background:var(--bg2);color:var(--muted);
+  border-radius:999px;padding:8px 12px;font-size:.74rem;cursor:pointer;
+}
+.mode-btn.active,.ftab.active,.ntab.active{
+  background:var(--accent);color:#1a2332;border-color:transparent;font-weight:800;
+}
+.toc{
+  background:var(--bg2);border:1px solid var(--line);border-radius:14px;
+  padding:14px;margin:4px 16px 0;
+}
+.toc h2{margin:0 0 8px;font-size:.9rem}
+.toc a{display:block;color:var(--accent2);text-decoration:none;font-size:.82rem;
+  padding:6px 0;border-bottom:1px solid var(--line)}
+.toc a:last-child{border-bottom:0}
+.toc .f{color:var(--muted);font-size:.68rem;margin-right:6px}
+main{max-width:760px;margin:0 auto;padding:8px 16px 24px}
+.note{display:none;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 16px;margin-bottom:14px}
+.note.show{display:block}
+.note-head{margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.field-pill{
+  display:inline-block;font-size:.68rem;padding:3px 8px;border-radius:999px;
+  background:rgba(94,184,168,.14);color:var(--accent2);margin-bottom:8px;
+}
+.note-head h1{margin:0;font-size:1.2rem;line-height:1.45}
+.meta{color:var(--muted);font-size:.72rem;margin-top:6px}
+.note-body h2{font-size:1.02rem;margin:1.25em 0 .45em;color:var(--accent)}
+.note-body h3{font-size:.95rem;margin:1em 0 .35em;color:#d7e6f5}
+.note-body p{margin:.55em 0;font-size:.92rem;color:#e8eef5}
+.note-body ul{margin:.45em 0 .8em;padding-left:1.15em}
+.note-body li{margin:.28em 0;font-size:.9rem}
+.callout{
+  margin:.8em 0;padding:10px 12px;border-radius:10px;
+  background:rgba(232,165,75,.12);border:1px solid rgba(232,165,75,.28);
+  color:#f0d2a0;font-size:.88rem;
+}
+.table-wrap{overflow-x:auto;margin:.9em 0;border-radius:12px;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:.82rem;min-width:280px}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+thead th{background:rgba(0,0,0,.22);color:var(--accent2);font-weight:700;white-space:nowrap}
+tbody th{background:rgba(94,184,168,.08);color:#cfe9e3;font-weight:700;min-width:6.5em}
+tr:last-child td,tr:last-child th{border-bottom:0}
+.kv-list{display:grid;gap:10px;margin:.9em 0}
+.kv-card{
+  border:1px solid var(--line);border-radius:12px;padding:12px;
+  background:rgba(0,0,0,.14);
+}
+.kv-title{font-weight:800;color:var(--accent2);margin-bottom:8px;font-size:.92rem}
+.kv{display:grid;grid-template-columns:7.5em 1fr;gap:8px;padding:6px 0;border-top:1px solid var(--line);font-size:.82rem}
+.kv:first-of-type{border-top:0}
+.kv .k{color:var(--muted)}
+.kv .v{color:#e8eef5}
+.empty{color:var(--muted);text-align:center;padding:40px 16px}
+.hidden{display:none !important}
+footer.bar{
+  position:fixed;left:0;right:0;bottom:0;
+  background:rgba(18,25,38,.96);border-top:1px solid var(--line);
+  padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+  display:flex;gap:8px;justify-content:center;
+}
+footer.bar a{
+  flex:1;max-width:220px;text-align:center;text-decoration:none;
+  border-radius:12px;padding:12px;font-weight:800;font-size:.88rem;
+}
+.btn-primary{background:var(--accent);color:#1a2332}
+.btn-ghost{background:var(--bg2);color:var(--text);border:1px solid var(--line)}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>PDF全文ノート</h1>
+  <div class="sub">添付PDF 18本を分野別に読みやすく整理 · 全文収録</div>
+  <div class="top-links">
+    <a href="./weakness-daily.html">弱点振り返り</a>
+    <a href="./docs/pdf-notes-full.md">Markdown版</a>
+    <a href="./start.html">スタート</a>
+  </div>
+  <input class="search" id="q" type="search" placeholder="キーワード検索（例: 建蔽率 / 法定地上権 / 3000万）" enterkeyhint="search"/>
+</header>
+<div class="mode-row">
+  <button class="mode-btn active" type="button" data-mode="one">1本ずつ読む</button>
+  <button class="mode-btn" type="button" data-mode="all">ヒットを一覧</button>
+</div>
+<nav class="filters" id="fields"></nav>
+<nav class="note-tabs" id="noteTabs"></nav>
+<section class="toc" id="toc"></section>
+<main id="main">
+<article class="note" id="建築基準法まとめノート-前編" data-field="法令上の制限">
+  <header class="note-head">
+    <div class="field-pill">法令上の制限</div>
+    <h1>建築基準法まとめノート（前編）</h1>
+    <div class="meta">1600字 · PDF全文</div>
+  </header>
+  <div class="note-body">
+<h2>第1章 建築基準法の目的と基本構造</h2>
+<p>建築基準法は、国民の生命・健康・財産を守るために、建築物の敷地・構造・設備・用途などについて最低限の基準を定めています。 目的は「安全・衛生・環境・防災・景観の確保」です。</p>
+<div class="table-wrap"><table><thead><tr><th>分類</th><th>内容</th></tr></thead><tbody><tr><th scope="row">建築物</th><td>屋根と柱または壁があり、土地に定着しているもの（プレハブや倉庫も含む）</td></tr><tr><th scope="row">工作物</th><td>煙突・広告塔・塀など、建築物以外で土地に定着している構造物</td></tr><tr><th scope="row">特定行政庁</th><td>建築行政を担当する自治体の長（札幌市長など）</td></tr><tr><th scope="row">建築主事</th><td>建築確認を行う国家資格者</td></tr><tr><th scope="row">指定確認検査機関</th><td>民間で建築確認・検査を行う機関</td></tr></tbody></table></div>
+<h2>第2章 用途地域ごとの建築制限</h2>
+<p>用途地域によって建てられる建築物の種類が制限されます。</p>
+<p>13種類の用途地域それぞれに、住居・商業・工業のバランスを考えた用途制限があります。</p>
+<div class="table-wrap"><table><thead><tr><th>用途地域</th><th>主な建築可否</th></tr></thead><tbody><tr><th scope="row">第一種低層住居専用地域</th><td>住宅中心。小規模店舗や兼用住宅のみ可。飲食店・ホテル不可（許可があれば小規模飲食店可）。</td></tr><tr><th scope="row">第二種低層住居専用地域</th><td>第一種よりやや緩和。小規模店舗・事務所併設可。</td></tr><tr><th scope="row">第一種中高層住居専用地域</th><td>中高層住宅中心。大学・病院は可。ホテルは不可。</td></tr><tr><th scope="row">第二種中高層住居専用地域</th><td>第一種より緩和。ホテル・旅館は原則不可。</td></tr><tr><th scope="row">第一種住居地域</th><td>住宅中心。一定規模の店舗・事務所・学校可。</td></tr><tr><th scope="row">第二種住居地域</th><td>幹線沿いを想定。パチンコ店・カラオケボックス可。</td></tr><tr><th scope="row">準住居地域</th><td>道路沿いを想定。自動車修理工場・ホテル可。</td></tr><tr><th scope="row">近隣商業地域</th><td>日用品店・映画館可。10,000㎡超の大型店も可。</td></tr><tr><th scope="row">商業地域</th><td>銀行・デパート・オフィスなど。住宅も可。</td></tr><tr><th scope="row">準工業地域</th><td>軽工業中心。住居と共存可。</td></tr><tr><th scope="row">工業地域</th><td>環境悪化をもたらすおそれのない工業中心。</td></tr><tr><th scope="row">工業専用地域</th><td>住宅・学校など不可。</td></tr><tr><th scope="row">田園住居地域</th><td>農地と調和する低層住宅中心。</td></tr></tbody></table></div>
+<h3>特別用途地区：国交大臣の承認を得て条例で用途制限を緩和できる。 ✅</h3>
+<p>幼保連携型認定こども園：全用途地域で建築可。 ✅兼用住宅：非住宅部分が延べ面積の1/2未満・50㎡以下なら建築可（工業専用地域を除く）。</p>
+<h2>第3章 建ぺい率・容積率・高さ制限</h2>
+<p>建築物の規模を制限する代表的な基準が「建蔽率」と「容積率」です。</p>
+<div class="table-wrap"><table><thead><tr><th>項目</th><th>内容</th></tr></thead><tbody><tr><th scope="row">建蔽率（けんぺいりつ）</th><td>敷地面積に対する建築面積の割合。防火地域内で耐火建築物なら＋10％緩和（限度8/10なら制限なし）。</td></tr><tr><th scope="row">容積率</th><td>敷地面積に対する延べ床面積の割合。前面道路の幅員が12m未満の場合は、幅員×法定係数（例：4m×4/10＝160％）で上限を決定。</td></tr><tr><th scope="row">絶対高さ制限</th><td>低層住居系では10mまたは12mを上限。都市計画で定められた方を超えてはならない。</td></tr><tr><th scope="row">外壁後退</th><td>第一種・第二種低層・田園住居地域では1mまたは1.5m後退を都市計画で設定可能。</td></tr><tr><th scope="row">北側斜線制限</th><td>低層・中高層住居専用・田園住居地域で適用（日影規制がある場合を除く）。</td></tr></tbody></table></div>
+<h2>第4章 防火・準防火地域と構造制限</h2>
+<p>防火地域・準防火地域では、火災の延焼を防ぐために構造制限が設けられています。</p>
+<div class="kv-list"><div class="kv-card"><div class="kv-title">防火地域</div><div class="kv"><span class="k">主要構造制限</span><span class="v">すべての建築物は原則耐火建築物。延べ面積1000㎡超は防火壁で区画。</span></div><div class="kv"><span class="k">補足</span><span class="v">耐火建築物なら建蔽率制限なし。</span></div></div><div class="kv-card"><div class="kv-title">準防火地域</div><div class="kv"><span class="k">主要構造制限</span><span class="v">地階を除く階数4以上、または延べ面積1500㎡超は耐火建築物または延焼防止建築物。</span></div><div class="kv"><span class="k">補足</span><span class="v">準耐火建築物では不可。</span></div></div><div class="kv-card"><div class="kv-title">防火構造・準耐火構造・耐火構造</div><div class="kv"><span class="k">主要構造制限</span><span class="v">防火＝外壁・軒裏等を燃えにくく、準耐火＝30分、耐火＝1時間以上の火災抵抗性能。</span></div><div class="kv"><span class="k">補足</span><span class="v">屋上の看板・広告塔（高さ3m超）は不燃材料で造る。</span></div></div></div>
+<h3>まとめポイント - 防火地域＝最も厳しい。すべて耐火建築物義務。 -</h3>
+<p>準防火地域＝延べ面積1500㎡超・4階以上は耐火または延焼防止建築物。 -広告塔や屋上工作物（高さ3m超）は不燃材で造る必要あり。</p>
+  </div>
+</article><article class="note" id="建築基準法まとめノート-後編" data-field="法令上の制限">
+  <header class="note-head">
+    <div class="field-pill">法令上の制限</div>
+    <h1>建築基準法まとめノート（後編）</h1>
+    <div class="meta">834字 · PDF全文</div>
+  </header>
+  <div class="note-body">
+<h2>第8章：防火・避難設備</h2>
+<ul><li>延べ面積1,000㎡超の建築物 → 防火壁・防火床で区画（各区画1,000㎡以内） ※耐火建築物・準耐火建築物は例外</li><li>階段部分の排煙設備 → 床面積800㎡以下の建物は不要</li><li>特殊建築物（映画館・ホテル・病院など） → 用途変更200㎡超は建築確認必要</li><li>高さ20ｍ超 → 避雷設備設置義務</li><li>防火地域内の広告塔・看板 → 高さ3ｍ超や屋上設置は不燃材料で造る</li></ul>
+<h2>第9章：確認・検査制度</h2>
+<ul><li>建築主は工事完了後、建築主事または指定確認検査機関による完了検査を受ける義務</li><li>防火地域内の大規模建築物（階数2以上・延べ200㎡超）は、10㎡以内の増改築でも確認・検査が必要</li><li>大規模建築物・特殊建築物 → 原則として検査済証交付後でなければ使用不可</li><li>ただし、安全上問題がないと認められた場合は「仮使用認定」で使用可</li></ul>
+<h2>第10章：違反建築物への対応</h2>
+<ul><li>是正命令：違反を発見した場合、工事停止・除却・使用禁止などを命令可能</li><li>仮命令：緊急の必要がある場合、手続を省略して仮の命令が可能（工事停止・使用制限など）</li></ul>
+<h2>第11章：構造・安全基準</h2>
+<ul><li>バルコニー・屋上広場など2階以上の部分には手すり高さ1.1ｍ以上必要</li><li>避難階以外の階で物品販売業を営む店舗（売場1,500㎡超） → 2以上の直通階段を設置</li><li>居室の換気開口部：床面積の20分の1以上</li><li>居室の採光開口部：床面積の7分の1以上</li><li>居室の天井高さ：2.1ｍ以上（平均値で判断）</li></ul>
+<h2>第12章：道路・接道・安全通路</h2>
+<ul><li>前面道路が2本以上ある場合 → 容積率は「最大の幅員（12ｍ未満）」で算定</li><li>建築基準法第68条の9第1項 → 幅員4ｍ（または指定区域は6ｍ）以上の現存道路は法上の道路とみなす</li><li>敷地が袋路（行き止まり道路）にのみ接する場合 → 延べ150㎡超（戸建除く）は条例制限あり</li><li>避難通路：延べ200㎡未満なら幅0.9ｍ、その他は1.5ｍ以上</li></ul>
+  </div>
+</article><article class="note" id="法令上の制限まとめリスト-簡易" data-field="法令上の制限">
+  <header class="note-head">
+    <div class="field-pill">法令上の制限</div>
+    <h1>法令上の制限まとめリスト（簡易）</h1>
+    <div class="meta">539字 · PDF全文</div>
+  </header>
+  <div class="note-body">
+<h3>都市計画法</h3>
+<ul><li>用途地域：12種類（住居系、商業系、工業系など）</li><li>市街化区域・市街化調整区域：線引き都市計画区域に指定</li><li>開発許可：原則1,000㎡以上（非線引き区域は3,000㎡以上）</li><li>建築制限：用途地域ごとに建ぺい率・容積率の上限が定められる</li></ul>
+<h3>建築基準法</h3>
+<ul><li>接道義務：幅員4ｍ以上の道路に2ｍ以上接すること</li><li>建ぺい率：原則30〜80％、角地緩和あり</li><li>容積率：建築面積×容積率＝延べ床面積の上限</li><li>高さ制限：絶対高さ（10ｍ・12ｍ）、斜線制限（日影規制含む）</li></ul>
+<h3>農地法</h3>
+<ul><li>農地転用には許可必要（3条：権利移転、4条：自己転用、5条：譲渡＋転用）</li><li>無許可転用は原状回復命令あり</li></ul>
+<h3>盛土規制法</h3>
+<ul><li>宅地造成等規制法に加え、全国一律で盛土規制が強化</li><li>大規模盛土造成地マップによる調査義務</li></ul>
+<h3>土地区画整理法</h3>
+<ul><li>仮換地制度：事業中に土地利用を可能にする仕組み</li><li>換地処分後、従前地の権利は消滅し、新しい換地に移行</li></ul>
+<h3>国土利用計画法</h3>
+<ul><li>一定面積以上の土地取引は事前届出が必要（市街化区域：2,000㎡、非線引き：5,000㎡、都市計</li></ul>
+<p>画区域外：10,000㎡）</p>
+<ul><li>事後届出が不要なケース：国・地方公共団体との取引など</li></ul>
+  </div>
+</article><article class="note" id="法令上の制限まとめリスト-都市計画法-建築基準法など" data-field="法令上の制限">
+  <header class="note-head">
+    <div class="field-pill">法令上の制限</div>
+    <h1>法令上の制限まとめリスト（都市計画法・建築基準法など）</h1>
+    <div class="meta">1061字 · PDF全文</div>
+  </header>
+  <div class="note-body">
+<h3>都市計画区域・準都市計画区域</h3>
+<ul><li>・都市計画区域は原則：都道府県が指定、例外：国土交通大臣（都府県をまたぐ場合）。</li><li>・準都市計画区域は区域区分は定められないが、8種類の地域地区は設定可能。</li><li>・準都市計画区域に設定可能な地域地区：用途地域、特別用途地区、特定用途制限地域、高度地区(最高限度のみ)、景観地区、風致地区、緑地保全地域、伝統的建造物群保存地区。</li></ul>
+<h3>用途地域（13種類）</h3>
+<ul><li>①第一種低層住居専用地域：低層住宅の良好な住環境を守る。</li><li>②第二種低層住居専用地域：低層住宅＋小規模店舗等。</li><li>③第一種中高層住居専用地域：中高層住宅向け。</li><li>④第二種中高層住居専用地域：中高層住宅＋小規模店舗。</li><li>⑤第一種住居地域：住居環境を守りつつ中規模店舗可。</li><li>⑥第二種住居地域：大規模店舗・事務所も可。</li><li>⑦準住居地域：幹線道路沿いの自動車関連施設等も可。</li><li>⑧近隣商業地域：近隣住民向け店舗中心。</li><li>⑨商業地域：商業・業務の中心。</li><li>⑩準工業地域：環境悪化を伴わない工業中心。</li><li>⑪工業地域：あらゆる工業可能（住宅も可）。</li><li>⑫工業専用地域：工業専用、住宅は不可。</li><li>⑬田園住居地域：農業と住居の調和。</li></ul>
+<h3>地域地区（用途地域内に定められるもの）</h3>
+<ul><li>・特別用途地区：用途地域の補完。</li><li>・高度地区：高さの最高限度/最低限度を設定。</li><li>・高度利用地区：容積率・建ぺい率・建築面積最低限度を設定。</li><li>・高層住居誘導地区：高層住宅の誘導（容積率400％/500％の住居系等）。</li><li>・特例容積率適用地区：容積率の未利用分を活用（低層住居・工業専用地域は除外）。</li></ul>
+<h3>開発許可が不要な場合（代表例）</h3>
+<ul><li>・公益上必要な建築物（駅舎、図書館、公民館、変電所、公園施設など）。</li><li>・都市計画事業、市街地再開発事業、土地区画整理事業として行う場合。</li><li>・自己居住用住宅（市街化調整区域100㎡程度など一部例外あり）。</li></ul>
+<h3>開発許可が必要な面積基準</h3>
+<ul><li>・市街化区域：1,000㎡以上。三大都市圏特定市は500㎡以上。</li><li>・市街化調整区域：原則すべて許可必要。</li><li>・非線引区域：3,000㎡以上。</li><li>・準都市計画区域：3,000㎡以上。</li><li>・都市計画区域外：10,000㎡以上。</li></ul>
+<h3>建築基準法関連（容積率・建ぺい率）</h3>
+<ul><li>・容積率＝延べ床面積 ÷ 敷地面積。</li><li>・建ぺい率＝建築面積 ÷ 敷地面積。</li><li>・道路幅員制限：前面道路幅員×0.4（住居系用途地域）を上限とする。</li></ul>
+  </div>
+</article><article class="note" id="農地法まとめ" data-field="法令上の制限">
+  <header class="note-head">
+    <div class="field-pill">法令上の制限</div>
+    <h1>農地法まとめ</h1>
+    <div class="meta">903字 · PDF全文</div>
+  </header>
+  <div class="note-body">
+<ul><li>農地法の目的は、農地の権利移動・転用を規制し、耕作者による適正かつ効率的な利</li></ul>
+<p>用を確保すること。</p>
+<ul><li>農地：耕作の目的に供される土地。採草放牧地：主として牧草の採取または家畜の放</li></ul>
+<p>牧に利用される土地。</p>
+<ul><li>農地法は、農地・採草放牧地の権利移転・転用・転用目的の権利移転に関するルール</li></ul>
+<p>を定める。</p>
+<h2>第2章 権利移転・転用の許可制度</h2>
+<ul><li>農地法3条：農地を農地として権利移転・設定する場合 → 農業委員会の許可が必要。</li><li>農地法4条：農地を農地以外に転用する場合 → 都道府県知事の許可が必要。</li><li>農地法5条：転用を目的として権利を移転・設定する場合 →</li></ul>
+<p>都道府県知事の許可が必要。</p>
+<ul><li>許可は原則事前許可。事後許可制度はなし。</li></ul>
+<h2>第3章 許可不要（届出）となるケース</h2>
+<ul><li>3条：農地→農地の権利移転で、農業委員会の許可対象外となる場合は届出。</li><li>4条・5条：市街化区域内では、開発許可または建築確認を受けた場合、届出により足</li></ul>
+<p>りる（許可不要）。</p>
+<ul><li>国または地方公共団体の事業に伴う転用も許可不要の例外あり。</li></ul>
+<h2>第4章 許可基準と判断</h2>
+<ul><li>3条許可基準：適正かつ効率的な農地利用が確保されるかどうか。</li><li>4条・5条許可基準：転用後の土地利用の確実性・公共性・周辺農地への悪影響の有無</li></ul>
+<p>など。</p>
+<ul><li>権利移転の相手が農業従事者であること、転用計画の実現性があることが重要。</li></ul>
+<h2>第5章 違反・罰則・効力</h2>
+<ul><li>無許可転用の場合、その契約は効力を有しない（無効）。</li><li>知事等による原状回復命令の対象となる。</li><li>罰則もあり、違反は行政・刑事両面で制裁対象となる。</li></ul>
+<h2>第6章 数字・用語・ひっかけ注意まとめ</h2>
+<ul><li>許可権者：3条→農業委員会、4条・5条→都道府県知事。</li><li>許可不要の届出制度：市街化区域内での転用・転用目的の権利移転（4条・5条）が代</li></ul>
+<p>表例。</p>
+<ul><li>農地の権利移転は事前許可が原則。事後許可制度はない。</li><li>『許可不要』と『許可が不要になる』は異なる（都市計画法との連動に注意）。</li><li>採草放牧地も農地法の適用対象となる。</li><li>農地転用許可の有無により、契約の有効性が変わる（無許可転用は無効）。</li></ul>
+  </div>
+</article><article class="note" id="都市計画法まとめノート-中編" data-field="法令上の制限">
+  <header class="note-head">
+    <div class="field-pill">法令上の制限</div>
+    <h1>都市計画法まとめノート（中編）</h1>
+    <div class="meta">1315字 · PDF全文</div>
+  </header>
+  <div class="note-body">
+<h2>第1章 用途地域（13種類の比較整理）</h2>
+<p>用途地域は、建築できる用途を制限して住環境を守る制度です。住居系・商業系・工業系に分類されます。</p>
+<div class="kv-list"><div class="kv-card"><div class="kv-title">住居系</div><div class="kv"><span class="k">地域名</span><span class="v">第一種低層住居専用地域</span></div><div class="kv"><span class="k">主な建築物</span><span class="v">専用住宅・小中学校など</span></div><div class="kv"><span class="k">特徴・建築制限の概要</span><span class="v">建物高さ10mまたは12m、店舗等不可（特定行政庁許可で可）</span></div></div><div class="kv-card"><div class="kv-title">住居系</div><div class="kv"><span class="k">地域名</span><span class="v">第二種低層住居専用地域</span></div><div class="kv"><span class="k">主な建築物</span><span class="v">専用住宅・小規模店舗（150㎡以内）</span></div><div class="kv"><span class="k">特徴・建築制限の概要</span><span class="v">住居環境を重視、日影・絶対高さ制限あり</span></div></div><div class="kv-card"><div class="kv-title">住居系</div><div class="kv"><span class="k">地域名</span><span class="v">田園住居地域</span></div><div class="kv"><span class="k">主な建築物</span><span class="v">農家住宅・直売所など</span></div><div class="kv"><span class="k">特徴・建築制限の概要</span><span class="v">農業と調和した住環境、10mまたは12m制限あり住居系</span></div></div><div class="kv-card"><div class="kv-title">第一種中高層住居専用地域</div><div class="kv"><span class="k">地域名</span><span class="v">住宅・病院・大学</span></div><div class="kv"><span class="k">主な建築物</span><span class="v">中高層住宅中心、学校・病院可、ホテル不可</span></div><div class="kv"><span class="k">特徴・建築制限の概要</span><span class="v">住居系</span></div></div><div class="kv-card"><div class="kv-title">第二種中高層住居専用地域</div><div class="kv"><span class="k">地域名</span><span class="v">住宅・店舗・事務所（1階500㎡以内）</span></div><div class="kv"><span class="k">主な建築物</span><span class="v">中高層住宅に小規模商業施設併設可</span></div><div class="kv"><span class="k">特徴・建築制限の概要</span><span class="v">住居系</span></div></div><div class="kv-card"><div class="kv-title">第一種住居地域</div><div class="kv"><span class="k">地域名</span><span class="v">住宅・店舗（3,000㎡以内）・ホテル</span></div><div class="kv"><span class="k">主な建築物</span><span class="v">住居を中心に商業も一部可</span></div><div class="kv"><span class="k">特徴・建築制限の概要</span><span class="v">住居系</span></div></div><div class="kv-card"><div class="kv-title">第二種住居地域</div><div class="kv"><span class="k">地域名</span><span class="v">住宅・店舗（10,000㎡以内）</span></div><div class="kv"><span class="k">主な建築物</span><span class="v">住宅と商業施設が混在可</span></div><div class="kv"><span class="k">特徴・建築制限の概要</span><span class="v">住居系</span></div></div><div class="kv-card"><div class="kv-title">準住居地域</div><div class="kv"><span class="k">地域名</span><span class="v">住宅・自動車修理工場など</span></div><div class="kv"><span class="k">主な建築物</span><span class="v">道路沿いサービス業可、自動車関連施設建築可</span></div><div class="kv"><span class="k">特徴・建築制限の概要</span><span class="v">商業系</span></div></div><div class="kv-card"><div class="kv-title">近隣商業地域</div><div class="kv"><span class="k">地域名</span><span class="v">住宅・店舗・小規模工場</span></div><div class="kv"><span class="k">主な建築物</span><span class="v">近隣住民向け商業、10,000㎡超の映画館も可</span></div><div class="kv"><span class="k">特徴・建築制限の概要</span><span class="v">商業系</span></div></div><div class="kv-card"><div class="kv-title">商業地域</div><div class="kv"><span class="k">地域名</span><span class="v">百貨店・映画館・住宅</span></div><div class="kv"><span class="k">主な建築物</span><span class="v">商業活動中心、建蔽率80%、容積率高い</span></div><div class="kv"><span class="k">特徴・建築制限の概要</span><span class="v">工業系</span></div></div><div class="kv-card"><div class="kv-title">準工業地域</div><div class="kv"><span class="k">地域名</span><span class="v">住宅・軽工業・倉庫</span></div><div class="kv"><span class="k">主な建築物</span><span class="v">ほぼ全て可だが危険性高い工場は不可</span></div><div class="kv"><span class="k">特徴・建築制限の概要</span><span class="v">工業系</span></div></div><div class="kv-card"><div class="kv-title">工業地域</div><div class="kv"><span class="k">地域名</span><span class="v">工場・倉庫・住宅</span></div><div class="kv"><span class="k">主な建築物</span><span class="v">住居系制限少ない、店舗10,000㎡超は不可</span></div><div class="kv"><span class="k">特徴・建築制限の概要</span><span class="v">工業系</span></div></div></div>
+<p>工業専用地域</p>
+<p>工場のみ</p>
+<p>住宅・店舗・学校など建築不可</p>
+<h2>第2章 地域地区（防火・高度・風致・景観など）</h2>
+<p>地域地区は、用途地域と併せて都市環境を守るために設けられます。用途地域の上乗せ的な規制です。</p>
+<div class="kv-list"><div class="kv-card"><div class="kv-title">耐火建築物義務、建蔽率緩和あり</div><div class="kv"><span class="k">定める目的</span><span class="v">準防火地域</span></div><div class="kv"><span class="k">主な効果・特徴</span><span class="v">市街地の延焼拡大防止</span></div><div class="kv"><span class="k">防火地域</span><span class="v">4階以上や1,500㎡超は耐火・延焼防止建築物義務</span></div><div class="kv"><span class="k">火災の延焼防止</span><span class="v">高度地区</span></div></div><div class="kv-card"><div class="kv-title">日照・通風・街並み調整</div><div class="kv"><span class="k">定める目的</span><span class="v">高さ制限（斜線制限）</span></div><div class="kv"><span class="k">主な効果・特徴</span><span class="v">特別用途地区</span></div><div class="kv"><span class="k">防火地域</span><span class="v">用途制限の緩和・強化</span></div><div class="kv"><span class="k">火災の延焼防止</span><span class="v">国交大臣の承認を得て条例で用途制限変更可能</span></div></div><div class="kv-card"><div class="kv-title">風致地区</div><div class="kv"><span class="k">定める目的</span><span class="v">自然景観の保全</span></div><div class="kv"><span class="k">主な効果・特徴</span><span class="v">伐採や建築に許可制</span></div><div class="kv"><span class="k">防火地域</span><span class="v">景観地区</span></div><div class="kv"><span class="k">火災の延焼防止</span><span class="v">景観形成</span></div></div><div class="kv-card"><div class="kv-title">デザインや外観の制限あり</div><div class="kv"><span class="k">定める目的</span><span class="v">緑地保全地域</span></div><div class="kv"><span class="k">主な効果・特徴</span><span class="v">緑地環境の保全</span></div><div class="kv"><span class="k">防火地域</span><span class="v">伐採や転用に知事許可必要</span></div><div class="kv"><span class="k">火災の延焼防止</span><span class="v">伝統的建造物群保存地区</span></div></div></div>
+<p>歴史的景観の保存</p>
+<p>建築・修繕は市町村の許可制</p>
+<h2>第3章 用途制限の原則と例外</h2>
+<p>建築物の用途制限は、「原則禁止・例外許可」の形で出題されます。</p>
+<p>住居系では静かな環境を守るために制限が強く、工業系では緩やかです。</p>
+<div class="kv-list"><div class="kv-card"><div class="kv-title">特定行政庁の許可で飲食店可</div><div class="kv"><span class="k">原則</span><span class="v">第二種低層住居専用地域</span></div><div class="kv"><span class="k">例外・特例</span><span class="v">住宅中心</span></div><div class="kv"><span class="k">第一種低層住居専用地域</span><span class="v">150㎡以内の小規模店舗可</span></div><div class="kv"><span class="k">住宅専用、店舗・工場不可</span><span class="v">中高層・住居地域</span></div></div><div class="kv-card"><div class="kv-title">住宅中心</div><div class="kv"><span class="k">原則</span><span class="v">ホテル・大学など用途に注意</span></div><div class="kv"><span class="k">例外・特例</span><span class="v">商業地域</span></div><div class="kv"><span class="k">第一種低層住居専用地域</span><span class="v">商業活動自由</span></div><div class="kv"><span class="k">住宅専用、店舗・工場不可</span><span class="v">工場も立地可（危険・有害なもの除く）</span></div></div><div class="kv-card"><div class="kv-title">工業地域</div><div class="kv"><span class="k">原則</span><span class="v">工場自由</span></div><div class="kv"><span class="k">例外・特例</span><span class="v">10,000㎡超の店舗不可</span></div><div class="kv"><span class="k">第一種低層住居専用地域</span><span class="v">工業専用地域</span></div><div class="kv"><span class="k">住宅専用、店舗・工場不可</span><span class="v">工場のみ</span></div></div></div>
+<p>住宅・店舗・学校すべて不可</p>
+  </div>
+</article><article class="note" id="都市計画法まとめノート-前編" data-field="法令上の制限">
+  <header class="note-head">
+    <div class="field-pill">法令上の制限</div>
+    <h1>都市計画法まとめノート（前編）</h1>
+    <div class="meta">867字 · PDF全文</div>
+  </header>
+  <div class="note-body">
+<h3>都市計画法の概要と体系</h3>
+<p>都市計画法は、「都市の健全な発展と秩序ある整備」を目的とする法律で、都市空間を総合的に整備・開発・保全するための枠組みを定めています。</p>
+<h3>【構成の全体像】 ① 都市計画区域の指定 ②都市計画の内容（地域地区・都市施設・市街地開発事業） ③ 開発行為の許可制度 ④</h3>
+<p>都市計画事業の実施・制限</p>
+<div class="callout">⚠ 試験の狙いどころ：『どの区域に何が定められるか』『許可不要なケース』の区別。</div>
+<h3>都市計画区域・準都市計画区域</h3>
+<p>都市計画区域は「都市として計画的に整備すべき区域」で、都道府県が指定します。 一方、準都市計画区域は「都市計画区域外でも、土地利用の整序や環境保全が必要な区域」に指定されます。</p>
+<div class="kv-list"><div class="kv-card"><div class="kv-title">都市計画区域</div><div class="kv"><span class="k">指定主体</span><span class="v">原則：都道府県（2以上にまたがる場合：国交大臣）</span></div><div class="kv"><span class="k">区域区分</span><span class="v">あり（市街化区域／調整区域）</span></div><div class="kv"><span class="k">定められる地域地区</span><span class="v">ほぼすべての地域地区</span></div><div class="kv"><span class="k">特徴</span><span class="v">都市として一体的に整備</span></div></div><div class="kv-card"><div class="kv-title">準都市計画区域</div><div class="kv"><span class="k">指定主体</span><span class="v">都道府県</span></div><div class="kv"><span class="k">区域区分</span><span class="v">なし</span></div><div class="kv"><span class="k">定められる地域地区</span><span class="v">用途地域・風致・景観・緑地など８種のみ</span></div><div class="kv"><span class="k">特徴</span><span class="v">非線引き区域に近い</span></div></div></div>
+<h3>覚え方：準都市計画区域＝“都市計画のミニ版”。区域区分はないが用途地域は設定できる。</h3>
+<h3>区域区分（線引き制度）</h3>
+<p>都市計画区域内では、無秩序な市街化を防止し、計画的な市街地形成を進めるため、「市街化区域」と「市街化調整区域」に区分されることがあります（＝線引き制度）。</p>
+<p>| 区域 | 内容 | 許可の原則 | |------|------|------------| | 市街化区域 |すでに市街地を形成している、または10年以内に市街化すべき区域 |原則、開発可能（ただし1,000㎡以上は許可必要） | | 市街化調整区域 | 市街化を抑制すべき区域 |原則、開発禁止（公益目的など一部例外のみ） | | 非線引き区域 | 区域区分を定めない都市計画区域 |3,000㎡以上の開発は許可必要 |</p>
+<div class="callout">⚠ ひっかけ注意：「準都市計画区域」には区域区分がないが、用途地域は定められる。</div>
+  </div>
+</article><article class="note" id="都市計画法まとめノート-後編" data-field="法令上の制限">
+  <header class="note-head">
+    <div class="field-pill">法令上の制限</div>
+    <h1>都市計画法まとめノート（後編）</h1>
+    <div class="meta">1053字 · PDF全文</div>
+  </header>
+  <div class="note-body">
+<h2>第1章 開発許可が必要な行為と不要な行為</h2>
+<p>「開発行為」とは、主として建築物の建築または特定工作物の建設のために行う土地の区画形質の変更をいいます。 開発許可が必要かどうかは、区域・面積・目的によって判断されます。</p>
+<p>区域区分</p>
+<p>許可が必要となる面積</p>
+<p>許可不要の例</p>
+<p>市街化区域</p>
+<p>1,000㎡以上（※三大都市圏特定市は500㎡）</p>
+<p>駅舎・図書館・公民館・変電所など公益建築物</p>
+<p>非線引き都市計画区域</p>
+<p>3,000㎡以上</p>
+<p>土地区画整理事業・市街地再開発事業による開発行為</p>
+<p>準都市計画区域</p>
+<p>3,000㎡以上</p>
+<p>公共事業として行う場合</p>
+<p>都市計画区域外</p>
+<p>1ha（10,000㎡）以上</p>
+<p>公益上必要な建築物や公園など</p>
+<h2>第2章 開発許可の権限・手続き</h2>
+<p>開発許可を与えるのは原則として都道府県知事です。</p>
+<p>ただし、2つ以上の都府県にまたがる開発については国土交通大臣が権限を持ちます。</p>
+<div class="table-wrap"><table><thead><tr><th>項目</th><th>内容</th></tr></thead><tbody><tr><th scope="row">権限者</th><td>原則：都道府県知事／例外：国土交通大臣（2都府県にまたがる場合）</td></tr><tr><th scope="row">公告手続き</th><td>許可の公告後は開発行為が正式に認可されたことを意味する</td></tr><tr><th scope="row">認可後の制限</th><td>公告前の建築は原則禁止。ただし仮設建築物・同意していない者の建築は例外</td></tr><tr><th scope="row">届出義務</th><td>認可の公告後に土地や建物を譲渡しようとする者は施行者に届出が必要（許可は不要）</td></tr></tbody></table></div>
+<h2>第3章 技術的基準（第33条）</h2>
+<p>開発許可を受ける際には、都市の健全な発展を図るための技術的基準（第33条）に適合していなければなりません。 特に「土砂災害特別警戒区域」を含む開発は禁止されています。</p>
+<div class="table-wrap"><table><thead><tr><th>区分</th><th>内容</th></tr></thead><tbody><tr><th scope="row">立地基準</th><td>自己の業務のための施設開発では、土砂災害特別警戒区域を含む土地は開発禁止</td></tr><tr><th scope="row">施設基準</th><td>道路・公園・排水施設等を適切に配置し、安全かつ衛生的であること</td></tr><tr><th scope="row">公共施設の整備</th><td>開発区域外の道路・上下水道との接続を確保</td></tr><tr><th scope="row">保安基準</th><td>急傾斜地・地盤不良地などは造成方法に制限あり</td></tr></tbody></table></div>
+<h2>第4章 特例・関連事業（再開発・地区計画など）</h2>
+<p>都市計画法では、一定の公共性を持つ事業に対して開発許可を不要とする特例が設けられています。</p>
+<div class="kv-list"><div class="kv-card"><div class="kv-title">都市計画決定時点で公的審査済のため</div><div class="kv"><span class="k">許可の扱い</span><span class="v">土地区画整理事業</span></div><div class="kv"><span class="k">理由・補足</span><span class="v">許可不要</span></div><div class="kv"><span class="k">市街地再開発事業</span><span class="v">区域・面積を問わず既に公共目的で整備されるため</span></div><div class="kv"><span class="k">許可不要</span><span class="v">地区計画・地区整備計画</span></div></div><div class="kv-card"><div class="kv-title">地区単位で整備方針を定め、開発を誘導</div><div class="kv"><span class="k">許可の扱い</span><span class="v">小規模区域における自主的都市整備計画</span></div><div class="kv"><span class="k">理由・補足</span><span class="v">工事完了公告前の建築制限</span></div><div class="kv"><span class="k">市街地再開発事業</span><span class="v">原則禁止</span></div><div class="kv"><span class="k">許可不要</span><span class="v">ただし仮設建築や同意していない者の権利行使は例外</span></div></div></div>
+  </div>
+</article><article class="note" id="借地権まとめ" data-field="権利関係">
+  <header class="note-head">
+    <div class="field-pill">権利関係</div>
+    <h1>借地権まとめ</h1>
+    <div class="meta">1185字 · PDF全文</div>
+  </header>
+  <div class="note-body">
+<ul><li>普通借地権の存続期間は30年以上。1回目の更新は20年、2回目以降は10年。短縮特約</li></ul>
+<p>は無効、延長特約は有効。</p>
+<ul><li>一時使用目的の借地権は30年ルール、更新、期間延長の規定が適用されず、短期契約</li><li>更新なし特約が可能。</li><li>契約方式：普通借地権は口頭でも成立可能。</li></ul>
+<h2>第2章 対抗要件と登記</h2>
+<ul><li>借地権は登記または自己名義の建物登記で第三者に対抗可能。土地の引渡しのみでは</li></ul>
+<p>対抗できない。</p>
+<ul><li>借家権は引渡しによって対抗可能（民法605条）。</li><li>建物滅失時、掲示で2年間の対抗力猶予あり。2年以内に新築＋登記で復活。掲示だけ</li></ul>
+<p>では延長不可。</p>
+<ul><li>単筆の土地では建物1棟の登記で土地全体に対抗可能。</li><li>複数筆の土地では、登記された建物の敷地にのみ対抗力が及ぶ（判例）。</li><li>他人名義の登記は対抗力なし。表示登記でも自己名義であれば可。</li></ul>
+<h2>第3章 定期借地権</h2>
+<ul><li>一般定期借地権：50年以上。用途不問。契約方式は書面または電磁的記録（公正証書</li></ul>
+<p>不要）。</p>
+<ul><li>事業用定期借地権：10年以上50年未満。用途は事業用限定。公正証書による契約が必</li></ul>
+<p>須。</p>
+<ul><li>住宅用＋50年未満の契約 → いずれの定期借地権も設定不可。</li><li>一般定期借地権では60年など長期契約も可能。</li></ul>
+<h2>第4章 更新と正当事由</h2>
+<ul><li>建物がある＋更新請求→従前と同一条件で法定更新。</li><li>借地権設定者が正当事由に基づき、遅滞なく異議を述べた場合は更新されない。</li><li>建物がない場合は更新されない。</li><li>更新期間：1回目20年／2回目以降10年。</li><li>借家は柔軟に更新可能（黙示更新あり）。</li></ul>
+<h2>第5章 建物滅失と再築</h2>
+<ul><li>登記建物が滅失した場合、原則対抗力喪失。</li><li>建物滅失後、所定事項の掲示で2年間対抗力維持。</li><li>2年以内に新築＋登記で対抗力復活。掲示だけでは不可。</li><li>再築による借地権の期間延長に反する借地権者不利な特約は無効。</li></ul>
+<h2>第6章 建物買取請求・先取特権</h2>
+<ul><li>借地契約満了＋更新なしの場合、借地権者は建物・附属物の買取請求ができる（借地</li></ul>
+<p>借家法13条）。</p>
+<ul><li>債務不履行による解除の場合、建物買取請求権は認められない（判例）。</li><li>借地権設定者は弁済期到来の最後の2年分の地代等について、建物に先取特権を有する（民法333条）。</li></ul>
+<h2>第7章 ひっかけ注意＆数字まとめ</h2>
+<ul><li>登記 or 建物登記 → 借地対抗OK。土地引渡しだけ → NG。借家は引渡しでOK。</li><li>建物滅失 → 掲示で2年猶予 → 新築＋登記で復活。</li><li>更新期間：1回目20年／2回目以降10年。</li><li>定期借地権：事業用は公正証書・10年以上50年未満、一般は書面・50年以上。</li><li>複数筆の土地→登記建物の敷地のみ対抗力が及ぶ。</li><li>債務不履行による解除→建物買取請求権は不可。</li><li>一時使用目的→30年ルール適用なし、短期契約・更新なし特約可。</li></ul>
+  </div>
+</article><article class="note" id="売主の担保責任まとめ" data-field="権利関係">
+  <header class="note-head">
+    <div class="field-pill">権利関係</div>
+    <h1>売主の担保責任まとめ</h1>
+    <div class="meta">564字 · PDF全文</div>
+  </header>
+  <div class="note-body">
+<h3>売主の担保責任とは</h3>
+<p>売買契約において、目的物に契約内容との不適合（数量・権利・種類・品質）がある場合に、売主が買主に対して負う責任。改正民法では「契約不適合責任」と呼ばれる。</p>
+<h3>契約不適合の種類</h3>
+<div class="kv-list"><div class="kv-card"><div class="kv-title">数量・権利</div><div class="kv"><span class="k">内容</span><span class="v">目的物の数量や権利関係が契約と異なる</span></div><div class="kv"><span class="k">具体例</span><span class="v">土地の一部が他人の所有物だった</span></div></div><div class="kv-card"><div class="kv-title">種類・品質</div><div class="kv"><span class="k">内容</span><span class="v">目的物の品質や種類が契約と異なる</span></div><div class="kv"><span class="k">具体例</span><span class="v">欠陥住宅、規格違い</span></div></div></div>
+<h3>買主ができる請求</h3>
+<h3>① 損害賠償請求</h3>
+<h3>② 契約解除（重大な場合）</h3>
+<h3>③ 追完請求（修補・代替物引渡し・不足分引渡し）</h3>
+<h3>④ 代金減額請求（追完不能等の場合）</h3>
+<div class="callout">※ 買主に帰責事由がある場合は請求不可</div>
+<h3>期間制限</h3>
+<p>契約不適合の種類</p>
+<p>通知・時効期間</p>
+<p>備考</p>
+<p>数量・権利</p>
+<p>不適合を知ったときから5年</p>
+<p>引渡しから10年</p>
+<p>消滅時効の原則</p>
+<p>種類・品質</p>
+<p>不適合を知ったときから1年以内に通知</p>
+<p>悪意・重過失の場合は制限なし</p>
+<h3>試験のひっかけポイント</h3>
+<ul><li>契約不適合＝担保責任（旧法用語）</li><li>契約解除には「原則催告」が必要（ただし不能などの例外あり）</li><li>追完請求・代金減額請求が可能になったのは改正民法後</li><li>悪意・重過失の場合は通知期間制限なし</li><li>宅建では特に「数量・権利」と「種類・品質」の区別が重要！</li></ul>
+<h3>関連条文：民法562条〜565条</h3>
+  </div>
+</article><article class="note" id="抵当権まとめ" data-field="権利関係">
+  <header class="note-head">
+    <div class="field-pill">権利関係</div>
+    <h1>抵当権まとめ</h1>
+    <div class="meta">855字 · PDF全文</div>
+  </header>
+  <div class="note-body">
+<h3>① 抵当権とは</h3>
+<p>抵当権とは、不動産を担保にしてお金を借りるときに設定される権利で、債務者が返済できなくなったときに担保不動産を競売して優先的に弁済を受けることができる権利。</p>
+<p>特徴：所有権はそのまま残り、債務者が使い続けられる（非占有担保）。</p>
+<h3>② 抵当権の効力</h3>
+<p>抵当権の効力は、担保の目的物およびその代価に及ぶ。</p>
+<p>また、利息や定期金の請求権については、満期となった最後の2年分についてのみ抵当権を行使できる（民法第375条）。</p>
+<div class="callout">※これは後順位抵当権者や一般債権者の利益保護のためであり、設定者と物上保証人との関係では適用されない（判例）。</div>
+<h3>③ 法定地上権</h3>
+<p>次の4つの要件を満たすと、建物について地上権が設定されたものとみなされる：</p>
+<h3>① 土地及びその土地上に存在する建物がある</h3>
+<h3>② 同一の所有者に属する場合</h3>
+<h3>③ 土地または建物について抵当権が設定されている</h3>
+<h3>④ 実行により土地と建物の所有者が異なるに至った</h3>
+<p>この場合、買受人は土地の上にある建物をそのまま利用できる（地上権が認められる）。</p>
+<h3>④ 一括競売</h3>
+<p>抵当地に建物が建てられた場合、抵当権者は土地とともに建物も一括して競売できる。</p>
+<p>ただし、抵当権の効力は土地のみに及ぶため、優先弁済を受けるのは土地の代価に限られる。</p>
+<h3>⑤ 抵当建物使用者の引渡し猶予</h3>
+<p>抵当権に対抗できない賃貸借によって建物を使用・収益している者は、競売により買受人が取得</p>
+<p>した場合、</p>
+<p>買受人の買受けの時から6か月間は引渡しを猶予される（民法395条）。</p>
+<h3>⑥ 根抵当権（補足）</h3>
+<p>根抵当権は将来の不特定の債権も担保できる抵当権の一種。</p>
+<p>元本確定前は被担保債権の範囲・債務者の変更等が可能。元本確定後は普通の抵当権と同じ扱いになる。</p>
+<h3>⑦ 試験で狙われるポイント</h3>
+<h3>抵当権は非占有担保である</h3>
+<h3>利息・定期金は2年分のみ担保</h3>
+<h3>法定地上権の要件4つは頻出</h3>
+<h3>一括競売では土地の代価のみ優先弁済対象</h3>
+<h3>引渡し猶予は6か月</h3>
+<h3>根抵当権＝将来債権も担保</h3>
+  </div>
+</article><article class="note" id="時効まとめ" data-field="権利関係">
+  <header class="note-head">
+    <div class="field-pill">権利関係</div>
+    <h1>時効まとめ</h1>
+    <div class="meta">729字 · PDF全文</div>
+  </header>
+  <div class="note-body">
+<h3>① 時効の基本</h3>
+<p>時効とは、一定期間の経過によって法律上の権利・義務の変動が生じる制度。</p>
+<h3>取得時効：占有を続けることで権利を取得</h3>
+<p>❌ 消滅時効：権利が行使されないまま一定期間経過すると権利が消滅</p>
+<h3>② 取得時効の援用権者</h3>
+<div class="kv-list"><div class="kv-card"><div class="kv-title">援用肯定例</div><div class="kv"><span class="k">内容</span><span class="v">被相続人の占有によって取得時効が完成した場合、共同相続人の1人は自己の相続分の限度でのみ援用できる</span></div><div class="kv"><span class="k">判例の考え方</span><span class="v">一部援用OK</span></div></div><div class="kv-card"><div class="kv-title">援用否定例</div><div class="kv"><span class="k">内容</span><span class="v">建物賃借人は、賃貸人による敷地所有権の取得時効を援</span></div><div class="kv"><span class="k">判例の考え方</span><span class="v">用できない</span></div></div></div>
+<p>否定される</p>
+<h3>③ 消滅時効の援用権者</h3>
+<div class="table-wrap"><table><thead><tr><th>援用肯定例</th><th>援用否定例</th></tr></thead><tbody><tr><th scope="row">保証人・連帯保証人 物上保証人</th><td>抵当不動産の第三取得者</td></tr><tr><th scope="row">後順位抵当権者（先順位の被担保債権の消滅時</th><td>効を援用できない）</td></tr></tbody></table></div>
+<h3>④ 占有の承継</h3>
+<ul><li>時効進行中に占有者が変わっても、前主の占有を承継できる。</li><li>承継者は「自分の占有のみで主張」または「前主の占有を併せて主張」が可能。</li></ul>
+<p>👉 ただし、前主の占有を併せるときは瑕疵（悪意・欠点）も承継する。</p>
+<h3>⑤ 消滅時効期間</h3>
+<div class="kv-list"><div class="kv-card"><div class="kv-title">債権者が権利行使できること</div><div class="kv"><span class="k">起算点</span><span class="v">を知ったとき</span></div><div class="kv"><span class="k">期間</span><span class="v">5年</span></div><div class="kv"><span class="k">備考</span><span class="v">債権（客観的起算点）</span></div><div class="kv"><span class="k">債権（主観的起算点）</span><span class="v">権利行使が可能となったとき</span></div></div><div class="kv-card"><div class="kv-title">10年</div><div class="kv"><span class="k">起算点</span><span class="v">生命・身体侵害による</span></div><div class="kv"><span class="k">期間</span><span class="v">損害賠償請求権</span></div><div class="kv"><span class="k">備考</span><span class="v">—</span></div><div class="kv"><span class="k">債権（主観的起算点）</span><span class="v">20年</span></div></div><div class="kv-card"><div class="kv-title">財産権（所有権以外）</div><div class="kv"><span class="k">起算点</span><span class="v">行使できるときから</span></div><div class="kv"><span class="k">期間</span><span class="v">20年</span></div><div class="kv"><span class="k">備考</span><span class="v">所有権</span></div><div class="kv"><span class="k">債権（主観的起算点）</span><span class="v">—</span></div></div></div>
+<p>—</p>
+<p>消滅時効の対象外</p>
+<h3>⑥ 試験でのひっかけポイント</h3>
+<h3>所有権には消滅時効が適用されない</h3>
+<h3>共同相続人は自己の相続分の限度でしか援用できない</h3>
+<p>❌ 賃借人は敷地所有権の取得時効を援用できない</p>
+<h3>前主の占有を併せるときは瑕疵も承継</h3>
+<h3>後順位抵当権者は先順位債権の消滅時効を援用できない</h3>
+  </div>
+</article><article class="note" id="権利関係-体系まとめ" data-field="権利関係">
+  <header class="note-head">
+    <div class="field-pill">権利関係</div>
+    <h1>権利関係 体系まとめ</h1>
+    <div class="meta">2821字 · PDF全文</div>
+  </header>
+  <div class="note-body">
+<h3>制限行為能力者・意思能力</h3>
+<h3>意思能力</h3>
+<ul><li>意思能力を欠く行為は無効（後見審判の有無にかかわらず）。</li></ul>
+<h3>未成年者（民5）</h3>
+<ul><li>原則：法定代理人の同意が必要。無断行為は取消可。</li><li>営業許可未成年者：営業に関しては成年者と同様（同意不要）。</li><li>同意の範囲・方式：包括同意も可。追認で有効化。</li></ul>
+<h3>成年被後見人等</h3>
+<ul><li>成年被後見人：原則取り消し得る行為。日用品の購入等は除外。</li><li>補助・保佐：同意権・取消権の付与の有無に注意。</li></ul>
+<h3>任意後見・法定後見</h3>
+<ul><li>任意後見：将来の判断能力低下に備え、契約で後見人を選ぶ。</li><li>法定後見：家庭裁判所の審判で開始（後見・保佐・補助）。</li></ul>
+<h3>意思表示の瑕疵（錯誤・詐欺・強迫）</h3>
+<h3>錯誤（民95）</h3>
+<ul><li>要素の錯誤＋表意者に重大な過失がない → 取消可。</li><li>取消権者：表意者本人（および承継人等）。相手方は錯誤を理由に取消不可。</li><li>効力：取消の遡及。善意第三者保護の射程に注意。</li></ul>
+<h3>詐欺（民96）</h3>
+<ul><li>相手方の詐欺 → 取消可。</li><li>第三者の詐欺 → 相手方が善意無過失なら取消不可（相手方保護）。</li><li>転売先との関係：転得者の善意・悪意で結論が変わる。</li></ul>
+<h3>強迫（民96）</h3>
+<ul><li>相手方・第三者を問わず取消可（強迫万能）。</li></ul>
+<h3>虚偽表示（民94）</h3>
+<h3>通謀虚偽表示：無効。</h3>
+<h3>94条2項：善意の第三者に対抗不可（善意第三者最強）。</h3>
+<ul><li>「第三者」＝当事者・一般承継人以外で、表示の目的物につき法的利害関係を有する者。</li></ul>
+<p>例：仮装譲受人名義の不動産を差押えた一般債権者、虚偽の抵当権に基づく転抵当権者、仮装債権の譲受人は〇。</p>
+<p>×：単なる金銭の貸付をしただけの者。</p>
+<ul><li>転得者：自ら善意なら保護。悪意から善意への転得でも善意転得者は保護。</li></ul>
+<h3>代理</h3>
+<h3>基本</h3>
+<ul><li>代理行為の効果は本人に帰属（本人・代理人・相手方の三者関係）。</li></ul>
+<h3>無権代理（民113～）</h3>
+<ul><li>本人の追認で有効化（原則遡及）。</li><li>相手方の催告権／取消権。</li><li>無権代理人の責任（相手方の選択：履行または損害賠償）。</li><li>無権代理人が本人を単独相続した場合、追認拒絶は信義則違反で不可（判例）。</li></ul>
+<h3>双方代理・自己契約（民108）</h3>
+<ul><li>原則禁止。本人の「事前の承諾」があれば有効化。</li></ul>
+<h3>復代理（民104）</h3>
+<ul><li>任意代理人：本人の許諾、またはやむを得ない事由があれば選任可。</li><li>法定代理人：やむを得ない事由がなくても選任可。</li></ul>
+<h3>行為能力</h3>
+<ul><li>代理人に行為能力は不要。ただし代理人が後見開始審判を受けると代理権は消滅。</li></ul>
+<h3>表見代理</h3>
+<ul><li>権限外の行為でも、相手方に正当な理由（善意無過失）があれば本人に効果帰属（判例類推適用）。</li></ul>
+<h3>占有</h3>
+<h3>基本</h3>
+<ul><li>直接占有／間接占有。占有の適法性は推定。</li><li>占有は相続により当然承継（相続開始の認識の有無は不問）。</li></ul>
+<h3>占有訴権</h3>
+<ul><li>回収：占有を奪われたとき（1年）。</li><li>保持：妨害されたとき。</li><li>保全：妨害のおそれがあるとき。</li><li>所有者であっても自ら占有していなければ「占有回収の訴え」は使えない（例：貸主AはBに賃貸中なら占</li></ul>
+<p>有者はB）。</p>
+<h3>時効</h3>
+<h3>取得時効</h3>
+<ul><li>要件：所有の意思・平穏・公然・継続。</li><li>期間：善意無過失10年／悪意・過失あり20年。</li><li>承継：相続等により占有の連続が可能。</li><li>効果：完成により起算時へ遡及して権利取得（遡及効）。</li></ul>
+<h3>消滅時効（改正民法）</h3>
+<ul><li>原則：権利行使可能時から5年、または客観的起算点から10年。</li><li>完成猶予・更新事由：</li><li>請求（訴え提起等）：取下げ・却下・棄却確定は更新効なし。</li><li>仮差押え・仮処分・差押え。</li><li>承認（債務の一部弁済・利息支払等）。</li><li>裁判上の和解が成立した場合：原則として権利の確定・新たな債務名義により時効はリセット（更新の効</li></ul>
+<p>果）。</p>
+<h3>物権変動・登記（不動産）</h3>
+<h3>対抗要件（民177）</h3>
+<ul><li>登記なければ第三者に対抗不可。二重譲渡は先登記者勝ち。</li></ul>
+<h3>保護されない第三者（対抗不要で勝てる相手）</h3>
+<ul><li>無権利者・不法占拠者・背信的悪意者・登記妨害者（条文・判例）。</li></ul>
+<h3>賃貸借の対抗</h3>
+<ul><li>土地賃借人が登記ある建物を所有→新所有者に対抗可。</li><li>新所有者が賃貸人地位を主張し賃料請求するには、移転登記等の対抗要件が必要（判例）。</li></ul>
+<h3>賃貸借・地上権</h3>
+<h3>修繕義務</h3>
+<ul><li>地上権（物権）：権利者が自己負担で使用収益（原則）。</li><li>賃貸借（債権）：貸主に修繕義務（民606）。</li></ul>
+<h3>譲渡・転貸</h3>
+<ul><li>地上権：自由（民266）。抵当権設定も可。</li><li>賃借権：原則、賃貸人の承諾が必要（民612）。承諾なく転貸・譲渡で解除・明渡請求可。賃借権自体に抵</li></ul>
+<p>当権設定は不可（債権譲渡等で担保化は理論上可）。</p>
+<h3>妨害排除請求</h3>
+<ul><li>地上権者：物権的請求権として不法占拠者に対抗可。</li><li>賃借人：判例上、使用収益確保のため不法占拠者に妨害排除請求可。</li></ul>
+<h3>相隣関係</h3>
+<h3>隣地使用権（民209）</h3>
+<ul><li>境界標調査・測量のために必要な範囲で隣地使用可。住家は承諾が必要。承諾得られないときは裁判所の</li></ul>
+<p>許可申立て。</p>
+<h3>枝と根（民233・2021改正）</h3>
+<ul><li>枝：切除請求→相当期間内に不履行なら自力で切取り可。</li><li>根：請求不要で自力切取り可。</li></ul>
+<h3>障壁（民225・226）</h3>
+<ul><li>境界線上の障壁は共有推定。</li><li>高さを増すのに相手の承諾は不要。ただし増設部分の費用は自己負担。</li></ul>
+<h3>雨水・排水</h3>
+<ul><li>屋根から直接隣地へ注ぐ構造は不可。妨害排除・予防請求可。</li></ul>
+<h3>袋地通行（囲繞地通行権）</h3>
+<h3>基本（民210～）</h3>
+<ul><li>公道に出られない袋地所有者は必要の範囲で囲繞地を通行可。自由に選べず、最も損害の少ない合理的経</li></ul>
+<p>路。</p>
+<ul><li>原因が分割による場合は無償。それ以外は償金支払が原則。</li><li>自動車通行：合理的必要性があれば可。</li></ul>
+<h3>賃貸借との関係</h3>
+<ul><li>通行目的で賃借した通路の賃借権は、要役地の所有権と当然に一体移転しない（賃借権は独立の債権）。</li></ul>
+<h3>地役権</h3>
+<h3>定義</h3>
+<ul><li>要役地の便益のために承役地を使用する物権。要役地に従たる権利。</li></ul>
+<h3>時効取得</h3>
+<ul><li>継続的かつ外形上認識可能な態様で行使される場合に限り時効取得可。通路開設が要役地所有者によって</li></ul>
+<p>されたことが必要（判例）。</p>
+<h3>承役地の特定承継人</h3>
+<ul><li>設定行為や契約で負担を負う旨がある場合、特定承継人にも義務が及ぶことがある。</li></ul>
+<h3>共有</h3>
+<h3>決定原則（民252）</h3>
+<ul><li>保存＝各自単独、管理＝持分価格の過半数、変更＝全員一致。</li><li>軽微変更（形状・効用の著しい変更なし）は管理扱い＝過半数。</li></ul>
+<h3>短期賃借権（過半数で設定可：民252②）</h3>
+<ul><li>山林（植栽・伐採目的）＝10年以内、その他の土地＝5年以内、建物＝3年以内、動産＝6か月以内。</li></ul>
+<h3>所在不明共有者への対応</h3>
+<ul><li>不在者財産管理人の選任で管理可能。</li><li>所在不明共有者の持分取得制度：裁判所の決定で他の共有者に移転可。所在不明者が現れたら10年以内に</li></ul>
+<p>時価相当額の支払で回復請求可。</p>
+  </div>
+</article><article class="note" id="民法まとめ-債権譲渡-不法行為" data-field="権利関係">
+  <header class="note-head">
+    <div class="field-pill">権利関係</div>
+    <h1>民法まとめ：債権譲渡・不法行為</h1>
+    <div class="meta">670字 · PDF全文</div>
+  </header>
+  <div class="note-body">
+<h3>債権譲渡</h3>
+<ul><li>性質上譲渡を許さない債権でない限り、債権は自由に譲渡可能。</li><li>譲渡制限特約があっても譲渡は有効。</li><li>ただし、譲受人や第三者が悪意・重過失の場合、債務者は履行拒否可能。</li></ul>
+<p>▶ 債務者への対抗要件</p>
+<h3>① 債権者A→債務者Bへの譲渡通知</h3>
+<h3>② 債務者B→債権者Aの承諾</h3>
+<h3>③ 債務者B→譲受人Cの承諾（C→Aの通知は不可）</h3>
+<div class="callout">※ 通知・承諾がなければ、旧債権者への弁済は有効。</div>
+<p>▶ 第三者への対抗要件</p>
+<ul><li>確定日付ある通知 or 承諾の先後で優劣が決まる。</li><li>先に確定日付を得た譲受人が優先する。</li></ul>
+<h3>不法行為</h3>
+<p>▶ 使用者責任（民法715条）</p>
+<ul><li>使用者は被用者が事業執行に関して加えた損害に責任を負う。</li><li>ただし、選任・監督に相当の注意をした場合や注意しても損害が生じた場合は免責。</li></ul>
+<p>▶ 使用者の被用者への求償</p>
+<h3>① 使用者が賠償した場合、被用者に求償できる。</h3>
+<h3>② 信義則上相当と認められる限度での請求にとどまる（判例）。</h3>
+<p>▶ 土地の工作物責任（民法717条）</p>
+<ul><li>占有者：過失責任（一次責任）</li><li>所有者：無過失責任（二次責任）</li><li>被害者はまず占有者→免責なら所有者へ。</li></ul>
+<div class="kv-list"><div class="kv-card"><div class="kv-title">債権譲渡</div><div class="kv"><span class="k">分類</span><span class="v">自由に譲渡可能（特約あっても有効）</span></div><div class="kv"><span class="k">内容</span><span class="v">通知または承諾</span></div><div class="kv"><span class="k">対抗要件</span><span class="v">C→Aの通知は不可／確定日付の先後で優劣</span></div><div class="kv"><span class="k">ポイント</span><span class="v">使用者責任</span></div></div><div class="kv-card"><div class="kv-title">事業執行に関する被用者の行為に責任</div><div class="kv"><span class="k">分類</span><span class="v">選任・監督の注意で免責</span></div><div class="kv"><span class="k">内容</span><span class="v">信義則に基づき求償制限あり</span></div><div class="kv"><span class="k">対抗要件</span><span class="v">土地工作物責任</span></div><div class="kv"><span class="k">ポイント</span><span class="v">占有者＝過失責任／所有者＝無過失責任</span></div></div></div>
+<p>―</p>
+<p>一次→占有者、二次→所有者</p>
+  </div>
+</article><article class="note" id="賃貸借まとめ" data-field="権利関係">
+  <header class="note-head">
+    <div class="field-pill">権利関係</div>
+    <h1>賃貸借まとめ</h1>
+    <div class="meta">424字 · PDF全文</div>
+  </header>
+  <div class="note-body">
+<h3>① 貸主・借主の義務</h3>
+<p>区分</p>
+<p>内容</p>
+<p>ポイント</p>
+<p>貸主の義務</p>
+<ul><li>使用収益させる義務</li><li>必要費の償還義務（直ちに償還）</li><li>有益費の償還義務（終了時に増価がある場合）</li></ul>
+<p>必要費＝直ちに／有益費＝終了時</p>
+<p>借主の義務</p>
+<ul><li>賃料の支払い義務</li><li>注意義務をもって使用収益</li><li>原状回復義務</li></ul>
+<p>借主の債務不履行で解除もあり</p>
+<h3>② 賃借権の譲渡・転貸</h3>
+<p>区分</p>
+<p>内容・効果</p>
+<p>譲渡</p>
+<ul><li>賃貸人の承諾が必要</li><li>譲受人は賃借人の地位を承継</li><li>敷金は承継されない（原則返還）</li></ul>
+<p>転貸</p>
+<ul><li>賃貸人の承諾が必要</li><li>転借人は賃借人の債務の範囲で義務負う</li><li>賃料前払いによる対抗不可</li></ul>
+<h3>③ 転貸借の終了</h3>
+<div class="table-wrap"><table><thead><tr><th>ケース</th><th>効果・ポイント</th></tr></thead><tbody><tr><th scope="row">債務不履行による解除</th><td>転借人に対抗可能（賃料支払機会不要）</td></tr><tr><th scope="row">合意解除</th><td>転借人に対抗不可</td></tr></tbody></table></div>
+<h3>④ 賃貸人たる地位の移転</h3>
+<p>要件</p>
+<p>効果</p>
+<p>賃借権の対抗要件を備えた場合</p>
+<ul><li>賃貸人たる地位は譲受人に移転</li><li>所有権移転登記が必要</li><li>対抗要件を備えないと対抗できない</li></ul>
+  </div>
+</article><article class="note" id="連帯債務と保証債務まとめ" data-field="権利関係">
+  <header class="note-head">
+    <div class="field-pill">権利関係</div>
+    <h1>連帯債務と保証債務まとめ</h1>
+    <div class="meta">831字 · PDF全文</div>
+  </header>
+  <div class="note-body">
+<h3>① 連帯債務とは</h3>
+<p>複数の債務者が、それぞれが全額の債務を負う債務。債権者は誰に対してでも全額の弁済を請求できる。</p>
+<p>弁済した1人の連帯債務者がいれば、他の債務者も債務を免れる（絶対効）。</p>
+<h3>② 連帯債務の絶対効</h3>
+<p>絶対効があるもの</p>
+<p>内容</p>
+<h3>①弁済（代物弁済・供託を含む）</h3>
+<p>全員の債務が消滅する</p>
+<h3>② 相殺</h3>
+<p>一人の債務者による相殺が全員に及ぶ</p>
+<h3>③ 更改</h3>
+<p>一人が債権者と新しい契約に切り替えると全員の債務が消滅</p>
+<h3>④ 混同</h3>
+<p>債権と債務が同一人に帰した場合、全員の債務が消滅上記以外（免除・時効完成など）は相対効にとどまり、他の債務者には影響しない。</p>
+<h3>③ 保証債務とは</h3>
+<p>保証債務とは、他人の債務を担保するために、債務者が履行しない場合に代わって履行する義務を負うもの。</p>
+<p>主たる債務が無効・消滅すれば、保証債務も消滅する（付従性・随伴性）。</p>
+<h3>④ 普通の保証と連帯保証の違い</h3>
+<div class="kv-list"><div class="kv-card"><div class="kv-title">普通の保証</div><div class="kv"><span class="k">催告の抗弁権</span><span class="v">有</span></div><div class="kv"><span class="k">検索の抗弁権</span><span class="v">有</span></div><div class="kv"><span class="k">分別の利益</span><span class="v">有</span></div><div class="kv"><span class="k">付従性・随伴性</span><span class="v">有</span></div></div><div class="kv-card"><div class="kv-title">連帯保証</div><div class="kv"><span class="k">催告の抗弁権</span><span class="v">無</span></div><div class="kv"><span class="k">検索の抗弁権</span><span class="v">無</span></div><div class="kv"><span class="k">分別の利益</span><span class="v">無</span></div><div class="kv"><span class="k">付従性・随伴性</span><span class="v">有</span></div></div></div>
+<h3>⑤ 保証人の情報提供義務</h3>
+<p>保証人が主たる債務者の委託を受けて保証した場合、保証人が請求したときは、債権者は遅滞なく主たる債務の残額、利息、違約金、損害賠償額などの情報を提供しなければならない。</p>
+<h3>⑥ 個人根保証契約</h3>
+<p>個人根保証契約とは、不特定の将来債務を担保する保証契約。</p>
+<p>書面または電子契約で結ぶ必要がある（要式契約）。</p>
+<p>保証人は元本・利息・違約金・損害賠償などの全てについて責任を負うが、極度額の範囲に限られる。</p>
+<h3>⑦ 試験でのひっかけポイント</h3>
+<h3>連帯債務は一人の弁済で全員が免責（絶対効）</h3>
+<h3>弁済・相殺・更改・混同が絶対効、それ以外は相対効</h3>
+<h3>連帯保証は普通保証と違い、催告・検索・分別の抗弁がない</h3>
+<h3>個人根保証契約は書面（電子含む）必須、極度額の定めが必要</h3>
+<h3>保証人の情報提供義務（主たる債務の履行状況を開示）</h3>
+  </div>
+</article><article class="note" id="税金まとめ-取得税-固定資産税-登録免許税など" data-field="税その他">
+  <header class="note-head">
+    <div class="field-pill">税その他</div>
+    <h1>税金まとめ（取得税・固定資産税・登録免許税など）</h1>
+    <div class="meta">1259字 · PDF全文</div>
+  </header>
+  <div class="note-body">
+<ul><li>不動産を取得したときに課税される地方税。相続は非課税。</li><li>課税標準：固定資産税評価額（売買価格ではない点がひっかけ）。</li><li>税率：原則4％。住宅軽減あり（3％）。</li><li>課税時期：取得時。</li><li>住宅特例（軽減措置）：一定の床面積要件あり。</li></ul>
+<h2>第2章 固定資産税（超頻出）</h2>
+<ul><li>1月1日時点の所有者が納税義務者。</li><li>税率：1.4％（標準税率）。</li><li>住宅用地特例：200㎡以下は課税標準1/6、超過部分は1/3。</li><li>免税点：土地30万円未満、家屋20万円未満、償却資産150万円未満は非課税。</li><li>新築住宅の減額措置：3年間（耐火構造は5年間）、120㎡まで1/2。</li></ul>
+<h2>第3章 都市計画税（頻出）</h2>
+<ul><li>固定資産税と併課される地方税。</li><li>課税客体：市街化区域内の土地・家屋。</li><li>税率：上限0.3％。</li><li>納税義務者・課税時期は固定資産税と同様（1月1日現在の所有者）。</li></ul>
+<h2>第4章 登録免許税（頻出）</h2>
+<ul><li>不動産登記などの登記手続に課税。</li><li>税率：売買2.0％、相続0.4％、抵当権設定0.4％など。</li><li>住宅や相続により軽減措置あり。</li><li>印紙税と混同しやすいので注意。</li></ul>
+<h2>第5章 印紙税（頻出）</h2>
+<ul><li>課税対象：不動産売買契約書など課税文書。</li><li>税額は契約金額に応じて定額。</li><li>軽減措置対象あり（住宅関係など）。</li></ul>
+<h2>第6章 譲渡所得税（頻出）</h2>
+<ul><li>譲渡所得＝譲渡価格−（取得費＋譲渡費用）。</li><li>所有期間5年以下：短期譲渡（税率39.63％）。</li><li>所有期間5年超：長期譲渡（税率20.315％）。</li><li>居住用財産には3,000万円特別控除の特例あり。</li><li>買換特例もあり（過去問出題あり）。</li></ul>
+<h2>第7章 相続税・贈与税（頻出）</h2>
+<ul><li>相続税の基礎控除：3,000万円＋600万円×法定相続人。</li><li>贈与税の基礎控除：110万円。</li><li>登録免許税率：相続0.4％、贈与2.0％。</li><li>贈与登記は課税対象。</li></ul>
+<h2>第8章 非課税・免税点・特例（頻出）</h2>
+<ul><li>不動産取得税は相続時非課税。</li><li>固定資産税の免税点：土地30万・家屋20万・償却資産150万未満。</li><li>住宅用地特例・新築住宅減額措置など軽減制度多数。</li></ul>
+<h2>第9章 数字・特例・ひっかけ早見表</h2>
+<p>税目</p>
+<p>税率・数字</p>
+<div class="kv-list"><div class="kv-card"><div class="kv-title">4％（住宅軽減3％）</div><div class="kv"><span class="k">注意点・ひっかけ</span><span class="v">頻出</span></div><div class="kv"><span class="k">不動産取得税</span><span class="v">課税標準＝評価額。相続は非課税。</span></div></div></div>
+<p>固定資産税</p>
+<p>1.4％</p>
+<p>超頻出</p>
+<p>住宅用地特例（200㎡まで1/6）。免税点注意。</p>
+<div class="kv-list"><div class="kv-card"><div class="kv-title">固定資産税と併課。市街化区域のみ。</div><div class="kv"><span class="k">上限0.3％</span><span class="v">登録免許税</span></div><div class="kv"><span class="k">頻出</span><span class="v">売買2.0％／相続0.4％</span></div></div><div class="kv-card"><div class="kv-title">頻出</div><div class="kv"><span class="k">上限0.3％</span><span class="v">印紙税と混同注意。軽減措置あり。</span></div><div class="kv"><span class="k">頻出</span><span class="v">印紙税</span></div></div><div class="kv-card"><div class="kv-title">契約金額に応じ定額</div><div class="kv"><span class="k">上限0.3％</span><span class="v">頻出</span></div><div class="kv"><span class="k">頻出</span><span class="v">売買契約書が課税対象。</span></div></div><div class="kv-card"><div class="kv-title">譲渡所得税</div><div class="kv"><span class="k">上限0.3％</span><span class="v">短期39.63％／長期20.315％</span></div><div class="kv"><span class="k">頻出</span><span class="v">頻出</span></div></div><div class="kv-card"><div class="kv-title">3,000万円特別控除。5年区分。</div><div class="kv"><span class="k">上限0.3％</span><span class="v">相続税</span></div><div class="kv"><span class="k">頻出</span><span class="v">基礎控除3000万＋600万×人数</span></div></div><div class="kv-card"><div class="kv-title">頻出</div><div class="kv"><span class="k">上限0.3％</span><span class="v">相続登記0.4％。</span></div><div class="kv"><span class="k">頻出</span><span class="v">贈与税</span></div></div><div class="kv-card"><div class="kv-title">基礎控除110万円</div><div class="kv"><span class="k">上限0.3％</span><span class="v">頻出</span></div><div class="kv"><span class="k">頻出</span><span class="v">贈与登記は課税対象。</span></div></div><div class="kv-card"><div class="kv-title">免税点</div><div class="kv"><span class="k">上限0.3％</span><span class="v">土地30万／家屋20万</span></div><div class="kv"><span class="k">頻出</span><span class="v">頻出</span></div></div></div>
+<p>固定資産税関連。</p>
+  </div>
+</article><article class="note" id="まとめリスト-完全版" data-field="宅建業法">
+  <header class="note-head">
+    <div class="field-pill">宅建業法</div>
+    <h1>まとめリスト（完全版）</h1>
+    <div class="meta">2645字 · PDF全文</div>
+  </header>
+  <div class="note-body">
+<h3>免許関連</h3>
+<ul><li>免許更新：有効期間満了ごと（5年）。更新しないと免許失効。</li><li>免許替え：本店を他の都道府県に移転するとき必要。有効期間は従前の免許の残りを引き継ぐ</li></ul>
+<p>。</p>
+<ul><li>免許証返納：①免許替えで従前の免許失効、②免許取消し、③亡失免許証の発見、④廃業届出</li></ul>
+<p>のとき。更新忘れで失効した場合は返納不要。</p>
+<ul><li>欠格事由：禁錮以上の刑、宅建業法違反による罰金刑、暴力団関係者など。過失傷害罪など一</li></ul>
+<p>部は対象外。</p>
+<ul><li>任意的免許取消処分と必要的免許取消処分の違い、任意的取消事由（免許条件違反、供託届出</li></ul>
+<p>未了、所在不明公告30日経過など）</p>
+<ul><li>処分権者は免許権者（知事 or 国交大臣）。</li></ul>
+<h3>営業保証金・保証協会</h3>
+<ul><li>営業保証金：主たる事務所1000万、従たる事務所500万。供託後に届出→事業開始可能。</li><li>保管替え：金銭のみの供託時に可能。有価証券含む場合は二重供託が必要。</li><li>営業保証金の変換：供託物を差し替える行為。遅滞なく免許権者へ届出。</li><li>営業保証金の取り戻し：廃業・免許取消し等で可能。ただし公告が必要（6か月以上）。10年経</li></ul>
+<p>過で公告不要。</p>
+<ul><li>保証協会：社員から分担金を受領→1週間以内に供託。宅建業者は弁済を受けられない（H29改</li></ul>
+<p>正後）。</p>
+<ul><li>不足・還付後対応：通知を受けた日から2週間以内に供託、不足額供託後2週間以内に届出（供</li></ul>
+<p>託書写し必要）。</p>
+<ul><li>営業保証金の供託義務：免許受領から3か月以内に供託届出しなければ、免許権者は催告義務 →</li></ul>
+<p>1か月以内に届出なければ取消し可能（任意的取消し）。</p>
+<ul><li>公告不要ケース：①二重供託による取戻し、②保証協会加入時、③10年経過。</li><li>保証協会の公告義務：社員の地位喪失時は6か月以上公告。</li><li>保証協会による弁済業務保証金の取戻し（事務所廃止時、公告不要）。</li><li>還付充当金：保証協会は弁済あれば通知義務 →</li></ul>
+<p>宅建業者は2週間以内に納付。未納なら社員地位喪失→1週間以内に営業保証金供託。</p>
+<ul><li>保証協会による担保提供請求（加入前の取引で支障あるとき）。</li></ul>
+<h3>届出関連</h3>
+<ul><li>死亡・破産・合併消滅法人：30日以内に届出。</li><li>心身の故障：本人・法定代理人・同居親族が30日以内に届出。成年被後見人＝自動欠格ではな</li></ul>
+<p>い。</p>
+<ul><li>事務所設置や名称・所在地変更：30日以内に免許権者へ届出。</li><li>展示会など案内所設置：10日前までに免許権者＋所在地管轄知事へ届出。</li><li>役員住所変更は不要（役員氏名は必要）。</li></ul>
+<h3>帳簿・従業者名簿</h3>
+<ul><li>帳簿：閉鎖後5年間保存（新築住宅売主＝10年）。</li><li>従業者名簿：最終記載から10年間保存。</li></ul>
+<h3>取引士関連</h3>
+<ul><li>登録欠格事由：禁錮以上、宅建業法違反の罰金刑など（過失傷害罪は対象外）。</li><li>取引士証：交付は登録実務講習修了後。更新は5年ごと、期間制限なしで申請可。</li><li>取引士証返納：登録取消し・死亡・事務禁止処分時。未返納は10万円以下の過料。</li><li>登録移転：他県の宅建業者事務所に従事する場合に申請可（単なる住所変更では不可）。</li><li>未成年取引士：登録可だが専任取引士にはなれない。例外＝法人役員で専任みなしあり。</li><li>講習要件：宅建士証交付・更新には申請前6か月以内の講習受講必須。</li></ul>
+<h3>重要事項説明（35条書面）</h3>
+<ul><li>相手が業者：交付のみ、説明不要、提示は請求あれば。</li><li>相手が一般顧客：説明＋交付＋取引士証提示が必要。</li><li>区分所有建物売買・交換時は「案」段階で説明すべき事項あり（専有部分の用途・共用部分・</li></ul>
+<p>専用使用権・修繕積立金・費用減免）。</p>
+<ul><li>管理会社がいる場合は説明義務あり。</li><li>保全措置：50万円以上の支払金・預り金受領時に説明義務。</li><li>定期借地権：期間・更新の有無・終了後の取扱いを説明。</li><li>既存建物：設計図書・点検記録・確認済証等の保存状況を説明。無ければその旨説明。</li><li>建物貸借契約：私道負担の説明不要（支払義務なし）。</li><li>区分所有建物の貸借：専有部分の用途は説明必要だが、専用使用権の規約説明は不要。</li><li>建物状況調査（インスペクション）：定義・実施者要件あり、説明義務。</li><li>クーリング・オフ：告知は書面で。記載事項＝業者名・住所・免許番号＋買主の氏名住所。発</li></ul>
+<p>信主義で効力発生。</p>
+<h3>37条書面（契約書）</h3>
+<ul><li>必要的記載事項：所在・構造等の特定表示、代金、引渡し・登記時期、代金・交換差金、担保</li></ul>
+<p>責任の定め、天災による損害負担（任意的）、保証保険契約の定めなど。</p>
+<ul><li>担保責任の定めは37条書面には必要だが重要事項説明には不要。</li><li>取引士証：記名押印は宅建士、交付は従業員でも可。</li><li>天災不可抗力：任意的記載（定めがあるときのみ）。</li><li>37条と35条の違い：金額（代金）は37条、保全措置は35条。</li></ul>
+<h3>契約関連</h3>
+<ul><li>手付解除：相手が履行に着手したら不可（重要強調ポイント）。</li><li>割賦販売：支払滞納時は30日以上の相当期間を定めて書面催告しなければ解除不可。即時解除</li></ul>
+<p>は不可。</p>
+<ul><li>損害賠償額の予定・違約金：上限＝代金の2割。定めなければ実損ベースで制限なし。</li><li>割賦販売：登記未了部分2割、その他義務3割で解除可。</li><li>手付金等の保全措置：完成物件＝10％以下かつ1000万円以下なら不要。未完成物件は厳格基準</li></ul>
+<p>。方法：完成物件＝保証・保険・保管、未完成物件＝保証・保険。</p>
+<ul><li>担保責任に関する特約の制限（2年以上ルールは売買のみ、賃貸には不適用）。</li></ul>
+<h3>媒介契約</h3>
+<ul><li>一般媒介：期間自由、更新自由、自動更新有効。報告義務なし。レインズ努力義務。</li><li>専任媒介：最長3か月、更新可（依頼者申出）。自動更新無効。2週に1回報告義務。レインズ7</li></ul>
+<p>日以内。</p>
+<ul><li>専属専任媒介：最長3か月、更新可。自動更新無効。1週に1回報告義務。レインズ5日以内。</li></ul>
+<h3>報酬関連</h3>
+<ul><li>権利金：居住用以外は売買代金とみなせるが、居住用は不可。</li><li>居住用以外の賃貸：報酬上限＝借賃1.1か月分（税込）。配分自由。</li><li>居住用：原則借賃0.55か月分まで。貸主承諾あれば1.1か月分受領可。</li><li>貸主の承諾メリット：全額借主負担にできる。</li></ul>
+<h3>工事完了前の契約制限</h3>
+<ul><li>工事完了前は建築確認などの処分後でなければ売買・交換契約を自ら行う、代理・媒介するこ</li></ul>
+<p>とはできない。</p>
+<ul><li>ただし貸借契約の媒介は可能（規制対象外）。</li></ul>
+<h3>不当な履行遅延の禁止</h3>
+<ul><li>対象は①登記、②引渡し、③取引に係る対価の支払に限られる。</li><li>媒介報酬の支払拒否などは対象外。</li></ul>
+  </div>
+</article>
+  <div class="empty hidden" id="empty">該当するノートがありません</div>
+</main>
+<footer class="bar">
+  <a class="btn-ghost" href="./weakness-daily.html">弱点振り返り</a>
+  <a class="btn-primary" href="./start.html">スタートへ</a>
+</footer>
+<script>
+const NOTES = [{"id": "建築基準法まとめノート-前編", "title": "建築基準法まとめノート（前編）", "field": "法令上の制限", "chars": 1600}, {"id": "建築基準法まとめノート-後編", "title": "建築基準法まとめノート（後編）", "field": "法令上の制限", "chars": 834}, {"id": "法令上の制限まとめリスト-簡易", "title": "法令上の制限まとめリスト（簡易）", "field": "法令上の制限", "chars": 539}, {"id": "法令上の制限まとめリスト-都市計画法-建築基準法など", "title": "法令上の制限まとめリスト（都市計画法・建築基準法など）", "field": "法令上の制限", "chars": 1061}, {"id": "農地法まとめ", "title": "農地法まとめ", "field": "法令上の制限", "chars": 903}, {"id": "都市計画法まとめノート-中編", "title": "都市計画法まとめノート（中編）", "field": "法令上の制限", "chars": 1315}, {"id": "都市計画法まとめノート-前編", "title": "都市計画法まとめノート（前編）", "field": "法令上の制限", "chars": 867}, {"id": "都市計画法まとめノート-後編", "title": "都市計画法まとめノート（後編）", "field": "法令上の制限", "chars": 1053}, {"id": "借地権まとめ", "title": "借地権まとめ", "field": "権利関係", "chars": 1185}, {"id": "売主の担保責任まとめ", "title": "売主の担保責任まとめ", "field": "権利関係", "chars": 564}, {"id": "抵当権まとめ", "title": "抵当権まとめ", "field": "権利関係", "chars": 855}, {"id": "時効まとめ", "title": "時効まとめ", "field": "権利関係", "chars": 729}, {"id": "権利関係-体系まとめ", "title": "権利関係 体系まとめ", "field": "権利関係", "chars": 2821}, {"id": "民法まとめ-債権譲渡-不法行為", "title": "民法まとめ：債権譲渡・不法行為", "field": "権利関係", "chars": 670}, {"id": "賃貸借まとめ", "title": "賃貸借まとめ", "field": "権利関係", "chars": 424}, {"id": "連帯債務と保証債務まとめ", "title": "連帯債務と保証債務まとめ", "field": "権利関係", "chars": 831}, {"id": "税金まとめ-取得税-固定資産税-登録免許税など", "title": "税金まとめ（取得税・固定資産税・登録免許税など）", "field": "税その他", "chars": 1259}, {"id": "まとめリスト-完全版", "title": "まとめリスト（完全版）", "field": "宅建業法", "chars": 2645}];
+const fields = ['すべて', ...Array.from(new Set(NOTES.map(n => n.field)))];
+let field = 'すべて';
+let activeId = NOTES[0]?.id || null;
+let mode = 'one';
+function esc(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function filtered() {
+  const q = document.getElementById('q').value.trim().toLowerCase();
+  return NOTES.filter(n => {
+    if (field !== 'すべて' && n.field !== field) return false;
+    if (!q) return true;
+    const art = document.getElementById(n.id);
+    const hay = (n.title + ' ' + n.field + ' ' + (art ? art.innerText : '')).toLowerCase();
+    return hay.includes(q);
+  });
+}
+function renderChrome() {
+  const list = filtered();
+  document.getElementById('fields').innerHTML = fields.map(f =>
+    `<button class="ftab${f===field?' active':''}" type="button" data-field="${esc(f)}">${esc(f)}</button>`
+  ).join('');
+  document.getElementById('fields').querySelectorAll('.ftab').forEach(b => b.onclick = () => {
+    field = b.dataset.field; activeId = null; render();
+  });
+  document.getElementById('noteTabs').innerHTML = list.map(n => {
+    const short = n.title.replace('まとめノート','').replace('まとめ','').slice(0, 14);
+    return `<button class="ntab${n.id===activeId?' active':''}" type="button" data-id="${n.id}">${esc(short)}</button>`;
+  }).join('');
+  document.getElementById('noteTabs').querySelectorAll('.ntab').forEach(b => b.onclick = () => {
+    activeId = b.dataset.id; mode = 'one';
+    document.querySelectorAll('.mode-btn').forEach(x => x.classList.toggle('active', x.dataset.mode==='one'));
+    show();
+    document.getElementById(activeId)?.scrollIntoView({behavior:'smooth', block:'start'});
+  });
+  document.getElementById('toc').innerHTML = `<h2>目次（${list.length}本）</h2>` + list.map(n =>
+    `<a href="#${n.id}" data-id="${n.id}"><span class="f">${esc(n.field)}</span>${esc(n.title)}</a>`
+  ).join('');
+  document.getElementById('toc').querySelectorAll('a').forEach(a => a.onclick = (e) => {
+    e.preventDefault();
+    activeId = a.dataset.id; mode = 'one';
+    document.querySelectorAll('.mode-btn').forEach(x => x.classList.toggle('active', x.dataset.mode==='one'));
+    show();
+    document.getElementById(activeId)?.scrollIntoView({behavior:'smooth', block:'start'});
+  });
+}
+function show() {
+  const list = filtered();
+  if (!list.length) {
+    document.querySelectorAll('.note').forEach(n => n.classList.remove('show'));
+    document.getElementById('empty').classList.remove('hidden');
+    renderChrome();
+    return;
+  }
+  document.getElementById('empty').classList.add('hidden');
+  if (!activeId || !list.some(n => n.id === activeId)) activeId = list[0].id;
+  const q = document.getElementById('q').value.trim();
+  const showAll = mode === 'all' || !!q;
+  document.querySelectorAll('.note').forEach(n => {
+    const on = list.some(x => x.id === n.id) && (showAll || n.id === activeId);
+    n.classList.toggle('show', on);
+  });
+  renderChrome();
+}
+function render() { renderChrome(); show(); }
+document.getElementById('q').addEventListener('input', () => { activeId = null; render(); });
+document.querySelectorAll('.mode-btn').forEach(b => b.onclick = () => {
+  mode = b.dataset.mode;
+  document.querySelectorAll('.mode-btn').forEach(x => x.classList.toggle('active', x === b));
+  render();
+});
+render();
+</script>
+</body>
+</html>
