@@ -501,7 +501,10 @@
             </select>
           </div>
         </div>
-        <div class="ai-note">
+          <div class="cta-row" style="margin-top:14px">
+            <button class="btn btn-secondary" type="button" id="btnDemo">写真なしでサンプル試す</button>
+          </div>
+          <div class="ai-note">
           いまはタグ付け＋気温ルールで提案します。本格的な「写真を見て自動で服を認識」は、画像認識AI（Vision API）をつなぐと実現できます。この試作はキーなしで動く版です。
         </div>
       </div>
@@ -1090,6 +1093,43 @@
       return;
     }
     renderOutfit(buildOutfit(lastSeed + 17));
+  });
+
+  function solidDataUrl(hex, w = 360, h = 480) {
+    const c = document.createElement("canvas");
+    c.width = w;
+    c.height = h;
+    const ctx = c.getContext("2d");
+    ctx.fillStyle = hex;
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = "rgba(255,255,255,0.18)";
+    ctx.fillRect(36, 36, w - 72, h - 72);
+    return c.toDataURL("image/jpeg", 0.85);
+  }
+
+  document.getElementById("btnDemo").addEventListener("click", async () => {
+    const samples = [
+      { category: "tops", color: "navy", weight: "light", hex: "#1e3270" },
+      { category: "bottoms", color: "beige", weight: "mid", hex: "#b4966e" },
+      { category: "outer", color: "black", weight: "mid", hex: "#1a1a1c" },
+      { category: "shoes", color: "white", weight: "mid", hex: "#ebebe6" },
+    ];
+    for (const s of samples) {
+      const item = {
+        id: crypto.randomUUID(),
+        category: s.category,
+        color: s.color,
+        weight: s.weight,
+        dataUrl: solidDataUrl(s.hex),
+        createdAt: Date.now(),
+      };
+      await saveItem(item);
+      items.push(item);
+    }
+    renderCloset();
+    renderOutfit(buildOutfit(Date.now()));
+    toast("サンプル4着を追加しました");
+    document.getElementById("suggest").scrollIntoView({ behavior: "smooth" });
   });
 
   async function boot() {
