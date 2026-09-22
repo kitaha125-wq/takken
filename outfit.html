@@ -446,6 +446,7 @@
           <div>
             <label for="cityInput">都市名</label>
             <input id="cityInput" placeholder="例: 東京, 大阪, Yokohama" autocomplete="off">
+          <div class="chips" id="cityPresets" style="margin-top:8px"></div>
           </div>
           <div class="cta-row">
             <button class="btn btn-leaf" type="button" id="btnCity">都市で取得</button>
@@ -545,6 +546,23 @@
   const DB_NAME = "closet-app-v1";
   const STORE = "items";
   const PLACE_KEY = "closet-place-v1";
+
+  const CITY_PRESETS = {
+    "東京": { lat: 35.6895, lon: 139.6917, name: "東京都" },
+    "tokyo": { lat: 35.6895, lon: 139.6917, name: "東京都" },
+    "大阪": { lat: 34.6937, lon: 135.5023, name: "大阪府・大阪" },
+    "osaka": { lat: 34.6937, lon: 135.5023, name: "大阪府・大阪" },
+    "名古屋": { lat: 35.1815, lon: 136.9066, name: "愛知県・名古屋" },
+    "横浜": { lat: 35.4437, lon: 139.638, name: "神奈川県・横浜" },
+    "yokohama": { lat: 35.4437, lon: 139.638, name: "神奈川県・横浜" },
+    "札幌": { lat: 43.0618, lon: 141.3545, name: "北海道・札幌" },
+    "福岡": { lat: 33.5904, lon: 130.4017, name: "福岡県・福岡" },
+    "京都": { lat: 35.0116, lon: 135.7681, name: "京都府・京都" },
+    "神戸": { lat: 34.6901, lon: 135.1956, name: "兵庫県・神戸" },
+    "仙台": { lat: 38.2682, lon: 140.8694, name: "宮城県・仙台" },
+    "広島": { lat: 34.3853, lon: 132.4553, name: "広島県・広島" },
+    "那覇": { lat: 26.2124, lon: 127.6809, name: "沖縄県・那覇" },
+  };
 
   const CAT_LABEL = {
     tops: "トップス",
@@ -890,7 +908,7 @@
     els.weatherChips.innerHTML = "";
     [
       `体感 ${Math.round(weather.apparent)}℃`,
-      `風 ${Math.round(weather.wind)} m/s`,
+      `風 ${Math.round(weather.wind)} km/h`,
       bandCopy(weatherBand(weather.temp)).split("。")[0],
     ].forEach((t) => {
       const c = document.createElement("span");
@@ -941,14 +959,28 @@
   }
 
   async function geocodeCity(q) {
-    const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=1&language=ja&format=json`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("geocode failed");
-    const data = await res.json();
-    if (!data.results?.length) throw new Error("not found");
-    const r = data.results[0];
-    const name = [r.name, r.admin1, r.country].filter(Boolean).join(" · ");
-    return { lat: r.latitude, lon: r.longitude, name };
+    const key = q.trim().toLowerCase();
+    const preset = CITY_PRESETS[q.trim()] || CITY_PRESETS[key];
+    if (preset) return preset;
+
+    const tryNames = [q.trim()];
+    if (!q.includes("都") && !q.includes("府") && !q.includes("県") && !q.includes("市")) {
+      tryNames.push(q.trim() + "市", q.trim() + "都", q.trim() + "府");
+    }
+
+    for (const name of tryNames) {
+      const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=5&language=ja&format=json`;
+      const res = await fetch(url);
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (!data.results?.length) continue;
+      const r =
+        data.results.find((x) => x.country_code === "JP") ||
+        data.results[0];
+      const label = [r.name, r.admin1, r.country].filter(Boolean).join(" · ");
+      return { lat: r.latitude, lon: r.longitude, name: label };
+    }
+    throw new Error("not found");
   }
 
   // Events
@@ -995,6 +1027,25 @@
 
   els.cityInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") els.btnCity.click();
+  });
+
+  const presetEl = document.getElementById("cityPresets");
+  ["東京", "大阪", "横浜", "札幌", "福岡", "那覇"].forEach((name) => {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "chip";
+    chip.style.cursor = "pointer";
+    chip.textContent = name;
+    chip.addEventListener("click", async () => {
+      els.cityInput.value = name;
+      const place = CITY_PRESETS[name];
+      try {
+        await fetchWeather(place.lat, place.lon, place.name);
+      } catch (_) {
+        toast("天気の取得に失敗しました");
+      }
+    });
+    presetEl.appendChild(chip);
   });
 
   els.btnGeo.addEventListener("click", () => {
