@@ -1108,28 +1108,38 @@
   }
 
   document.getElementById("btnDemo").addEventListener("click", async () => {
-    const samples = [
-      { category: "tops", color: "navy", weight: "light", hex: "#1e3270" },
-      { category: "bottoms", color: "beige", weight: "mid", hex: "#b4966e" },
-      { category: "outer", color: "black", weight: "mid", hex: "#1a1a1c" },
-      { category: "shoes", color: "white", weight: "mid", hex: "#ebebe6" },
-    ];
-    for (const s of samples) {
-      const item = {
-        id: crypto.randomUUID(),
-        category: s.category,
-        color: s.color,
-        weight: s.weight,
-        dataUrl: solidDataUrl(s.hex),
-        createdAt: Date.now(),
-      };
-      await saveItem(item);
-      items.push(item);
+    try {
+      const samples = [
+        { category: "tops", color: "navy", weight: "light", hex: "#1e3270" },
+        { category: "bottoms", color: "beige", weight: "mid", hex: "#b4966e" },
+        { category: "outer", color: "black", weight: "mid", hex: "#1a1a1c" },
+        { category: "shoes", color: "white", weight: "mid", hex: "#ebebe6" },
+      ];
+      for (const s of samples) {
+        const item = {
+          id: (crypto.randomUUID && crypto.randomUUID()) ||
+            ("id-" + Date.now() + "-" + Math.random().toString(16).slice(2)),
+          category: s.category,
+          color: s.color,
+          weight: s.weight,
+          dataUrl: solidDataUrl(s.hex),
+          createdAt: Date.now(),
+        };
+        try {
+          await saveItem(item);
+        } catch (err) {
+          console.warn("IndexedDB save failed, keeping in memory", err);
+        }
+        items.push(item);
+      }
+      renderCloset();
+      renderOutfit(buildOutfit(Date.now()));
+      toast("サンプル4着を追加しました");
+      document.getElementById("suggest").scrollIntoView({ behavior: "smooth" });
+    } catch (err) {
+      console.error(err);
+      toast("サンプル追加に失敗しました");
     }
-    renderCloset();
-    renderOutfit(buildOutfit(Date.now()));
-    toast("サンプル4着を追加しました");
-    document.getElementById("suggest").scrollIntoView({ behavior: "smooth" });
   });
 
   async function boot() {
@@ -1148,6 +1158,14 @@
         await fetchWeather(saved.lat, saved.lon, saved.name || "保存した場所");
       }
     } catch (_) {}
+
+    if (new URLSearchParams(location.search).get("demo") === "1") {
+      document.getElementById("btnDemo").click();
+      const tokyo = CITY_PRESETS["東京"];
+      try {
+        await fetchWeather(tokyo.lat, tokyo.lon, tokyo.name);
+      } catch (_) {}
+    }
   }
 
   boot();
