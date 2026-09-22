@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CLOSET · 気温と場所でコーデ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Outfit:wght@380;500;650&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1c211c;
+    --muted: #5e675e;
+    --paper: #f3efe6;
+    --wash: #e7e1d4;
+    --leaf: #3d6b4f;
+    --leaf-deep: #2a4a37;
+    --accent: #c45c26;
+    --line: rgba(28, 33, 28, 0.12);
+    --shadow: 0 18px 50px rgba(28, 33, 28, 0.12);
+    --radius: 18px;
+    --font-display: "Fraunces", Georgia, serif;
+    --font-body: "Outfit", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-weight: 380;
+    line-height: 1.55;
+    background:
+      radial-gradient(1200px 700px at 10% -10%, #fff8e8 0%, transparent 55%),
+      radial-gradient(900px 600px at 100% 0%, #dce8df 0%, transparent 50%),
+      linear-gradient(165deg, #f7f2e8 0%, #ebe4d6 48%, #e4ecE6 100%);
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.35;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E");
+    mix-blend-mode: multiply;
+    z-index: 0;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    width: min(980px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 28px 0 80px;
+  }
+
+  .hero {
+    min-height: min(78vh, 720px);
+    display: grid;
+    align-content: end;
+    gap: 18px;
+    padding: 24px 0 40px;
+    animation: rise 0.8s ease both;
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  .brand {
+    font-family: var(--font-display);
+    font-size: clamp(3.4rem, 12vw, 6.4rem);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 0.92;
+    margin: 0;
+  }
+
+  .brand span {
+    display: block;
+    color: var(--leaf);
+  }
+
+  .lede {
+    max-width: 34ch;
+    font-size: 1.12rem;
+    color: var(--muted);
+    margin: 0;
+    animation: fadeSlide 0.9s 0.15s ease both;
+  }
+
+  .cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    animation: fadeSlide 0.9s 0.28s ease both;
+  }
+
+  .btn {
+    appearance: none;
+    border: 0;
+    border-radius: 999px;
+    padding: 14px 22px;
+    font: inherit;
+    font-weight: 650;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn-primary {
+    background: var(--ink);
+    color: #f7f2e8;
+    box-shadow: var(--shadow);
+  }
+  .btn-secondary {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--line);
+  }
+  .btn-leaf {
+    background: var(--leaf);
+    color: #f4faf5;
+  }
+
+  section {
+    margin-top: 56px;
+    animation: fadeSlide 0.7s ease both;
+  }
+
+  .section-kicker {
+    font-size: 0.78rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--leaf);
+    font-weight: 650;
+    margin: 0 0 8px;
+  }
+
+  h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    margin: 0 0 10px;
+  }
+
+  .section-copy {
+    color: var(--muted);
+    max-width: 48ch;
+    margin: 0 0 22px;
+  }
+
+  .panel {
+    background: rgba(255, 252, 246, 0.72);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    backdrop-filter: blur(10px);
+    padding: 18px;
+  }
+
+  .weather-bar {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 720px) {
+    .weather-bar { grid-template-columns: 1fr; }
+  }
+
+  .weather-main {
+    display: grid;
+    gap: 8px;
+  }
+
+  .temp {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 8vw, 4.4rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+
+  .meta {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  .form-row {
+    display: grid;
+    gap: 10px;
+  }
+
+  label {
+    font-size: 0.82rem;
+    font-weight: 650;
+    color: var(--muted);
+  }
+
+  input, select, textarea {
+    width: 100%;
+    border: 1px solid var(--line);
+    background: #fffdf8;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font: inherit;
+    color: var(--ink);
+  }
+
+  input:focus, select:focus, textarea:focus {
+    outline: 2px solid rgba(61, 107, 79, 0.35);
+    border-color: transparent;
+  }
+
+  .upload-zone {
+    border: 1.5px dashed rgba(61, 107, 79, 0.45);
+    border-radius: var(--radius);
+    padding: 28px 18px;
+    text-align: center;
+    background: rgba(244, 250, 245, 0.55);
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+  .upload-zone:hover, .upload-zone.drag {
+    background: rgba(61, 107, 79, 0.08);
+    border-color: var(--leaf);
+  }
+  .upload-zone strong {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    margin-bottom: 6px;
+  }
+
+  .tag-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 14px;
+  }
+  @media (max-width: 640px) {
+    .tag-grid { grid-template-columns: 1fr; }
+  }
+
+  .closet-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+
+  .item {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #fffdf8;
+    border: 1px solid var(--line);
+    aspect-ratio: 3 / 4;
+    animation: fadeSlide 0.45s ease both;
+  }
+
+  .item img {
+    width: 100%;
+    height: 72%;
+    object-fit: cover;
+    display: block;
+    background: var(--wash);
+  }
+
+  .item-meta {
+    padding: 8px 10px 10px;
+    font-size: 0.78rem;
+  }
+  .item-meta b {
+    display: block;
+    font-weight: 650;
+    margin-bottom: 2px;
+  }
+  .item-meta span { color: var(--muted); }
+
+  .item button.del {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    border: 0;
+    border-radius: 999px;
+    width: 28px;
+    height: 28px;
+    background: rgba(28, 33, 28, 0.72);
+    color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  .outfit-stage {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 16px;
+  }
+  @media (max-width: 720px) {
+    .outfit-stage { grid-template-columns: 1fr; }
+  }
+
+  .look {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    min-height: 280px;
+  }
+
+  .look-slot {
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--wash);
+    border: 1px solid var(--line);
+    position: relative;
+  }
+  .look-slot img {
+    width: 100%;
+    height: 100%;
+    min-height: 140px;
+    object-fit: cover;
+    display: block;
+  }
+  .look-slot .cap {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    background: rgba(28, 33, 28, 0.72);
+    color: #f7f2e8;
+    font-size: 0.72rem;
+    padding: 4px 8px;
+    border-radius: 999px;
+  }
+  .look-slot.empty {
+    display: grid;
+    place-items: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .reason {
+    color: var(--muted);
+    font-size: 0.98rem;
+  }
+  .reason strong {
+    color: var(--ink);
+    font-weight: 650;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .chip {
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    background: rgba(255, 253, 248, 0.8);
+  }
+
+  .empty-state {
+    color: var(--muted);
+    padding: 24px 8px;
+    text-align: center;
+  }
+
+  .ai-note {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border-left: 3px solid var(--accent);
+    background: rgba(196, 92, 38, 0.06);
+    border-radius: 0 12px 12px 0;
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--ink);
+    color: #f7f2e8;
+    padding: 12px 18px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: 0.25s ease;
+    z-index: 20;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .footer-note {
+    margin-top: 64px;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  .footer-note a { color: var(--leaf-deep); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <p class="section-kicker">Wardrobe + Weather</p>
+      <h1 class="brand">CLOSET<span>気温で決まる。</span></h1>
+      <p class="lede">自分の服を読み込んで、いまの気温と場所に合うコーデを提案します。写真は端末内にだけ保存されます。</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#suggest">今日のコーデを見る</a>
+        <a class="btn btn-secondary" href="#closet">服を追加する</a>
+      </div>
+    </header>
+
+    <section id="weather">
+      <p class="section-kicker">Place &amp; Temp</p>
+      <h2>いまの場所と気温</h2>
+      <p class="section-copy">位置情報か都市名から天気を取得し、コーデの厚みを決めます。</p>
+      <div class="weather-bar">
+        <div class="panel weather-main">
+          <div class="temp" id="tempDisplay">--°</div>
+          <div class="meta" id="weatherMeta">場所を設定すると気温が表示されます</div>
+          <div class="chips" id="weatherChips"></div>
+        </div>
+        <div class="panel form-row">
+          <div>
+            <label for="cityInput">都市名</label>
+            <input id="cityInput" placeholder="例: 東京, 大阪, Yokohama" autocomplete="off">
+          </div>
+          <div class="cta-row">
+            <button class="btn btn-leaf" type="button" id="btnCity">都市で取得</button>
+            <button class="btn btn-secondary" type="button" id="btnGeo">現在地</button>
+          </div>
+          <p class="meta">天気データは Open-Meteo（無料・APIキー不要）を使用します。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="closet">
+      <p class="section-kicker">Your Closet</p>
+      <h2>服を読み込む</h2>
+      <p class="section-copy">写真を追加して、種類・色・厚みをタグ付けします。タグがあると気温に合わせた提案がうまくなります。</p>
+
+      <div class="panel">
+        <div class="upload-zone" id="uploadZone" tabindex="0" role="button" aria-label="服の写真を追加">
+          <strong>写真をドロップ / タップ</strong>
+          <span class="meta">スマホのカメラロールからそのまま追加できます</span>
+          <input type="file" id="fileInput" accept="image/*" multiple hidden>
+        </div>
+
+        <div class="tag-grid">
+          <div>
+            <label for="catSelect">種類</label>
+            <select id="catSelect">
+              <option value="tops">トップス</option>
+              <option value="bottoms">ボトムス</option>
+              <option value="outer">アウター</option>
+              <option value="shoes">シューズ</option>
+              <option value="onepiece">ワンピース / セットアップ</option>
+              <option value="accessory">小物</option>
+            </select>
+          </div>
+          <div>
+            <label for="colorSelect">色み</label>
+            <select id="colorSelect">
+              <option value="black">ブラック</option>
+              <option value="white">ホワイト / ライト</option>
+              <option value="navy">ネイビー</option>
+              <option value="beige">ベージュ / ブラウン</option>
+              <option value="gray">グレー</option>
+              <option value="color">カラー</option>
+            </select>
+          </div>
+          <div>
+            <label for="weightSelect">厚み</label>
+            <select id="weightSelect">
+              <option value="light">薄手（夏）</option>
+              <option value="mid" selected>普通</option>
+              <option value="heavy">厚手（冬）</option>
+            </select>
+          </div>
+        </div>
+        <div class="ai-note">
+          いまはタグ付け＋気温ルールで提案します。本格的な「写真を見て自動で服を認識」は、画像認識AI（Vision API）をつなぐと実現できます。この試作はキーなしで動く版です。
+        </div>
+      </div>
+
+      <div style="margin-top:18px" class="closet-grid" id="closetGrid"></div>
+      <div class="empty-state" id="closetEmpty">まだ服がありません。上から写真を追加してください。</div>
+    </section>
+
+    <section id="suggest">
+      <p class="section-kicker">Today's Look</p>
+      <h2>コーデを提案</h2>
+      <p class="section-copy">気温・場所・クローゼットの中身から、今日の組み合わせを組み立てます。</p>
+
+      <div class="outfit-stage">
+        <div class="panel look" id="lookBoard">
+          <div class="look-slot empty">トップス</div>
+          <div class="look-slot empty">ボトムス</div>
+          <div class="look-slot empty">アウター / 小物</div>
+          <div class="look-slot empty">シューズ</div>
+        </div>
+        <div class="panel">
+          <p class="reason" id="reasonText">服を追加して、気温を取得すると提案が始まります。</p>
+          <div class="chips" id="lookChips"></div>
+          <div class="cta-row" style="margin-top:18px">
+            <button class="btn btn-primary" type="button" id="btnSuggest">コーデを作る</button>
+            <button class="btn btn-secondary" type="button" id="btnShuffle">別案</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <p class="footer-note">
+      宅建アプリとは別の試作です · データはこの端末のブラウザ内のみ ·
+      <a href="./start.html">スタートに戻る</a>
+    </p>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+  const DB_NAME = "closet-app-v1";
+  const STORE = "items";
+  const PLACE_KEY = "closet-place-v1";
+
+  const CAT_LABEL = {
+    tops: "トップス",
+    bottoms: "ボトムス",
+    outer: "アウター",
+    shoes: "シューズ",
+    onepiece: "ワンピ/セット",
+    accessory: "小物",
+  };
+  const COLOR_LABEL = {
+    black: "ブラック",
+    white: "ライト",
+    navy: "ネイビー",
+    beige: "ベージュ",
+    gray: "グレー",
+    color: "カラー",
+  };
+  const WEIGHT_LABEL = {
+    light: "薄手",
+    mid: "普通",
+    heavy: "厚手",
+  };
+
+  const els = {
+    tempDisplay: document.getElementById("tempDisplay"),
+    weatherMeta: document.getElementById("weatherMeta"),
+    weatherChips: document.getElementById("weatherChips"),
+    cityInput: document.getElementById("cityInput"),
+    btnCity: document.getElementById("btnCity"),
+    btnGeo: document.getElementById("btnGeo"),
+    uploadZone: document.getElementById("uploadZone"),
+    fileInput: document.getElementById("fileInput"),
+    catSelect: document.getElementById("catSelect"),
+    colorSelect: document.getElementById("colorSelect"),
+    weightSelect: document.getElementById("weightSelect"),
+    closetGrid: document.getElementById("closetGrid"),
+    closetEmpty: document.getElementById("closetEmpty"),
+    lookBoard: document.getElementById("lookBoard"),
+    reasonText: document.getElementById("reasonText"),
+    lookChips: document.getElementById("lookChips"),
+    btnSuggest: document.getElementById("btnSuggest"),
+    btnShuffle: document.getElementById("btnShuffle"),
+    toast: document.getElementById("toast"),
+  };
+
+  let items = [];
+  let weather = null;
+  let lastSeed = 0;
+
+  function toast(msg) {
+    els.toast.textContent = msg;
+    els.toast.classList.add("show");
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => els.toast.classList.remove("show"), 2200);
+  }
+
+  function openDb() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains(STORE)) {
+          db.createObjectStore(STORE, { keyPath: "id" });
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async function loadItems() {
+    const db = await openDb();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, "readonly");
+      const req = tx.objectStore(STORE).getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async function saveItem(item) {
+    const db = await openDb();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, "readwrite");
+      tx.objectStore(STORE).put(item);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+
+  async function deleteItem(id) {
+    const db = await openDb();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, "readwrite");
+      tx.objectStore(STORE).delete(id);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+
+  function resizeImage(file, maxSide = 720, quality = 0.82) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(reader.error);
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+          const w = Math.round(img.width * scale);
+          const h = Math.round(img.height * scale);
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        };
+        img.onerror = reject;
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderCloset() {
+    els.closetGrid.innerHTML = "";
+    els.closetEmpty.style.display = items.length ? "none" : "block";
+    items
+      .slice()
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .forEach((item, i) => {
+        const el = document.createElement("article");
+        el.className = "item";
+        el.style.animationDelay = `${Math.min(i, 8) * 0.04}s`;
+        el.innerHTML = `
+          <button class="del" type="button" aria-label="削除">×</button>
+          <img src="${item.dataUrl}" alt="${CAT_LABEL[item.category] || "服"}">
+          <div class="item-meta">
+            <b>${CAT_LABEL[item.category] || item.category}</b>
+            <span>${COLOR_LABEL[item.color] || ""} · ${WEIGHT_LABEL[item.weight] || ""}</span>
+          </div>
+        `;
+        el.querySelector(".del").addEventListener("click", async () => {
+          await deleteItem(item.id);
+          items = items.filter((x) => x.id !== item.id);
+          renderCloset();
+          toast("削除しました");
+        });
+        els.closetGrid.appendChild(el);
+      });
+  }
+
+  async function addFiles(fileList) {
+    const files = [...fileList].filter((f) => f.type.startsWith("image/"));
+    if (!files.length) {
+      toast("画像ファイルを選んでください");
+      return;
+    }
+    const category = els.catSelect.value;
+    const color = els.colorSelect.value;
+    const weight = els.weightSelect.value;
+    for (const file of files) {
+      const dataUrl = await resizeImage(file);
+      const item = {
+        id: crypto.randomUUID(),
+        category,
+        color,
+        weight,
+        dataUrl,
+        createdAt: Date.now(),
+      };
+      await saveItem(item);
+      items.push(item);
+    }
+    renderCloset();
+    toast(`${files.length}着追加しました`);
+  }
+
+  function weatherBand(temp) {
+    if (temp == null || Number.isNaN(temp)) return "mid";
+    if (temp >= 26) return "hot";
+    if (temp >= 20) return "warm";
+    if (temp >= 12) return "mild";
+    if (temp >= 5) return "cool";
+    return "cold";
+  }
+
+  function bandCopy(band) {
+    return {
+      hot: "暑い日。薄手中心で風通しを優先",
+      warm: "暖かい日。軽やかな一枚で十分",
+      mild: "過ごしやすい気温。レイヤードの出番",
+      cool: "少し肌寒い。アウターがあると安心",
+      cold: "寒い日。厚手と保温を意識",
+    }[band] || "気温に合わせて調整";
+  }
+
+  function preferredWeights(band) {
+    return {
+      hot: ["light"],
+      warm: ["light", "mid"],
+      mild: ["mid", "light"],
+      cool: ["mid", "heavy"],
+      cold: ["heavy", "mid"],
+    }[band] || ["mid"];
+  }
+
+  function needsOuter(band) {
+    return band === "cool" || band === "cold" || band === "mild";
+  }
+
+  function scoreItem(item, band, preferColors) {
+    let score = 0;
+    const prefs = preferredWeights(band);
+    const wi = prefs.indexOf(item.weight);
+    score += wi === 0 ? 30 : wi === 1 ? 18 : 4;
+    if (preferColors.has(item.color)) score += 12;
+    if (item.color === "black" || item.color === "navy" || item.color === "beige" || item.color === "gray") {
+      score += 4;
+    }
+    score += (item.createdAt % 7);
+    return score;
+  }
+
+  function pickBest(list, band, preferColors, seed) {
+    if (!list.length) return null;
+    const ranked = list
+      .map((item, idx) => ({
+        item,
+        score: scoreItem(item, band, preferColors) + ((seed + idx * 13) % 5),
+      }))
+      .sort((a, b) => b.score - a.score);
+    return ranked[0].item;
+  }
+
+  function harmonizeColors(picked) {
+    const colors = new Set(
+      Object.values(picked)
+        .filter(Boolean)
+        .map((x) => x.color)
+    );
+    return colors;
+  }
+
+  function buildOutfit(seed = Date.now()) {
+    lastSeed = seed;
+    const band = weatherBand(weather?.temp);
+    const byCat = (cat) => items.filter((x) => x.category === cat);
+
+    let prefer = new Set(["black", "navy", "beige", "gray", "white"]);
+    const look = {
+      tops: null,
+      bottoms: null,
+      outer: null,
+      shoes: null,
+      onepiece: null,
+      accessory: null,
+    };
+
+    const onepieces = byCat("onepiece");
+    const useOne = onepieces.length && (seed % 5 === 0 || (!byCat("tops").length && !byCat("bottoms").length));
+
+    if (useOne) {
+      look.onepiece = pickBest(onepieces, band, prefer, seed);
+      prefer = harmonizeColors({ onepiece: look.onepiece });
+    } else {
+      look.tops = pickBest(byCat("tops"), band, prefer, seed);
+      prefer = harmonizeColors({ tops: look.tops });
+      look.bottoms = pickBest(byCat("bottoms"), band, prefer, seed + 3);
+      prefer = harmonizeColors({ tops: look.tops, bottoms: look.bottoms });
+    }
+
+    if (needsOuter(band)) {
+      look.outer = pickBest(byCat("outer"), band, prefer, seed + 7);
+    } else if (band === "warm" && byCat("outer").some((x) => x.weight === "light")) {
+      look.outer = pickBest(
+        byCat("outer").filter((x) => x.weight === "light"),
+        band,
+        prefer,
+        seed + 7
+      );
+    }
+
+    look.shoes = pickBest(byCat("shoes"), band, prefer, seed + 11);
+    look.accessory = pickBest(byCat("accessory"), band, prefer, seed + 17);
+
+    return { look, band };
+  }
+
+  function slotHtml(item, label) {
+    if (!item) {
+      return `<div class="look-slot empty">${label}<br><span style="font-size:0.8rem">未登録</span></div>`;
+    }
+    return `<div class="look-slot"><img src="${item.dataUrl}" alt="${label}"><div class="cap">${label}</div></div>`;
+  }
+
+  function renderOutfit(result) {
+    const { look, band } = result;
+    const slots = [];
+    if (look.onepiece) {
+      slots.push(slotHtml(look.onepiece, "ワンピ/セット"));
+      slots.push(slotHtml(look.outer, "アウター"));
+      slots.push(slotHtml(look.shoes, "シューズ"));
+      slots.push(slotHtml(look.accessory, "小物"));
+    } else {
+      slots.push(slotHtml(look.tops, "トップス"));
+      slots.push(slotHtml(look.bottoms, "ボトムス"));
+      slots.push(slotHtml(look.outer || look.accessory, look.outer ? "アウター" : "小物"));
+      slots.push(slotHtml(look.shoes, "シューズ"));
+    }
+    els.lookBoard.innerHTML = slots.join("");
+
+    const place = weather?.name || "未設定の場所";
+    const tempText = weather?.temp != null ? `${Math.round(weather.temp)}℃` : "気温未取得";
+    const parts = [look.tops, look.bottoms, look.onepiece, look.outer, look.shoes, look.accessory].filter(Boolean);
+
+    if (!items.length) {
+      els.reasonText.innerHTML = "まずはクローゼットに服の写真を追加してください。";
+    } else if (!parts.length) {
+      els.reasonText.innerHTML = "タグの種類が足りません。トップスとボトムスなどを追加すると提案できます。";
+    } else {
+      els.reasonText.innerHTML = `<strong>${place} · ${tempText}</strong><br>${bandCopy(band)}。クローゼットから ${parts.length} 点を組み合わせました。`;
+    }
+
+    els.lookChips.innerHTML = "";
+    [
+      place,
+      tempText,
+      bandCopy(band).split("。")[0],
+      `${items.length}着登録`,
+    ].forEach((t) => {
+      const c = document.createElement("span");
+      c.className = "chip";
+      c.textContent = t;
+      els.lookChips.appendChild(c);
+    });
+  }
+
+  function renderWeather() {
+    if (!weather) return;
+    els.tempDisplay.textContent = `${Math.round(weather.temp)}°`;
+    els.weatherMeta.textContent = `${weather.name} · ${weather.summary}`;
+    els.weatherChips.innerHTML = "";
+    [
+      `体感 ${Math.round(weather.apparent)}℃`,
+      `風 ${Math.round(weather.wind)} m/s`,
+      bandCopy(weatherBand(weather.temp)).split("。")[0],
+    ].forEach((t) => {
+      const c = document.createElement("span");
+      c.className = "chip";
+      c.textContent = t;
+      els.weatherChips.appendChild(c);
+    });
+    try {
+      localStorage.setItem(PLACE_KEY, JSON.stringify({
+        name: weather.name,
+        lat: weather.lat,
+        lon: weather.lon,
+      }));
+    } catch (_) {}
+  }
+
+  function weatherCodeLabel(code) {
+    if (code === 0) return "晴れ";
+    if (code <= 3) return "くもりがち";
+    if (code <= 48) return "霧";
+    if (code <= 67) return "雨";
+    if (code <= 77) return "雪";
+    if (code <= 82) return "にわか雨";
+    if (code <= 99) return "雷雨";
+    return "天気情報あり";
+  }
+
+  async function fetchWeather(lat, lon, name) {
+    const url =
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+      `&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=auto`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("weather fetch failed");
+    const data = await res.json();
+    const cur = data.current;
+    weather = {
+      name,
+      lat,
+      lon,
+      temp: cur.temperature_2m,
+      apparent: cur.apparent_temperature,
+      wind: cur.wind_speed_10m,
+      summary: weatherCodeLabel(cur.weather_code),
+    };
+    renderWeather();
+    renderOutfit(buildOutfit());
+    toast("天気を更新しました");
+  }
+
+  async function geocodeCity(q) {
+    const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=1&language=ja&format=json`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("geocode failed");
+    const data = await res.json();
+    if (!data.results?.length) throw new Error("not found");
+    const r = data.results[0];
+    const name = [r.name, r.admin1, r.country].filter(Boolean).join(" · ");
+    return { lat: r.latitude, lon: r.longitude, name };
+  }
+
+  // Events
+  els.uploadZone.addEventListener("click", () => els.fileInput.click());
+  els.uploadZone.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") els.fileInput.click();
+  });
+  els.fileInput.addEventListener("change", async (e) => {
+    await addFiles(e.target.files);
+    e.target.value = "";
+  });
+  ["dragenter", "dragover"].forEach((ev) => {
+    els.uploadZone.addEventListener(ev, (e) => {
+      e.preventDefault();
+      els.uploadZone.classList.add("drag");
+    });
+  });
+  ["dragleave", "drop"].forEach((ev) => {
+    els.uploadZone.addEventListener(ev, (e) => {
+      e.preventDefault();
+      els.uploadZone.classList.remove("drag");
+    });
+  });
+  els.uploadZone.addEventListener("drop", async (e) => {
+    await addFiles(e.dataTransfer.files);
+  });
+
+  els.btnCity.addEventListener("click", async () => {
+    const q = els.cityInput.value.trim();
+    if (!q) {
+      toast("都市名を入力してください");
+      return;
+    }
+    try {
+      els.btnCity.disabled = true;
+      const place = await geocodeCity(q);
+      await fetchWeather(place.lat, place.lon, place.name);
+    } catch (err) {
+      toast("場所が見つかりませんでした");
+    } finally {
+      els.btnCity.disabled = false;
+    }
+  });
+
+  els.cityInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") els.btnCity.click();
+  });
+
+  els.btnGeo.addEventListener("click", () => {
+    if (!navigator.geolocation) {
+      toast("この端末では位置情報が使えません");
+      return;
+    }
+    els.btnGeo.disabled = true;
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude: lat, longitude: lon } = pos.coords;
+          const name = `現在地 (${lat.toFixed(2)}, ${lon.toFixed(2)})`;
+          await fetchWeather(lat, lon, name);
+        } catch (_) {
+          toast("天気の取得に失敗しました");
+        } finally {
+          els.btnGeo.disabled = false;
+        }
+      },
+      () => {
+        els.btnGeo.disabled = false;
+        toast("位置情報の許可が必要です");
+      },
+      { enableHighAccuracy: false, timeout: 10000 }
+    );
+  });
+
+  els.btnSuggest.addEventListener("click", () => {
+    if (!weather) {
+      toast("先に場所と気温を取得してください");
+      document.getElementById("weather").scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+    renderOutfit(buildOutfit(Date.now()));
+    toast("コーデを更新しました");
+  });
+
+  els.btnShuffle.addEventListener("click", () => {
+    if (!items.length) {
+      toast("服を追加してください");
+      return;
+    }
+    renderOutfit(buildOutfit(lastSeed + 17));
+  });
+
+  async function boot() {
+    try {
+      items = await loadItems();
+    } catch (_) {
+      items = [];
+    }
+    renderCloset();
+    renderOutfit(buildOutfit());
+
+    try {
+      const saved = JSON.parse(localStorage.getItem(PLACE_KEY) || "null");
+      if (saved?.lat != null && saved?.lon != null) {
+        els.cityInput.value = saved.name?.split(" · ")[0] || "";
+        await fetchWeather(saved.lat, saved.lon, saved.name || "保存した場所");
+      }
+    } catch (_) {}
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>
