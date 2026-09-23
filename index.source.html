@@ -424,7 +424,7 @@ function buildSmartPlan({ doneSet, days, dailyMinutes = 90, srs }) {
   }
   return buildPlan(tasks.slice(0, days));
 }
-const APP_VERSION = '2026.06.14-20';
+const APP_VERSION = '2026.09.23-1';
 
 const C = {
   s:'#c8102e', sBg:'#fff0f2', sBd:'#e8b4ba',
@@ -444,7 +444,7 @@ function sg(k,fb){try{const v=localStorage.getItem(k);return v?JSON.parse(v):fb;
 function ss(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
 const BACKUP_KEYS = [
   'tk_done_v5', 'tk_days_v5', 'tk_schedule_v1', 'tk_plan_start_v1', 'tk_plan_daily_min_v1',
-  'tk_srs_v1', 'tk_hist_v5', 'tk_activity_v1', 'tk_daily_journal_v1', 'tk_last_visit_v1', 'tk_notify_v1', 'tk_review_count_v1', 'tk_gemini_notes_v1', 'tk_chatgpt_notes_v1', 'tk_ai_quiz_v1', 'tk_career_vision_v1', 'tk_tracker_filter_v1', 'tk_tracker_collapsed_v1', 'tk_tracker_sort_v1', 'tk_docs_collapsed_v1', 'tk_q_edits_v1', 'tk_seen_version',
+  'tk_srs_v1', 'tk_hist_v5', 'tk_activity_v1', 'tk_daily_journal_v1', 'tk_last_visit_v1', 'tk_notify_v1', 'tk_review_count_v1', 'tk_gemini_notes_v1', 'tk_chatgpt_notes_v1', 'tk_ai_quiz_v1', 'tk_career_vision_v1', 'tk_tracker_filter_v1', 'tk_tracker_collapsed_v1', 'tk_tracker_sort_v1', 'tk_docs_collapsed_v1', 'tk_q_edits_v1', 'tk_question_memos_v1', 'tk_theme_memos_v1', 'tk_seen_version',
 ];
 function coerceBackupValue(v) {
   if (v === undefined || v === null) return null;
@@ -7017,6 +7017,91 @@ function pickQuestions(scope, count, srs, diff) {
 function loadQEdits() { return sg('tk_q_edits_v1', {}); }
 function saveQEdits(data) { ss('tk_q_edits_v1', data); }
 
+// 問題メモ（過去問・分野別など、解答中に残す自由メモ）
+// ══════════════════════════════════════════════════
+function loadQuestionMemos() {
+  const raw = sg('tk_question_memos_v1', {});
+  return raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+}
+function saveQuestionMemos(data) { ss('tk_question_memos_v1', data); }
+function questionMemoCount(memos) {
+  return Object.values(memos || {}).filter(m => m && String(m.text || '').trim()).length;
+}
+function upsertQuestionMemo(memos, questionId, text, q) {
+  const next = { ...(memos || {}) };
+  const trimmed = String(text || '').trim();
+  if (!questionId) return next;
+  if (!trimmed) {
+    delete next[questionId];
+    return next;
+  }
+  const prev = next[questionId] || {};
+  next[questionId] = {
+    ...prev,
+    text: trimmed,
+    updatedAt: Date.now(),
+    question: (q && q.s) || prev.question || '',
+    cat: (q && q.cat) || prev.cat || '',
+    pastYear: (q && q.pastYear) || prev.pastYear || null,
+    pastKind: (q && q.pastKind) || prev.pastKind || null,
+    answer: q && typeof q.a === 'boolean' ? q.a : prev.answer,
+  };
+  return next;
+}
+
+// テーマメモ（過去問風・年度・資料項目など、範囲ごとのメモ）
+// ══════════════════════════════════════════════════
+function loadThemeMemos() {
+  const raw = sg('tk_theme_memos_v1', {});
+  return raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+}
+function saveThemeMemos(data) { ss('tk_theme_memos_v1', data); }
+function themeMemoCount(memos) {
+  return Object.values(memos || {}).filter(m => m && String(m.text || '').trim()).length;
+}
+function upsertThemeMemo(memos, themeId, text, label) {
+  const next = { ...(memos || {}) };
+  const trimmed = String(text || '').trim();
+  if (!themeId) return next;
+  if (!trimmed) {
+    delete next[themeId];
+    return next;
+  }
+  const prev = next[themeId] || {};
+  next[themeId] = {
+    ...prev,
+    text: trimmed,
+    updatedAt: Date.now(),
+    label: label || prev.label || themeId,
+  };
+  return next;
+}
+function formatMemoUpdatedAt(ts) {
+  if (!ts) return '';
+  try {
+    const d = new Date(ts);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mm = String(d.getMinutes()).padStart(2, '0');
+    return `${y}/${m}/${day} ${hh}:${mm}`;
+  } catch { return ''; }
+}
+function memoScopeLabel(entry) {
+  if (!entry) return '';
+  if (entry.pastYear) {
+    const meta = PAST_YEARS.find(y => y.id === String(entry.pastYear));
+    return meta ? `過去問 ${meta.label}` : `過去問 ${entry.pastYear}`;
+  }
+  if (entry.pastKind === 'style') return '過去問風';
+  if (entry.pastKind === 'based') return '過去問ベース';
+  return entry.cat || '問題メモ';
+}
+function themeHasMemo(themeMemos, themeId) {
+  return !!(themeMemos && themeMemos[themeId] && String(themeMemos[themeId].text || '').trim());
+}
+
 function getBaseQ(id) {
   if (!id) return null;
   if (id.startsWith('ai::')) {
@@ -10312,11 +10397,295 @@ function QuestionEditor({q,onSave,onCancel,onReset}) {
   );
 }
 
+function QuestionMemoBox({questionId, question, memo, onSave, title, placeholder}) {
+  const [text, setText] = useState(memo?.text || '');
+  const [savedFlash, setSavedFlash] = useState(false);
+  useEffect(() => {
+    setText(memo?.text || '');
+    setSavedFlash(false);
+  }, [questionId, memo?.text, memo?.updatedAt]);
+  const dirty = String(text || '').trim() !== String(memo?.text || '').trim();
+  const persist = () => {
+    onSave(text);
+    setSavedFlash(true);
+    setTimeout(() => setSavedFlash(false), 1200);
+  };
+  return (
+    <div style={{background:'#fffef8',border:`1px solid ${C.line}`,borderLeft:`3px solid ${C.a}`,padding:'12px 14px',marginBottom:12}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,flexWrap:'wrap',marginBottom:8}}>
+        <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:11,fontWeight:700,letterSpacing:'0.15em',color:C.a}}>{title || '📝 この問題のメモ'}</div>
+        <div style={{fontSize:10,color:C.muted}}>
+          {savedFlash ? '保存しました' : (memo?.updatedAt ? `更新 ${formatMemoUpdatedAt(memo.updatedAt)}` : '未保存可・端末に保存')}
+        </div>
+      </div>
+      <textarea
+        value={text}
+        onChange={ev => setText(ev.target.value)}
+        onBlur={() => { if (dirty) persist(); }}
+        placeholder={placeholder || 'ひっかけポイント・条文数字・自分の覚え方などを自由にメモ'}
+        rows={3}
+        style={{width:'100%',padding:'10px 12px',border:`1px solid ${C.line}`,fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:13,lineHeight:1.7,resize:'vertical',marginBottom:8,boxSizing:'border-box',background:'white'}}
+      />
+      <div style={{display:'flex',gap:8,flexWrap:'wrap',alignItems:'center'}}>
+        <button type="button" onClick={persist} disabled={!dirty && !savedFlash} style={{padding:'7px 14px',border:'none',background:dirty?C.ink:'#ccc',color:'white',fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:12,fontWeight:700,cursor:dirty?'pointer':'default'}}>
+          {dirty ? 'メモを保存' : (memo?.text ? '保存済み' : 'メモを保存')}
+        </button>
+        {!!String(text||'').trim() && (
+          <button type="button" onClick={() => { setText(''); onSave(''); setSavedFlash(true); setTimeout(() => setSavedFlash(false), 1200); }} style={{padding:'7px 12px',border:`1px solid ${C.line}`,background:'white',color:C.muted,fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:12,cursor:'pointer'}}>
+            削除
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ThemeMemoBox({themeId, label, memo, onSave}) {
+  return (
+    <QuestionMemoBox
+      questionId={`theme::${themeId}`}
+      memo={memo}
+      onSave={onSave}
+      title={`🗂 テーマメモ：${label || themeId}`}
+      placeholder="このテーマ全体の注意点・まとめ・復習ポイントをメモ"
+    />
+  );
+}
+
+function ThemeMemoCornerBtn({hasMemo, onOpen, dark}) {
+  return (
+    <button
+      type="button"
+      aria-label={hasMemo ? 'テーマメモを編集' : 'テーマメモを追加'}
+      title={hasMemo ? 'テーマメモあり（タップで編集）' : 'テーマメモを追加'}
+      onClick={(ev) => { ev.preventDefault(); ev.stopPropagation(); onOpen(); }}
+      style={{
+        position: 'absolute',
+        top: 6,
+        right: 6,
+        zIndex: 3,
+        width: 30,
+        height: 30,
+        padding: 0,
+        border: `1.5px solid ${hasMemo ? C.a : (dark ? 'rgba(255,255,255,0.45)' : C.line)}`,
+        background: hasMemo ? C.aBg : (dark ? 'rgba(255,255,255,0.18)' : '#fffef8'),
+        color: hasMemo ? C.a : (dark ? 'rgba(255,255,255,0.92)' : C.muted),
+        borderRadius: 7,
+        fontSize: 14,
+        lineHeight: 1,
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: dark ? 'none' : '0 1px 2px rgba(0,0,0,0.06)',
+      }}
+    >📝</button>
+  );
+}
+
+function ThemeMemoEditorModal({themeId, label, memo, onSave, onClose}) {
+  if (!themeId) return null;
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="テーマメモ編集"
+      onClick={onClose}
+      style={{position:'fixed',inset:0,background:'rgba(26,26,26,0.45)',zIndex:2000,display:'flex',alignItems:'flex-end',justifyContent:'center',padding:'12px 12px 20px'}}
+    >
+      <div
+        onClick={ev => ev.stopPropagation()}
+        style={{width:'100%',maxWidth:520,maxHeight:'78vh',overflow:'auto',background:'white',border:`1px solid ${C.line}`,borderTop:`3px solid ${C.a}`,padding:'14px 14px 16px',boxShadow:'0 -8px 28px rgba(0,0,0,0.18)'}}
+      >
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,marginBottom:10}}>
+          <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:13,fontWeight:800,color:C.ink}}>テーマメモ</div>
+          <button type="button" onClick={onClose} style={{padding:'6px 12px',border:`1px solid ${C.line}`,background:'white',fontSize:12,cursor:'pointer',fontFamily:"'Zen Kaku Gothic New',sans-serif"}}>閉じる</button>
+        </div>
+        <ThemeMemoBox
+          themeId={themeId}
+          label={label}
+          memo={memo}
+          onSave={onSave}
+        />
+      </div>
+    </div>
+  );
+}
+
+function QuestionMemoList({memos, themeMemos, onChangeMemos, onChangeThemeMemos, onBack}) {
+  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState('all'); // all | theme | question
+  const [editingKey, setEditingKey] = useState(null); // `q::id` or `t::id`
+  const [draft, setDraft] = useState('');
+
+  const entries = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const themeEntries = Object.entries(themeMemos || {})
+      .filter(([, m]) => m && String(m.text || '').trim())
+      .map(([id, m]) => ({
+        key: `t::${id}`,
+        kind: 'theme',
+        id,
+        text: m.text,
+        updatedAt: m.updatedAt,
+        label: m.label || scopeLabel(id),
+        preview: '',
+      }));
+    const questionEntries = Object.entries(memos || {})
+      .filter(([, m]) => m && String(m.text || '').trim())
+      .map(([id, m]) => ({
+        key: `q::${id}`,
+        kind: 'question',
+        id,
+        text: m.text,
+        updatedAt: m.updatedAt,
+        label: `${memoScopeLabel(m)}${m.cat && (m.pastYear || m.pastKind) ? ` · ${m.cat}` : ''}`,
+        preview: m.question || '',
+        cat: m.cat,
+        pastYear: m.pastYear,
+        pastKind: m.pastKind,
+        answer: m.answer,
+      }));
+    let list = [...themeEntries, ...questionEntries];
+    if (filter === 'theme') list = list.filter(e => e.kind === 'theme');
+    if (filter === 'question') list = list.filter(e => e.kind === 'question');
+    if (q) {
+      list = list.filter(e => {
+        const hay = `${e.text || ''} ${e.preview || ''} ${e.label || ''} ${e.cat || ''}`.toLowerCase();
+        return hay.includes(q);
+      });
+    }
+    return list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+  }, [memos, themeMemos, query, filter]);
+
+  const themeTotal = themeMemoCount(themeMemos);
+  const questionTotal = questionMemoCount(memos);
+
+  const startEdit = (entry) => {
+    setEditingKey(entry.key);
+    setDraft(entry.text || '');
+  };
+  const saveEdit = () => {
+    if (!editingKey) return;
+    if (editingKey.startsWith('t::')) {
+      const id = editingKey.slice(3);
+      const prev = themeMemos[id];
+      onChangeThemeMemos(upsertThemeMemo(themeMemos, id, draft, prev?.label || scopeLabel(id)));
+    } else {
+      const id = editingKey.slice(3);
+      const base = getBaseQ(id);
+      const prev = memos[id];
+      onChangeMemos(upsertQuestionMemo(memos, id, draft, base || {
+        s: prev?.question,
+        cat: prev?.cat,
+        pastYear: prev?.pastYear,
+        pastKind: prev?.pastKind,
+        a: prev?.answer,
+      }));
+    }
+    setEditingKey(null);
+    setDraft('');
+  };
+  const removeEntry = (entry) => {
+    if (!window.confirm('このメモを削除しますか？')) return;
+    if (entry.kind === 'theme') {
+      const next = { ...themeMemos };
+      delete next[entry.id];
+      onChangeThemeMemos(next);
+    } else {
+      const next = { ...memos };
+      delete next[entry.id];
+      onChangeMemos(next);
+    }
+    if (editingKey === entry.key) { setEditingKey(null); setDraft(''); }
+  };
+
+  return (
+    <div>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:10,flexWrap:'wrap',marginBottom:14}}>
+        <div>
+          <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:22,fontWeight:800}}>📝 メモ一覧</div>
+          <div style={{fontSize:12,color:C.muted,marginTop:4}}>
+            テーマメモ {themeTotal}件 · 問題メモ {questionTotal}件（表示 {entries.length}件）
+          </div>
+        </div>
+        <button type="button" onClick={onBack} style={{padding:'8px 14px',border:`1px solid ${C.line}`,background:'white',color:C.ink,fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:12,fontWeight:700,cursor:'pointer'}}>← 問題集に戻る</button>
+      </div>
+      <div style={{display:'flex',gap:8,marginBottom:12,flexWrap:'wrap'}}>
+        {[
+          {id:'all', label:'すべて'},
+          {id:'theme', label:'テーマ'},
+          {id:'question', label:'問題'},
+        ].map(f => (
+          <button key={f.id} type="button" onClick={()=>setFilter(f.id)} style={{padding:'6px 12px',border:`1.5px solid ${filter===f.id?C.a:C.line}`,background:filter===f.id?C.aBg:'white',color:filter===f.id?C.a:C.muted,fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:"'Zen Kaku Gothic New',sans-serif"}}>
+            {f.label}
+          </button>
+        ))}
+      </div>
+      <input
+        value={query}
+        onChange={ev => setQuery(ev.target.value)}
+        placeholder="キーワードで検索（テーマ名・問題文・メモ）"
+        style={{width:'100%',padding:'10px 12px',border:`1px solid ${C.line}`,fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:13,marginBottom:14,boxSizing:'border-box'}}
+      />
+      {entries.length === 0 ? (
+        <div style={{background:'white',border:`1px solid ${C.line}`,padding:'20px 16px',fontSize:13,color:C.muted,lineHeight:1.7}}>
+          まだメモがありません。分野別でテーマを選んで「🗂 テーマメモ」を書くか、問題解答中の「📝 この問題のメモ」に入力すると、ここに一覧表示されます。
+        </div>
+      ) : entries.map(entry => {
+        const preview = (entry.preview || '').slice(0, 90);
+        const editing = editingKey === entry.key;
+        return (
+          <div key={entry.key} style={{background:'white',border:`1px solid ${C.line}`,padding:'14px 14px',marginBottom:10}}>
+            <div style={{display:'flex',justifyContent:'space-between',gap:8,flexWrap:'wrap',marginBottom:8}}>
+              <div style={{fontSize:11,fontWeight:700,color:entry.kind==='theme'?C.s:C.a}}>
+                {entry.kind==='theme'?'🗂 テーマ':'📝 問題'} · {entry.label}
+              </div>
+              <div style={{fontSize:10,color:C.muted}}>{formatMemoUpdatedAt(entry.updatedAt)}</div>
+            </div>
+            {preview && <div style={{fontSize:12,color:C.muted,lineHeight:1.6,marginBottom:8}}>{preview}{(entry.preview || '').length > 90 ? '…' : ''}</div>}
+            {editing ? (
+              <>
+                <textarea value={draft} onChange={ev => setDraft(ev.target.value)} rows={4} style={{width:'100%',padding:'10px 12px',border:`1px solid ${C.line}`,fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:13,lineHeight:1.7,resize:'vertical',marginBottom:8,boxSizing:'border-box'}}/>
+                <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+                  <button type="button" onClick={saveEdit} style={{padding:'7px 14px',border:'none',background:C.ink,color:'white',fontSize:12,fontWeight:700,cursor:'pointer'}}>保存</button>
+                  <button type="button" onClick={() => { setEditingKey(null); setDraft(''); }} style={{padding:'7px 12px',border:`1px solid ${C.line}`,background:'white',fontSize:12,cursor:'pointer'}}>キャンセル</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{fontSize:14,lineHeight:1.8,whiteSpace:'pre-wrap',marginBottom:10}}>{entry.text}</div>
+                <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+                  <button type="button" onClick={() => startEdit(entry)} style={{padding:'6px 12px',border:`1px solid ${C.ink}`,background:'white',fontSize:11,fontWeight:700,cursor:'pointer'}}>編集</button>
+                  <button type="button" onClick={() => removeEntry(entry)} style={{padding:'6px 12px',border:`1px solid ${C.line}`,background:'white',color:C.muted,fontSize:11,cursor:'pointer'}}>削除</button>
+                </div>
+              </>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function QuizTab({quizPhase,quizScope,setQuizScope,quizDiff,setQuizDiff,quizCount,setQuizCount,quizMode,setQuizMode,dueCount,q,qIdx,score,skipped,totalQ,answered,barPct,finalPct,currentRec,handleOX,nextQ,skipQ,editQuestion,startQuiz,backToSetup,history,srs}) {
   const [editing,setEditing]=useState(false);
+  const [showMemos,setShowMemos]=useState(false);
+  const [questionMemos,setQuestionMemos]=useState(()=>loadQuestionMemos());
+  const [themeMemos,setThemeMemos]=useState(()=>loadThemeMemos());
+  const [themeMemoEditId,setThemeMemoEditId]=useState(null);
   useEffect(()=>setEditing(false),[q?.id]);
+  useEffect(()=>{ if(quizPhase==='running') { setShowMemos(false); setThemeMemoEditId(null); } },[quizPhase]);
   const qBase=q?.id?getBaseQ(q.id):null;
   const isQEdited=qBase&&q&&(q.s!==qBase.s||q.a!==qBase.a||q.e!==qBase.e);
+  const memoTotal=questionMemoCount(questionMemos)+themeMemoCount(themeMemos);
+  const persistMemos=(next)=>{ setQuestionMemos(next); saveQuestionMemos(next); };
+  const persistThemeMemos=(next)=>{ setThemeMemos(next); saveThemeMemos(next); };
+  const saveCurrentMemo=(text)=>{ if(!q?.id) return; persistMemos(upsertQuestionMemo(questionMemos,q.id,text,q)); };
+  const saveThemeMemoForScope=(text)=>{ if(!quizScope) return; persistThemeMemos(upsertThemeMemo(themeMemos,quizScope,text,scopeLabel(quizScope))); };
+  const saveThemeMemoById=(themeId,text)=>{ if(!themeId) return; persistThemeMemos(upsertThemeMemo(themeMemos,themeId,text,scopeLabel(themeId))); };
+  const openThemeMemoEditor=(themeId)=>{ setThemeMemoEditId(themeId); };
+  const canEditThemeMemo = quizMode==='normal' || quizMode==='exam';
   const docOrder = d => typeof d.n === 'string' ? 1000 + parseInt(d.n.replace(/\D/g,''),10) : d.n;
   const examField = isExamScope(quizScope) ? examFieldFromScope(quizScope) : 'all';
   const { maxQ: maxSolvable, opts: countOpts } = useMemo(
@@ -10367,8 +10736,22 @@ function QuizTab({quizPhase,quizScope,setQuizScope,quizDiff,setQuizDiff,quizCoun
         <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:11,letterSpacing:'0.2em',color:C.muted,marginTop:4}}>全{totalQB}問（資料別{docQBCount}問・過去問{pastQBCount}問） · 難問{hardCount}問</div>
       </div>
 
+      {showMemos?(
+        <QuestionMemoList
+          memos={questionMemos}
+          themeMemos={themeMemos}
+          onChangeMemos={persistMemos}
+          onChangeThemeMemos={persistThemeMemos}
+          onBack={()=>setShowMemos(false)}
+        />
+      ):(<>
+
       {quizPhase==='setup'&&(
         <div>
+          <button type="button" onClick={()=>setShowMemos(true)} style={{width:'100%',marginBottom:16,padding:'12px 14px',border:`1.5px solid ${C.a}`,background:C.aBg,color:C.ink,fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:13,fontWeight:700,cursor:'pointer',textAlign:'left',display:'flex',justifyContent:'space-between',alignItems:'center',gap:8}}>
+            <span>📝 メモを一括で見る（テーマ・問題）</span>
+            <span style={{fontSize:11,color:C.a}}>{memoTotal>0?`${memoTotal}件`:'まだなし'}</span>
+          </button>
           {/* モード選択 */}
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:20}}>
             <div onClick={()=>{setQuizMode('review');setQuizScope('all');}} style={{border:`2px solid ${quizMode==='review'?C.review:C.line}`,background:quizMode==='review'?C.reviewBg:'white',padding:'12px 10px',cursor:'pointer',position:'relative',transition:'all 0.15s'}}>
@@ -10426,12 +10809,15 @@ function QuizTab({quizPhase,quizScope,setQuizScope,quizDiff,setQuizDiff,quizCoun
                     const selected = quizScope === opt.scope;
                     const poolSize = examFieldPoolSize(opt.id, quizDiff || 'normal');
                     return (
-                      <button key={opt.scope} onClick={()=>selectExamField(opt)} style={{padding:'10px 10px',border:`2px solid ${selected?C.s:C.line}`,background:selected?C.sBg:'white',color:C.ink,fontFamily:"'Zen Kaku Gothic New',sans-serif",cursor:'pointer',textAlign:'left',position:'relative'}}>
-                        <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:13,fontWeight:800,color:selected?C.s:C.ink}}>{opt.label}</div>
-                        <div style={{fontSize:10,color:C.muted,lineHeight:1.45,marginTop:3}}>{opt.sub}</div>
-                        <div style={{fontSize:10,fontWeight:700,color:selected?C.s:C.a,marginTop:4}}>出題可能 {poolSize}問</div>
-                        {selected&&<span style={{position:'absolute',top:8,right:8,fontSize:14}}>✓</span>}
-                      </button>
+                      <div key={opt.scope} style={{position:'relative'}}>
+                        <button type="button" onClick={()=>selectExamField(opt)} style={{width:'100%',padding:'10px 36px 10px 10px',border:`2px solid ${selected?C.s:C.line}`,background:selected?C.sBg:'white',color:C.ink,fontFamily:"'Zen Kaku Gothic New',sans-serif",cursor:'pointer',textAlign:'left',position:'relative',boxSizing:'border-box'}}>
+                          <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:13,fontWeight:800,color:selected?C.s:C.ink}}>{opt.label}</div>
+                          <div style={{fontSize:10,color:C.muted,lineHeight:1.45,marginTop:3}}>{opt.sub}</div>
+                          <div style={{fontSize:10,fontWeight:700,color:selected?C.s:C.a,marginTop:4}}>出題可能 {poolSize}問</div>
+                          {selected&&<span style={{position:'absolute',top:8,left:8,fontSize:14}}>✓</span>}
+                        </button>
+                        <ThemeMemoCornerBtn hasMemo={themeHasMemo(themeMemos,opt.scope)} onOpen={()=>openThemeMemoEditor(opt.scope)} />
+                      </div>
                     );
                   })}
                 </div>
@@ -10454,18 +10840,21 @@ function QuizTab({quizPhase,quizScope,setQuizScope,quizDiff,setQuizDiff,quizCoun
                     {scope:'past-style',icon:'🧩',title:'過去問風',desc:'頻出論点・ひっかけ',count:PAST_STYLE_QB.length,color:C.hard},
                     {scope:'past-based',icon:'📜',title:'過去問ベース',desc:'実出題テーマを改題',count:PAST_BASED_QB.length,color:C.s},
                   ].map(p=>(
-                    <button key={p.scope} onClick={()=>setQuizScope(p.scope)} style={{padding:'12px 12px',border:`2px solid ${quizScope===p.scope?p.color:C.line}`,background:quizScope===p.scope?(p.scope==='past-style'?C.hardBg:C.sBg):'white',color:C.ink,fontFamily:"'Zen Kaku Gothic New',sans-serif",cursor:'pointer',textAlign:'left',position:'relative'}}>
-                      <div style={{fontSize:20,marginBottom:4}}>{p.icon}</div>
-                      <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:14,fontWeight:800,color:quizScope===p.scope?p.color:C.ink}}>{p.title}</div>
-                      <div style={{fontSize:10,color:C.muted,lineHeight:1.5}}>{p.desc}</div>
-                      <div style={{fontSize:10,fontWeight:800,color:p.color,marginTop:5}}>{p.count}問</div>
-                      {quizScope===p.scope&&<span style={{position:'absolute',top:8,right:10,fontSize:14}}>✓</span>}
-                    </button>
+                    <div key={p.scope} style={{position:'relative'}}>
+                      <button type="button" onClick={()=>setQuizScope(p.scope)} style={{width:'100%',padding:'12px 40px 12px 12px',border:`2px solid ${quizScope===p.scope?p.color:C.line}`,background:quizScope===p.scope?(p.scope==='past-style'?C.hardBg:C.sBg):'white',color:C.ink,fontFamily:"'Zen Kaku Gothic New',sans-serif",cursor:'pointer',textAlign:'left',position:'relative',boxSizing:'border-box'}}>
+                        <div style={{fontSize:20,marginBottom:4}}>{p.icon}</div>
+                        <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:14,fontWeight:800,color:quizScope===p.scope?p.color:C.ink}}>{p.title}</div>
+                        <div style={{fontSize:10,color:C.muted,lineHeight:1.5}}>{p.desc}</div>
+                        <div style={{fontSize:10,fontWeight:800,color:p.color,marginTop:5}}>{p.count}問</div>
+                        {quizScope===p.scope&&<span style={{position:'absolute',top:8,left:10,fontSize:14}}>✓</span>}
+                      </button>
+                      <ThemeMemoCornerBtn hasMemo={themeHasMemo(themeMemos,p.scope)} onOpen={()=>openThemeMemoEditor(p.scope)} />
+                    </div>
                   ))}
                 </div>
                 <Lbl>年度別過去問（改題）</Lbl>
                 <div style={{fontSize:11,color:C.muted,lineHeight:1.6,marginBottom:10}}>
-                  各年度の本試験で出題された論点を、○×形式に改題した問題です（学習用）。
+                  各年度の本試験で出題された論点を、○×形式に改題した問題です（学習用）。右上の📝からテーマメモを書けます。
                 </div>
                 <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(120px,1fr))',gap:8,marginBottom:18}}>
                   {PAST_YEARS.map(y=>{
@@ -10473,22 +10862,28 @@ function QuizTab({quizPhase,quizScope,setQuizScope,quizDiff,setQuizDiff,quizCoun
                     const selected=quizScope===scope;
                     const count=(PAST_YEAR_QB[y.id]||[]).length;
                     return (
-                      <button key={scope} onClick={()=>setQuizScope(scope)} style={{padding:'10px 10px',border:`2px solid ${selected?C.a:C.line}`,background:selected?C.aBg:'white',color:C.ink,fontFamily:"'Zen Kaku Gothic New',sans-serif",cursor:'pointer',textAlign:'left',position:'relative'}}>
-                        <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:13,fontWeight:800,color:selected?C.a:C.ink}}>{y.label}</div>
-                        <div style={{fontSize:10,color:C.muted,marginTop:2}}>{y.sub}</div>
-                        <div style={{fontSize:10,fontWeight:700,color:C.a,marginTop:4}}>{count}問</div>
-                        {selected&&<span style={{position:'absolute',top:8,right:8,fontSize:14}}>✓</span>}
-                      </button>
+                      <div key={scope} style={{position:'relative'}}>
+                        <button type="button" onClick={()=>setQuizScope(scope)} style={{width:'100%',padding:'10px 36px 10px 10px',border:`2px solid ${selected?C.a:C.line}`,background:selected?C.aBg:'white',color:C.ink,fontFamily:"'Zen Kaku Gothic New',sans-serif",cursor:'pointer',textAlign:'left',position:'relative',boxSizing:'border-box'}}>
+                          <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:13,fontWeight:800,color:selected?C.a:C.ink}}>{y.label}</div>
+                          <div style={{fontSize:10,color:C.muted,marginTop:2}}>{y.sub}</div>
+                          <div style={{fontSize:10,fontWeight:700,color:C.a,marginTop:4}}>{count}問</div>
+                          {selected&&<span style={{position:'absolute',top:8,left:8,fontSize:14}}>✓</span>}
+                        </button>
+                        <ThemeMemoCornerBtn hasMemo={themeHasMemo(themeMemos,scope)} onOpen={()=>openThemeMemoEditor(scope)} />
+                      </div>
                     );
                   })}
                 </div>
                 <Lbl>資料項目から選ぶ</Lbl>
                 <div style={{marginBottom:20}}>
-                  <button onClick={()=>setQuizScope('all')} style={{width:'100%',marginBottom:10,padding:'9px 10px',border:`1.5px solid ${quizScope==='all'?C.ink:C.line}`,background:quizScope==='all'?C.ink:'white',color:quizScope==='all'?'white':C.ink,fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:12,fontWeight:800,cursor:'pointer',textAlign:'left'}}>
-                    📚 全項目ランダム
-                  </button>
+                  <div style={{position:'relative',marginBottom:10}}>
+                    <button type="button" onClick={()=>setQuizScope('all')} style={{width:'100%',padding:'9px 40px 9px 10px',border:`1.5px solid ${quizScope==='all'?C.ink:C.line}`,background:quizScope==='all'?C.ink:'white',color:quizScope==='all'?'white':C.ink,fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:12,fontWeight:800,cursor:'pointer',textAlign:'left',boxSizing:'border-box'}}>
+                      📚 全項目ランダム
+                    </button>
+                    <ThemeMemoCornerBtn hasMemo={themeHasMemo(themeMemos,'all')} onOpen={()=>openThemeMemoEditor('all')} dark={quizScope==='all'} />
+                  </div>
                   <div style={{fontSize:11,color:C.muted,lineHeight:1.6,marginBottom:10}}>
-                    資料名を選ぶと、その資料の範囲で作成した問題（資料別問題）を優先して出題します。
+                    資料名を選ぶと、その資料の範囲で作成した問題（資料別問題）を優先して出題します。各テーマ右上の📝からメモを残せます。
                   </div>
                   {Object.entries(groupedDocs).map(([subject,items])=>(
                     <div key={subject} style={{marginBottom:12}}>
@@ -10503,16 +10898,19 @@ function QuizTab({quizPhase,quizScope,setQuizScope,quizDiff,setQuizDiff,quizCoun
                           const label=typeof doc.n==='string'?doc.n:`権${doc.n}`;
                           const qCount=docQuestionCount(doc.n) || (QB[lecture.cat]?.length||0);
                           return(
-                            <button key={scope} onClick={()=>setQuizScope(scope)} style={{padding:'8px 10px',border:`1.5px solid ${selected?C.ink:C.line}`,background:selected?C.ink:'white',color:selected?'white':C.ink,fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:11,fontWeight:600,cursor:'pointer',textAlign:'left',display:'grid',gridTemplateColumns:'auto 1fr auto',alignItems:'center',gap:4,transition:'all 0.15s'}}>
-                              <span style={{fontSize:9,padding:'1px 4px',fontWeight:800,background:selected?'rgba(255,255,255,0.25)':rankColor(rank),color:'white'}}>{rank}</span>
-                              <span style={{overflow:'hidden'}}>
-                                <span style={{fontWeight:800}}>{label}</span>
-                                <span style={{display:'block',fontSize:10,lineHeight:1.35,color:selected?'rgba(255,255,255,0.78)':C.muted}}>{lecture.t}</span>
-                                <span style={{display:'block',fontSize:9,lineHeight:1.35,color:selected?'rgba(255,255,255,0.62)':C.muted}}>{lecture.cat}</span>
-                              </span>
-                              <span style={{fontSize:10,color:selected?'rgba(255,255,255,0.7)':C.muted}}>{qCount}問</span>
-                              {catAcc!==null&&<span style={{gridColumn:'1 / -1',fontSize:10,color:selected?'rgba(255,255,255,0.7)':(catAcc<50?C.s:catAcc<75?C.warn:C.done),textAlign:'right'}}>正答率 {catAcc}%</span>}
-                            </button>
+                            <div key={scope} style={{position:'relative'}}>
+                              <button type="button" onClick={()=>setQuizScope(scope)} style={{width:'100%',padding:'8px 34px 8px 10px',border:`1.5px solid ${selected?C.ink:C.line}`,background:selected?C.ink:'white',color:selected?'white':C.ink,fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:11,fontWeight:600,cursor:'pointer',textAlign:'left',display:'grid',gridTemplateColumns:'auto 1fr auto',alignItems:'center',gap:4,transition:'all 0.15s',boxSizing:'border-box'}}>
+                                <span style={{fontSize:9,padding:'1px 4px',fontWeight:800,background:selected?'rgba(255,255,255,0.25)':rankColor(rank),color:'white'}}>{rank}</span>
+                                <span style={{overflow:'hidden'}}>
+                                  <span style={{fontWeight:800}}>{label}</span>
+                                  <span style={{display:'block',fontSize:10,lineHeight:1.35,color:selected?'rgba(255,255,255,0.78)':C.muted}}>{lecture.t}</span>
+                                  <span style={{display:'block',fontSize:9,lineHeight:1.35,color:selected?'rgba(255,255,255,0.62)':C.muted}}>{lecture.cat}</span>
+                                </span>
+                                <span style={{fontSize:10,color:selected?'rgba(255,255,255,0.7)':C.muted}}>{qCount}問</span>
+                                {catAcc!==null&&<span style={{gridColumn:'1 / -1',fontSize:10,color:selected?'rgba(255,255,255,0.7)':(catAcc<50?C.s:catAcc<75?C.warn:C.done),textAlign:'right'}}>正答率 {catAcc}%</span>}
+                              </button>
+                              <ThemeMemoCornerBtn hasMemo={themeHasMemo(themeMemos,scope)} onOpen={()=>openThemeMemoEditor(scope)} dark={selected} />
+                            </div>
                           );
                         })}
                       </div>
@@ -10550,6 +10948,16 @@ function QuizTab({quizPhase,quizScope,setQuizScope,quizDiff,setQuizDiff,quizCoun
                 選択した範囲・難易度では出題できる問題がありません。別の資料や難易度を選んでください。
               </div>
             )}
+            {canEditThemeMemo && quizScope && (
+              <div style={{marginBottom:14}}>
+                <ThemeMemoBox
+                  themeId={quizScope}
+                  label={scopeLabel(quizScope)}
+                  memo={themeMemos[quizScope]}
+                  onSave={saveThemeMemoForScope}
+                />
+              </div>
+            )}
             <button onClick={startQuiz} disabled={!ready} style={{width:'100%',padding:14,border:'none',background:ready?(quizMode==='review'?C.review:quizMode==='exam'?C.s:C.ink):'#ccc',color:'white',fontFamily:"'Shippori Mincho',serif",fontSize:14,fontWeight:700,letterSpacing:'0.2em',cursor:ready?'pointer':'not-allowed',transition:'background 0.2s'}}>
               {ready?(quizMode==='review'?`🔔 復習スタート →（最大${quizCount}問）`:quizMode==='exam'?`🏆 ${scopeLabel(quizScope)} →（${quizCount}問）`:`スタート →（${quizCount}問・${quizDiff==='hard'?'難しい':'普通'}）`):(quizMode==='review'&&dueCount===0?'復習対象はまだありません':quizMode==='exam'?'分野・難易度・問題数を選択':'問題数・難易度を選択')}
             </button>
@@ -10573,6 +10981,13 @@ function QuizTab({quizPhase,quizScope,setQuizScope,quizDiff,setQuizDiff,quizCoun
             <span style={{fontSize:11,color:C.muted}}>🎯 {quizMode==='review'?'復習':scopeLabel(quizScope)}</span>
             <span style={{fontSize:12}}>正解: {score}{skipped>0&&<span style={{color:C.muted,marginLeft:6}}>スキップ: {skipped}</span>}</span>
           </div>
+
+          {canEditThemeMemo && themeHasMemo(themeMemos, quizScope) && (
+            <div style={{padding:'10px 12px',background:C.sBg,border:`1px solid ${C.sBd||C.s}`,marginBottom:10,fontSize:12,lineHeight:1.7}}>
+              <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:10,fontWeight:700,letterSpacing:'0.12em',color:C.s,marginBottom:4}}>🗂 このテーマのメモ</div>
+              <div style={{whiteSpace:'pre-wrap'}}>{themeMemos[quizScope].text}</div>
+            </div>
+          )}
 
           {/* この問題のSRS情報 */}
           {currentRec&&currentRec.totalAns>0&&(
@@ -10636,11 +11051,27 @@ function QuizTab({quizPhase,quizScope,setQuizScope,quizDiff,setQuizDiff,quizCoun
                 <div style={{fontFamily:"'Shippori Mincho',serif",fontSize:10,letterSpacing:'0.2em',color:C.muted,marginBottom:6}}>解 説</div>
                 <div>{q.e}</div>
               </div>
+              {q?.id&&(
+                <QuestionMemoBox
+                  questionId={q.id}
+                  question={q}
+                  memo={questionMemos[q.id]}
+                  onSave={saveCurrentMemo}
+                />
+              )}
               <button onClick={nextQ} style={{width:'100%',padding:13,border:'none',background:quizMode==='review'?C.review:C.ink,color:'white',fontFamily:"'Shippori Mincho',serif",fontSize:13,fontWeight:700,letterSpacing:'0.2em',cursor:'pointer',marginBottom:8,transition:'background 0.2s'}}
                 onMouseEnter={e=>e.target.style.opacity='0.85'} onMouseLeave={e=>e.target.style.opacity='1'}>
                 {qIdx>=totalQ-1?'結果を見る →':'次の問題 →'}
               </button>
             </>
+          )}
+          {!editing&&answered===null&&q?.id&&(
+            <QuestionMemoBox
+              questionId={q.id}
+              question={q}
+              memo={questionMemos[q.id]}
+              onSave={saveCurrentMemo}
+            />
           )}
           <button onClick={backToSetup} style={{width:'100%',padding:9,border:`1px solid ${C.line}`,background:'white',color:C.muted,fontSize:12,cursor:'pointer',fontFamily:"'Zen Kaku Gothic New',sans-serif"}}>中止して設定に戻る</button>
         </div>
@@ -10656,6 +11087,7 @@ function QuizTab({quizPhase,quizScope,setQuizScope,quizDiff,setQuizDiff,quizCoun
           <div style={{display:'flex',gap:10,justifyContent:'center',flexWrap:'wrap'}}>
             <button onClick={startQuiz} style={{padding:'11px 22px',border:`2px solid ${C.ink}`,background:'white',fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:12,fontWeight:700,cursor:'pointer'}}>もう一度</button>
             <button onClick={backToSetup} style={{padding:'11px 22px',border:'none',background:C.ink,color:'white',fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:12,fontWeight:700,cursor:'pointer'}}>設定に戻る</button>
+            <button onClick={()=>setShowMemos(true)} style={{padding:'11px 22px',border:`1.5px solid ${C.a}`,background:C.aBg,fontFamily:"'Zen Kaku Gothic New',sans-serif",fontSize:12,fontWeight:700,cursor:'pointer'}}>📝 メモ一覧{memoTotal>0?`（${memoTotal}）`:''}</button>
           </div>
         </div>
       )}
@@ -10675,6 +11107,14 @@ function QuizTab({quizPhase,quizScope,setQuizScope,quizDiff,setQuizDiff,quizCoun
           }
         </div>
       )}
+      </>)}
+      <ThemeMemoEditorModal
+        themeId={themeMemoEditId}
+        label={themeMemoEditId ? scopeLabel(themeMemoEditId) : ''}
+        memo={themeMemoEditId ? themeMemos[themeMemoEditId] : null}
+        onSave={(text)=>saveThemeMemoById(themeMemoEditId, text)}
+        onClose={()=>setThemeMemoEditId(null)}
+      />
     </div>
   );
 }
