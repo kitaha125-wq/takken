@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "node scripts/compile-app.mjs && node scripts/patch-index.mjs",
+    "build:flash": "node scripts/build-random-flash.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

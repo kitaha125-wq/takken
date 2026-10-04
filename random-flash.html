@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#1a2332"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="宅建ランダム"/>
+<title>ランダム1件｜宅建</title>
+<style>
+  :root {
+    --bg: #1a2332;
+    --bg2: #243044;
+    --card: #2a3a52;
+    --text: #f0f3f7;
+    --muted: #9aadc4;
+    --accent: #e8a54b;
+    --accent2: #5eb8a8;
+    --danger: #e07a6a;
+    --ok: #7bc47f;
+    --line: rgba(255,255,255,.08);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg); color: var(--text);
+    font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+    line-height: 1.55; -webkit-text-size-adjust: 100%;
+  }
+  body {
+    min-height: 100dvh;
+    padding-bottom: calc(96px + env(safe-area-inset-bottom));
+    background:
+      radial-gradient(120% 80% at 10% -10%, rgba(94,184,168,.16), transparent 55%),
+      radial-gradient(90% 60% at 100% 0%, rgba(232,165,75,.12), transparent 50%),
+      var(--bg);
+  }
+  header {
+    position: sticky; top: 0; z-index: 20;
+    background: linear-gradient(180deg, #152033 0%, rgba(26,35,50,.96) 100%);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 16px 10px;
+    backdrop-filter: blur(8px);
+  }
+  h1 { margin: 0; font-size: 1.15rem; letter-spacing: .02em; }
+  .sub { color: var(--muted); font-size: .78rem; margin-top: 4px; }
+  .sub a { color: var(--accent2); text-decoration: none; }
+  .modes, .filters {
+    display: flex; gap: 6px; overflow-x: auto; padding: 10px 16px 0;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  }
+  .modes::-webkit-scrollbar, .filters::-webkit-scrollbar { display: none; }
+  .filters { padding-top: 6px; padding-bottom: 4px; }
+  .chip {
+    flex: 0 0 auto; border: 1px solid var(--line); background: var(--bg2);
+    color: var(--muted); border-radius: 999px; padding: 8px 12px; font-size: .78rem;
+    cursor: pointer;
+  }
+  .chip.active {
+    background: var(--accent); color: #1a2332; border-color: transparent; font-weight: 700;
+  }
+  .chip.filter.active {
+    background: rgba(94,184,168,.16); color: var(--accent2); border-color: var(--accent2); font-weight: 650;
+  }
+  main {
+    padding: 16px; max-width: 560px; margin: 0 auto;
+    animation: fadeIn .28s ease both;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+  .card {
+    background: linear-gradient(155deg, #314860, #243447 70%);
+    border: 1px solid var(--line); border-radius: 18px; padding: 18px 16px;
+    min-height: 280px; display: flex; flex-direction: column; gap: 12px;
+  }
+  .meta-row {
+    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  }
+  .pill {
+    display: inline-block; font-size: .7rem; padding: 3px 8px; border-radius: 999px;
+    background: rgba(232,165,75,.18); color: var(--accent);
+  }
+  .pill.field { background: rgba(94,184,168,.14); color: var(--accent2); }
+  .pill.wrong { background: rgba(224,122,106,.18); color: #f0a39a; }
+  .pill.src-pdf { background: rgba(94,184,168,.18); color: #9fe0d5; }
+  .pill.src-weak { background: rgba(224,122,106,.18); color: #f0a39a; }
+  .prompt {
+    font-size: 1.05rem; font-weight: 650; margin: 0; flex: 1;
+  }
+  .hint {
+    color: var(--muted); font-size: .8rem; margin: 0;
+  }
+  .answer {
+    display: none;
+    background: rgba(0,0,0,.18);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .answer.show { display: block; animation: fadeIn .2s ease both; }
+  .hook {
+    background: rgba(94,184,168,.12); border: 1px solid rgba(94,184,168,.28);
+    color: #b8ebe1; border-radius: 10px; padding: 10px 12px; font-size: .92rem; margin: 0 0 8px;
+  }
+  .hook::before { content: "記憶フック："; font-size: .72rem; opacity: .85; }
+  .kw { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 8px; }
+  .kw span {
+    font-size: .68rem; color: var(--muted); border: 1px solid var(--line);
+    border-radius: 6px; padding: 2px 6px;
+  }
+  .summary { font-size: .86rem; color: #d7e2ef; margin: 0 0 8px; }
+  details { margin-top: 4px; }
+  summary {
+    cursor: pointer; color: var(--accent2); font-size: .8rem; list-style: none;
+  }
+  summary::-webkit-details-marker { display: none; }
+  .cmp { margin-top: 8px; font-size: .76rem; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 420px; }
+  th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: rgba(0,0,0,.2); color: var(--muted); font-weight: 600; }
+  .attn { color: var(--danger); }
+  .num { color: var(--accent); white-space: nowrap; }
+  .verdict {
+    font-size: 1.1rem; font-weight: 800; margin: 0 0 8px;
+  }
+  .verdict.ok { color: var(--ok); }
+  .verdict.ng { color: var(--danger); }
+  .explain { font-size: .88rem; color: #d7e2ef; margin: 0; }
+  .quiz-acts {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto;
+  }
+  .quiz-acts button {
+    border: 0; border-radius: 12px; padding: 14px; font-size: 1.05rem; font-weight: 800; cursor: pointer;
+  }
+  .btn-o { background: rgba(123,196,127,.2); color: var(--ok); border: 1px solid rgba(123,196,127,.35) !important; }
+  .btn-x { background: rgba(224,122,106,.18); color: #f0a39a; border: 1px solid rgba(224,122,106,.35) !important; }
+  .quiz-acts button:disabled { opacity: .55; }
+  .loading, .error {
+    text-align: center; color: var(--muted); padding: 48px 16px; font-size: .92rem;
+  }
+  .error { color: #f0a39a; }
+  footer.bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(21,32,51,.96); border-top: 1px solid var(--line);
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    display: flex; gap: 8px; justify-content: center;
+  }
+  footer.bar button, footer.bar a {
+    flex: 1; max-width: 220px; border: 0; border-radius: 12px; padding: 12px;
+    font-weight: 700; font-size: .9rem; cursor: pointer; text-align: center;
+    text-decoration: none; display: flex; align-items: center; justify-content: center;
+  }
+  .btn-primary { background: var(--accent); color: #1a2332; }
+  .btn-ghost { background: var(--bg2); color: var(--text); border: 1px solid var(--line) !important; }
+  .stats {
+    color: var(--muted); font-size: .72rem; text-align: center; margin: 10px 0 0;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>ランダム1件</h1>
+  <div class="sub">開くたびに別の論点 · <a href="./weakness-daily.html">弱点振り返り</a> · <a href="./start.html">スタート</a></div>
+</header>
+<nav class="modes" id="modes">
+  <button class="chip active" type="button" data-mode="note">記憶フック</button>
+  <button class="chip" type="button" data-mode="quiz">○×問題</button>
+</nav>
+<nav class="filters" id="filters"></nav>
+<main id="main"><div class="loading">読み込み中…</div></main>
+<p class="stats" id="stats"></p>
+<footer class="bar">
+  <button class="btn-ghost" type="button" id="btnReveal">答えを見る</button>
+  <button class="btn-primary" type="button" id="btnNext">次のランダム</button>
+</footer>
+<script>
+const SEEN_KEY = 'tk_random_flash_seen_v1';
+const MODE_KEY = 'tk_random_flash_mode_v1';
+const FILTER_KEY = 'tk_random_flash_filter_v1';
+const RECENT_MAX = 18;
+
+let DATA = null;
+let mode = localStorage.getItem(MODE_KEY) || 'note';
+let filter = localStorage.getItem(FILTER_KEY) || 'prefer-wrong';
+let current = null;
+let revealed = false;
+let answered = null; // true/false/null for quiz
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function loadSeen() {
+  try { return JSON.parse(localStorage.getItem(SEEN_KEY) || '[]'); } catch { return []; }
+}
+function pushSeen(id) {
+  const seen = loadSeen().filter(x => x !== id);
+  seen.push(id);
+  while (seen.length > RECENT_MAX) seen.shift();
+  localStorage.setItem(SEEN_KEY, JSON.stringify(seen));
+}
+
+function notePool() {
+  let pool = DATA.notes.slice();
+  if (filter === 'wrong') pool = pool.filter(n => n.wasWrong);
+  else if (filter === 'weak') pool = pool.filter(n => n.source !== 'pdf');
+  else if (filter === 'pdf') pool = pool.filter(n => n.source === 'pdf');
+  else if (filter.startsWith('field:')) {
+    const f = filter.slice(6);
+    pool = pool.filter(n => n.field === f || (f === '権利関係' && n.cat === '債権総論'));
+  }
+  return pool.length ? pool : DATA.notes.slice();
+}
+
+function quizPool() {
+  let pool = DATA.quizzes.slice();
+  if (filter === 'hard') pool = pool.filter(q => q.d === 'h');
+  else if (filter.startsWith('qcat:')) {
+    const c = filter.slice(5);
+    pool = pool.filter(q => q.cat === c);
+  }
+  return pool.length ? pool : DATA.quizzes.slice();
+}
+
+function pickRandom(pool) {
+  if (!pool.length) return null;
+  const seen = new Set(loadSeen());
+  const fresh = pool.filter(x => !seen.has(x.id));
+  const preferWrong = mode === 'note' && filter === 'prefer-wrong';
+  let candidates = fresh.length ? fresh : pool;
+
+  if (preferWrong) {
+    const wrong = candidates.filter(x => x.wasWrong);
+    if (wrong.length && Math.random() < 0.65) candidates = wrong;
+  }
+  return candidates[Math.floor(Math.random() * candidates.length)];
+}
+
+function renderFilters() {
+  const el = document.getElementById('filters');
+  let defs;
+  if (mode === 'note') {
+    defs = [
+      { id: 'prefer-wrong', label: '誤答多め' },
+      { id: 'all', label: 'すべて' },
+      { id: 'wrong', label: '誤答のみ' },
+      { id: 'weak', label: '弱点' },
+      { id: 'pdf', label: 'まとめ' },
+      { id: 'field:宅建業法', label: '業法' },
+      { id: 'field:法令上の制限', label: '法令' },
+      { id: 'field:権利関係', label: '権利' },
+      { id: 'field:税その他', label: '税' },
+    ];
+  } else {
+    defs = [
+      { id: 'all', label: 'すべて' },
+      { id: 'hard', label: '難問' },
+    ];
+  }
+  if (!defs.some(d => d.id === filter)) filter = defs[0].id;
+  el.innerHTML = defs.map(d =>
+    `<button class="chip filter${d.id===filter?' active':''}" type="button" data-filter="${d.id}">${d.label}</button>`
+  ).join('');
+  el.querySelectorAll('.chip').forEach(btn => btn.addEventListener('click', () => {
+    filter = btn.dataset.filter;
+    localStorage.setItem(FILTER_KEY, filter);
+    renderFilters();
+    nextCard(true);
+  }));
+}
+
+function renderNote(item) {
+  const kws = (item.keywords || []).map(k => `<span>${escapeHtml(k)}</span>`).join('');
+  let cmp = '';
+  if (item.comparisonTable && item.comparisonTable.length) {
+    const rows = item.comparisonTable.map(r => `
+      <tr>
+        <td>${escapeHtml(r.condition || '')}</td>
+        <td>${escapeHtml(r.rule || '')}</td>
+        <td class="num">${escapeHtml(String(r.number ?? ''))}</td>
+        <td class="attn">${escapeHtml(r.attention || '')}</td>
+      </tr>`).join('');
+    cmp = `
+      <details>
+        <summary>比較表を見る${item.comparisonTitle ? '（' + escapeHtml(item.comparisonTitle) + '）' : ''}</summary>
+        <div class="cmp">
+          <table>
+            <thead><tr><th>条件</th><th>ルール</th><th>数字</th><th>ひっかけ</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </details>`;
+  }
+  return `
+    <article class="card">
+      <div class="meta-row">
+        <span class="pill field">${escapeHtml(item.field || '')}</span>
+        <span class="pill">${escapeHtml(item.cat || '')}</span>
+        ${item.source==='pdf' ? '<span class="pill src-pdf">まとめ</span>' : '<span class="pill src-weak">弱点</span>'}
+        ${item.wasWrong ? '<span class="pill wrong">誤答あり</span>' : ''}
+      </div>
+      <p class="prompt">${escapeHtml(item.weakPoint || '')}</p>
+      <p class="hint">思い浮かんだら「答えを見る」。フックを声に出す。</p>
+      <div class="answer${revealed?' show':''}" id="answerBox">
+        <div class="hook">${escapeHtml(item.memoryHook || '')}</div>
+        <div class="kw">${kws}</div>
+        ${item.summary ? `<p class="summary">${escapeHtml(item.summary)}</p>` : ''}
+        ${cmp}
+      </div>
+    </article>`;
+}
+
+function renderQuiz(item) {
+  const show = revealed || answered !== null;
+  let result = '';
+  if (answered !== null) {
+    const correct = answered === !!item.a;
+    result = `<p class="verdict ${correct?'ok':'ng'}">${correct ? '正解' : '不正解'} · 答えは ${item.a ? '○' : '×'}</p>`;
+  } else if (revealed) {
+    result = `<p class="verdict">${item.a ? '○' : '×'}</p>`;
+  }
+  return `
+    <article class="card">
+      <div class="meta-row">
+        <span class="pill field">${escapeHtml(item.bank || '○×')}</span>
+        <span class="pill">${escapeHtml(item.cat || '')}</span>
+        ${item.d==='h' ? '<span class="pill wrong">難</span>' : ''}
+      </div>
+      <p class="prompt">${escapeHtml(item.s || '')}</p>
+      <p class="hint">○か×か。答えを出す前に一呼吸。</p>
+      ${!show ? `
+        <div class="quiz-acts">
+          <button class="btn-o" type="button" data-ans="1">○</button>
+          <button class="btn-x" type="button" data-ans="0">×</button>
+        </div>` : ''}
+      <div class="answer${show?' show':''}" id="answerBox">
+        ${result}
+        <p class="explain">${escapeHtml(item.e || '')}</p>
+      </div>
+    </article>`;
+}
+
+function updateChrome() {
+  const revealBtn = document.getElementById('btnReveal');
+  if (mode === 'quiz') {
+    revealBtn.textContent = revealed || answered !== null ? '答え表示中' : '答えを見る';
+    revealBtn.disabled = revealed || answered !== null;
+  } else {
+    revealBtn.textContent = revealed ? '答え表示中' : '答えを見る';
+    revealBtn.disabled = revealed;
+  }
+  const pool = mode === 'note' ? notePool() : quizPool();
+  document.getElementById('stats').textContent =
+    `${mode === 'note' ? '記憶フック' : '○×'} · 候補 ${pool.length}件 · 直近除外 ${Math.min(loadSeen().length, RECENT_MAX)}件`;
+}
+
+function renderCurrent() {
+  const main = document.getElementById('main');
+  if (!current) {
+    main.innerHTML = '<div class="error">表示できる項目がありません</div>';
+    return;
+  }
+  main.innerHTML = mode === 'note' ? renderNote(current) : renderQuiz(current);
+  main.querySelectorAll('[data-ans]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      answered = btn.dataset.ans === '1';
+      revealed = true;
+      renderCurrent();
+      updateChrome();
+    });
+  });
+  updateChrome();
+}
+
+function nextCard(forceNew) {
+  const pool = mode === 'note' ? notePool() : quizPool();
+  let item = pickRandom(pool);
+  if (forceNew && current && pool.length > 1) {
+    let guard = 0;
+    while (item && item.id === current.id && guard++ < 8) item = pickRandom(pool);
+  }
+  current = item;
+  revealed = false;
+  answered = null;
+  if (current) pushSeen(current.id);
+  const main = document.getElementById('main');
+  main.style.animation = 'none';
+  // restart fade
+  void main.offsetWidth;
+  main.style.animation = '';
+  renderCurrent();
+}
+
+function bindModes() {
+  document.querySelectorAll('#modes .chip').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === mode);
+    btn.addEventListener('click', () => {
+      mode = btn.dataset.mode;
+      localStorage.setItem(MODE_KEY, mode);
+      document.querySelectorAll('#modes .chip').forEach(b => b.classList.toggle('active', b === btn));
+      filter = mode === 'note' ? (localStorage.getItem(FILTER_KEY) || 'prefer-wrong') : 'all';
+      if (mode === 'quiz' && (filter === 'prefer-wrong' || filter === 'wrong' || filter === 'weak' || filter === 'pdf' || filter.startsWith('field:'))) {
+        filter = 'all';
+      }
+      localStorage.setItem(FILTER_KEY, filter);
+      renderFilters();
+      nextCard(true);
+    });
+  });
+}
+
+async function boot() {
+  try {
+    const res = await fetch('./data/random-flash.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    DATA = await res.json();
+  } catch (e) {
+    document.getElementById('main').innerHTML =
+      `<div class="error">データ読み込みに失敗しました（${escapeHtml(e.message)}）<br>同じフォルダの data/random-flash.json が必要です。</div>`;
+    return;
+  }
+  bindModes();
+  renderFilters();
+  document.getElementById('btnNext').onclick = () => nextCard(true);
+  document.getElementById('btnReveal').onclick = () => {
+    if (revealed || answered !== null) return;
+    revealed = true;
+    renderCurrent();
+  };
+  // keyboard / swipe helpers for quick review
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'n' || e.key === 'N') nextCard(true);
+    if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      if (!revealed && answered === null) {
+        revealed = true;
+        renderCurrent();
+      } else nextCard(true);
+    }
+    if (mode === 'quiz' && answered === null && !revealed) {
+      if (e.key === 'o' || e.key === 'O' || e.key === '1') {
+        answered = true; revealed = true; renderCurrent();
+      }
+      if (e.key === 'x' || e.key === 'X' || e.key === '0' || e.key === '2') {
+        answered = false; revealed = true; renderCurrent();
+      }
+    }
+  });
+  nextCard(false);
+}
+
+boot();
+</script>
+</body>
+</html>
