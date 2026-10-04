@@ -25,6 +25,8 @@
 
 **https://kitaha125-wq.github.io/takken/restore.html**（バックアップ復元だけ・すぐ開く）
 
+**https://kitaha125-wq.github.io/takken/random-flash.html**（開くたびにランダム1件・隙間復習）
+
 **https://kitaha125-wq.github.io/takken/weakness-daily.html**（弱点ノートの毎日振り返り）
 
 **https://kitaha125-wq.github.io/takken/notes-library.html**（PDF全文ノート・検索付き）
