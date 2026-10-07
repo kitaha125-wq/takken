@@ -44,17 +44,19 @@ header {
   position: sticky; top: 0; z-index: 30;
   background: linear-gradient(180deg, #152033 0%, rgba(26,35,50,.97) 100%);
   border-bottom: 1px solid var(--line);
-  padding: 12px 16px 8px;
+  padding: 12px 0 8px;
   backdrop-filter: blur(8px);
 }
+.header-inner { padding: 0 16px; }
 h1 { margin: 0; font-size: 1.12rem; letter-spacing: .02em; }
 .sub { color: var(--muted); font-size: .76rem; margin-top: 3px; }
 .sub a { color: var(--accent2); text-decoration: none; }
 .chips {
-  display: flex; gap: 6px; overflow-x: auto; padding: 8px 16px 4px;
+  display: flex; gap: 6px; overflow-x: auto; padding: 8px 16px 2px;
   -webkit-overflow-scrolling: touch; scrollbar-width: none;
 }
 .chips::-webkit-scrollbar { display: none; }
+.chips .chip { min-height: 36px; touch-action: manipulation; }
 .chip {
   flex: 0 0 auto; border: 1px solid var(--line); background: var(--bg2);
   color: var(--muted); border-radius: 999px; padding: 7px 12px; font-size: .74rem;
@@ -178,16 +180,17 @@ footer.bar button, footer.bar a {
 </head>
 <body>
 <header>
-  <h1>試験前要点｜一目まとめ</h1>
-  <div class="sub">寝る前・試験直前用 · <a href="./weakness-daily.html">弱点振り返り</a> · <a href="./random-flash.html">ランダム1件</a> · <a href="./start.html">スタート</a></div>
+  <div class="header-inner">
+    <h1>試験前要点｜一目まとめ</h1>
+    <div class="sub">寝る前・試験直前用 · <a href="./weakness-daily.html">弱点振り返り</a> · <a href="./random-flash.html">ランダム1件</a> · <a href="./start.html">スタート</a></div>
+  </div>
+  <div class="chips" id="fieldChips" role="tablist" aria-label="分野"></div>
+  <div class="chips" id="modeChips" role="tablist" aria-label="表示"></div>
+  <div class="progress-wrap">
+    <div class="progress"><i id="progBar"></i></div>
+    <div class="prog-meta"><span id="progText">0 / 0 チェック</span><span>今夜の進捗（端末に保存）</span></div>
+  </div>
 </header>
-
-<div class="chips" id="fieldChips" role="tablist" aria-label="分野"></div>
-<div class="chips" id="modeChips" role="tablist" aria-label="表示"></div>
-<div class="progress-wrap">
-  <div class="progress"><i id="progBar"></i></div>
-  <div class="prog-meta"><span id="progText">0 / 0 チェック</span><span>今夜の進捗（端末に保存）</span></div>
-</div>
 
 <main>
   <p class="hint">頻出の数字・線引き・ひっかけだけを凝縮しています。チェックを付けながら眺めると、寝る前の復習に向きます。</p>
