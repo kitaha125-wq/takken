@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#1a2332"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="宅建要点"/>
+<title>試験前要点｜一目まとめ</title>
+<style>
+:root {
+  --bg: #1a2332;
+  --bg2: #243044;
+  --card: #2a3a52;
+  --text: #f0f3f7;
+  --muted: #9aadc4;
+  --accent: #e8a54b;
+  --accent2: #5eb8a8;
+  --danger: #e07a6a;
+  --ok: #7bc47f;
+  --line: rgba(255,255,255,.08);
+  --gyo: #6ea8ff;
+  --ken: #b48cff;
+  --hou: #7bc47f;
+  --zei: #e8a54b;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+html, body {
+  margin: 0; padding: 0; background: var(--bg); color: var(--text);
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  line-height: 1.55; -webkit-text-size-adjust: 100%;
+}
+body {
+  min-height: 100dvh;
+  padding-bottom: calc(88px + env(safe-area-inset-bottom));
+  background:
+    radial-gradient(110% 70% at 0% -5%, rgba(110,168,255,.14), transparent 50%),
+    radial-gradient(90% 55% at 100% 0%, rgba(232,165,75,.12), transparent 45%),
+    var(--bg);
+}
+header {
+  position: sticky; top: 0; z-index: 30;
+  background: linear-gradient(180deg, #152033 0%, rgba(26,35,50,.97) 100%);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 16px 8px;
+  backdrop-filter: blur(8px);
+}
+h1 { margin: 0; font-size: 1.12rem; letter-spacing: .02em; }
+.sub { color: var(--muted); font-size: .76rem; margin-top: 3px; }
+.sub a { color: var(--accent2); text-decoration: none; }
+.chips {
+  display: flex; gap: 6px; overflow-x: auto; padding: 8px 16px 4px;
+  -webkit-overflow-scrolling: touch; scrollbar-width: none;
+}
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex: 0 0 auto; border: 1px solid var(--line); background: var(--bg2);
+  color: var(--muted); border-radius: 999px; padding: 7px 12px; font-size: .74rem;
+  cursor: pointer;
+}
+.chip.active {
+  background: var(--accent); color: #1a2332; border-color: transparent; font-weight: 800;
+}
+.chip.mode.active {
+  background: rgba(94,184,168,.16); color: var(--accent2);
+  border-color: var(--accent2); font-weight: 700;
+}
+.progress-wrap { padding: 0 16px 8px; max-width: 760px; margin: 0 auto; }
+.progress {
+  height: 5px; background: rgba(255,255,255,.08); border-radius: 999px; overflow: hidden;
+}
+.progress > i { display: block; height: 100%; width: 0%; background: var(--accent2); transition: width .2s; }
+.prog-meta { display: flex; justify-content: space-between; color: var(--muted); font-size: .7rem; margin-top: 4px; }
+main { max-width: 760px; margin: 0 auto; padding: 8px 16px 24px; }
+.toc {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px;
+}
+.toc a {
+  display: block; text-decoration: none; color: var(--text);
+  background: var(--bg2); border: 1px solid var(--line); border-radius: 12px;
+  padding: 10px 12px; font-size: .82rem; font-weight: 700;
+}
+.toc a span { display: block; color: var(--muted); font-size: .68rem; font-weight: 500; margin-top: 2px; }
+.toc a.gyo { border-left: 3px solid var(--gyo); }
+.toc a.ken { border-left: 3px solid var(--ken); }
+.toc a.hou { border-left: 3px solid var(--hou); }
+.toc a.zei { border-left: 3px solid var(--zei); }
+.sec { display: none; margin-bottom: 22px; }
+.sec.show { display: block; }
+.sec-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 8px; margin: 6px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line);
+}
+.sec-head h2 { margin: 0; font-size: 1.05rem; }
+.sec-head .tag {
+  font-size: .68rem; padding: 3px 8px; border-radius: 999px;
+  background: rgba(255,255,255,.06); color: var(--muted);
+}
+.block {
+  background: linear-gradient(155deg, #2f425a, #243447 75%);
+  border: 1px solid var(--line); border-radius: 14px; padding: 12px 12px 8px;
+  margin-bottom: 10px;
+}
+.block h3 {
+  margin: 0 0 8px; font-size: .88rem; color: var(--accent);
+  display: flex; align-items: center; gap: 6px;
+}
+.block h3 .dot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex: 0 0 auto;
+}
+.row {
+  display: grid; grid-template-columns: 1fr auto; gap: 8px;
+  padding: 8px 0; border-top: 1px solid var(--line);
+  align-items: start;
+}
+.row:first-of-type { border-top: 0; }
+.row label.check {
+  display: grid; grid-template-columns: 18px 1fr; gap: 8px; align-items: start;
+  cursor: pointer; margin: 0;
+}
+.row input[type=checkbox] {
+  margin-top: 3px; accent-color: var(--accent2); width: 16px; height: 16px;
+}
+.row.done .k, .row.done .v { opacity: .45; }
+.k { font-size: .84rem; color: #e8eef5; }
+.v {
+  font-size: .84rem; font-weight: 800; color: var(--accent);
+  text-align: right; white-space: nowrap; min-width: 4.5em;
+}
+.trap {
+  grid-column: 1 / -1; font-size: .72rem; color: var(--danger);
+  margin: -2px 0 2px 26px;
+}
+.trap::before { content: "⚠ "; }
+.hook {
+  grid-column: 1 / -1;
+  font-size: .76rem; color: #b8ebe1;
+  background: rgba(94,184,168,.1); border: 1px solid rgba(94,184,168,.22);
+  border-radius: 8px; padding: 7px 10px; margin: 2px 0 4px 26px;
+}
+.compare {
+  width: 100%; border-collapse: collapse; font-size: .74rem; margin: 4px 0 6px;
+}
+.compare th, .compare td {
+  border: 1px solid var(--line); padding: 6px 7px; text-align: left; vertical-align: top;
+}
+.compare th { background: rgba(0,0,0,.22); color: var(--muted); font-weight: 650; }
+.compare .num { color: var(--accent); font-weight: 800; }
+.hint {
+  color: var(--muted); font-size: .78rem; margin: 0 0 12px;
+  background: rgba(255,255,255,.04); border: 1px solid var(--line);
+  border-radius: 12px; padding: 10px 12px;
+}
+.nums-only .k { font-size: .8rem; }
+.nums-only .trap, .nums-only .hook, .nums-only .compare-wrap { display: none !important; }
+.trap-only .hook, .trap-only .compare-wrap { display: none !important; }
+.trap-only .row:not(.has-trap) { display: none; }
+footer.bar {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  background: rgba(21,32,51,.96); border-top: 1px solid var(--line);
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  display: flex; gap: 8px; justify-content: center;
+}
+footer.bar button, footer.bar a {
+  flex: 1; max-width: 200px; text-align: center; text-decoration: none;
+  border: 0; border-radius: 12px; padding: 12px; font-weight: 800; font-size: .86rem;
+  cursor: pointer; font-family: inherit;
+}
+.btn-primary { background: var(--accent); color: #1a2332; }
+.btn-ghost { background: var(--bg2); color: var(--text); border: 1px solid var(--line) !important; }
+.hidden { display: none !important; }
+@media (min-width: 640px) {
+  .toc { grid-template-columns: repeat(4, 1fr); }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>試験前要点｜一目まとめ</h1>
+  <div class="sub">寝る前・試験直前用 · <a href="./weakness-daily.html">弱点振り返り</a> · <a href="./random-flash.html">ランダム1件</a> · <a href="./start.html">スタート</a></div>
+</header>
+
+<div class="chips" id="fieldChips" role="tablist" aria-label="分野"></div>
+<div class="chips" id="modeChips" role="tablist" aria-label="表示"></div>
+<div class="progress-wrap">
+  <div class="progress"><i id="progBar"></i></div>
+  <div class="prog-meta"><span id="progText">0 / 0 チェック</span><span>今夜の進捗（端末に保存）</span></div>
+</div>
+
+<main>
+  <p class="hint">頻出の数字・線引き・ひっかけだけを凝縮しています。チェックを付けながら眺めると、寝る前の復習に向きます。</p>
+  <nav class="toc" id="toc"></nav>
+  <div id="sections"></div>
+</main>
+
+<footer class="bar">
+  <button type="button" class="btn-ghost" id="resetBtn">チェック解除</button>
+  <a class="btn-ghost" href="./notes-library.html">全文ノート</a>
+  <button type="button" class="btn-primary" id="topBtn">上へ</button>
+</footer>
+
+<script>
+(function () {
+  const STORAGE_KEY = "takken-exam-sheet-checks-v1";
+
+  const DATA = [
+    {
+      id: "gyo",
+      field: "宅建業法",
+      color: "gyo",
+      blurb: "20問前後 · 得点源",
+      blocks: [
+        {
+          title: "35条 / 37条の線引き",
+          rows: [
+            { k: "35条の時期", v: "契約前", trap: "37条は契約成立後・遅滞なく", hook: "重説＝契約前／契約書面＝成立後" },
+            { k: "35条の説明者", v: "宅建士", trap: "専任である必要はない" },
+            { k: "相手が業者のとき", v: "交付のみ", trap: "説明は省略可・交付は必要" },
+            { k: "代金の額", v: "37条", trap: "保全措置は35条" },
+            { k: "引渡し・登記の時期", v: "37条", trap: "時期系は37条" },
+            { k: "天災の損害負担", v: "37条のみ", trap: "35条では説明不要" },
+            { k: "損害賠償・違約金の上限", v: "代金の2割", trap: "超えた部分のみ無効（全部無効ではない）" },
+            { k: "都市計画29条制限", v: "売買のみ", trap: "貸借の重説では不要" },
+            { k: "石綿・ハザード", v: "貸借も必要", trap: "『貸借は不要』はひっかけ" },
+            { k: "敷金・設備の状況", v: "貸借必須", trap: "売買では原則不要" },
+            { k: "私道負担・都市計画制限", v: "建物貸借は不要", trap: "借主は建物を建て替えないから" },
+            { k: "供託所等の説明（35条の2）", v: "口頭OK", trap: "個別書面交付義務なし（35条に書くと◎）" }
+          ],
+          compare: {
+            title: "媒介契約の数字",
+            head: ["種類", "期間", "報告", "レインズ"],
+            body: [
+              ["一般媒介", "自由・自動更新可", "なし", "努力義務"],
+              ["専任媒介", "最長3か月", "2週に1回", "7日以内"],
+              ["専属専任", "最長3か月", "1週に1回", "5日以内"]
+            ]
+          }
+        },
+        {
+          title: "免許・保証金・宅建士",
+          rows: [
+            { k: "免許・取引士証の有効期間", v: "5年", trap: "更新忘れ＝失効（返納不要）" },
+            { k: "営業保証金（本店）", v: "1,000万", trap: "支店は各500万" },
+            { k: "供託後の届出なし", v: "催告→取消可", trap: "免許受領から3か月以内に届出" },
+            { k: "還付後の不足額供託", v: "2週間以内", trap: "その後2週間以内に届出" },
+            { k: "保証協会の分担金供託", v: "1週間以内", trap: "業者本人は弁済を受けられない" },
+            { k: "案内所設置の届出", v: "10日前", trap: "免許権者＋所在地管轄知事" },
+            { k: "死亡・破産等の届出", v: "30日以内", trap: "役員の住所変更は届出不要" },
+            { k: "帳簿の保存", v: "閉鎖後5年", trap: "新築住宅売主は10年／従業者名簿は10年" },
+            { k: "宅建士証の講習", v: "申請前6か月以内", trap: "交付・更新の両方で必要" },
+            { k: "未成年の取引士", v: "登録可", trap: "専任取引士にはなれない（例外あり）" }
+          ]
+        },
+        {
+          title: "契約・報酬・保全",
+          rows: [
+            { k: "手付解除", v: "履行着手まで", trap: "相手が着手したら解除不可" },
+            { k: "割賦販売の解除催告", v: "30日以上", trap: "即時解除は不可" },
+            { k: "完成物件の保全不要", v: "10%以下かつ1,000万以下", trap: "未完成は基準が厳しい" },
+            { k: "未完成の保全方法", v: "保証・保険のみ", trap: "完成は保証・保険・保管" },
+            { k: "居住用賃貸の報酬上限", v: "0.55か月", trap: "貸主承諾で1.1か月まで（税込）" },
+            { k: "居住用以外の賃貸報酬", v: "1.1か月", trap: "配分は自由" },
+            { k: "工事完了前の売買", v: "確認後のみ", trap: "貸借の媒介は規制外で可能" }
+          ]
+        }
+      ]
+    },
+    {
+      id: "ken",
+      field: "権利関係",
+      color: "ken",
+      blurb: "14問前後 · 民法中心",
+      blocks: [
+        {
+          title: "借地借家",
+          rows: [
+            { k: "普通借地の存続期間", v: "30年以上", trap: "短縮特約は無効・延長は有効" },
+            { k: "更新期間", v: "1回目20年→以降10年", trap: "建物がないと更新されない" },
+            { k: "借地の対抗力", v: "登記 or 建物登記", trap: "土地の引渡しだけでは対抗不可" },
+            { k: "借家の対抗力", v: "引渡しでOK", trap: "借地と混同しない" },
+            { k: "建物滅失後の対抗力", v: "掲示で2年", trap: "2年以内に新築＋登記で復活" },
+            { k: "一般定期借地", v: "50年以上・書面", trap: "公正証書は不要" },
+            { k: "事業用定期借地", v: "10年以上50年未満", trap: "公正証書必須・事業用のみ" },
+            { k: "建物買取請求", v: "期間満了＋更新なし", trap: "債務不履行解除では不可" }
+          ]
+        },
+        {
+          title: "抵当・時効・契約不適合",
+          rows: [
+            { k: "抵当権の利息担保", v: "満期最後の2年分", trap: "設定者・物上保証人間では適用外（判例）" },
+            { k: "法定地上権の要件", v: "4つ全部", trap: "土地建物同一所有者＋抵当＋所有者分離" },
+            { k: "抵当建物使用者の猶予", v: "買受けから6か月", trap: "対抗できない賃貸借が対象" },
+            { k: "債権の消滅時効", v: "知って5年／起算10年", trap: "所有権に消滅時効なし" },
+            { k: "種類・品質の不適合通知", v: "知って1年以内", trap: "悪意・重過失は制限なし" },
+            { k: "数量・権利の不適合", v: "知って5年", trap: "引渡しから10年の上限も" }
+          ]
+        },
+        {
+          title: "保証・連帯・賃貸借",
+          rows: [
+            { k: "連帯債務の絶対効", v: "弁済・相殺・更改・混同", trap: "免除・時効は相対効" },
+            { k: "連帯保証", v: "催告・検索・分別なし", trap: "付従性・随伴性はある" },
+            { k: "個人根保証", v: "書面＋極度額必須", trap: "電子契約も可" },
+            { k: "賃借権の譲渡・転貸", v: "賃貸人の承諾必要", trap: "敷金は原則承継されない" },
+            { k: "合意解除と転借人", v: "転借人に対抗不可", trap: "債務不履行解除は対抗可" },
+            { k: "必要費／有益費", v: "直ちに／終了時", trap: "有益費は増価がある場合" }
+          ]
+        }
+      ]
+    },
+    {
+      id: "hou",
+      field: "法令上の制限",
+      color: "hou",
+      blurb: "8問前後 · 数字勝負",
+      blocks: [
+        {
+          title: "都市計画法（開発許可）",
+          rows: [
+            { k: "市街化区域", v: "1,000㎡以上", trap: "三大都市圏の特定市は500㎡" },
+            { k: "市街化調整区域", v: "原則すべて", trap: "面積にかかわらず許可" },
+            { k: "非線引・準都市計画", v: "3,000㎡以上", trap: "区域外は1万㎡" },
+            { k: "都市計画区域外", v: "10,000㎡以上", trap: "国土利用計画法の事後届出と同じ数字感" },
+            { k: "用途地域の数", v: "13種類", trap: "田園住居を忘れない" },
+            { k: "工業専用地域", v: "住宅不可", trap: "幼保こども園は全用途地域で可" },
+            { k: "準都市計画の区域区分", v: "定められない", trap: "用途地域など8種の地域地区は可" }
+          ],
+          compare: {
+            title: "開発許可の面積",
+            head: ["区域", "基準"],
+            body: [
+              ["市街化", "1,000㎡（特定市500㎡）"],
+              ["調整", "原則すべて"],
+              ["非線引／準都市", "3,000㎡"],
+              ["区域外", "10,000㎡"]
+            ]
+          }
+        },
+        {
+          title: "建築基準法",
+          rows: [
+            { k: "接道義務", v: "幅4ｍ以上に2ｍ以上", trap: "袋路は条例制限あり" },
+            { k: "絶対高さ（低層・田園）", v: "10ｍ or 12ｍ", trap: "外壁後退1ｍ/1.5ｍも都市計画で可" },
+            { k: "前面道路と容積率", v: "幅員×係数", trap: "12ｍ未満で制限。複数道路は最大幅員" },
+            { k: "防火地域", v: "原則すべて耐火", trap: "最も厳しい" },
+            { k: "準防火：耐火等が必要", v: "4階以上 or 1,500㎡超", trap: "準耐火だけでは足りない場合あり" },
+            { k: "防火壁区画", v: "延べ1,000㎡超", trap: "耐火・準耐火は例外" },
+            { k: "採光／換気／天井", v: "1/7・1/20・2.1ｍ", trap: "天井は平均値" },
+            { k: "手すり高さ", v: "1.1ｍ以上", trap: "2階以上のバルコニー等" },
+            { k: "避雷設備", v: "高さ20ｍ超", trap: "屋上広告塔3ｍ超は不燃材" },
+            { k: "兼用住宅の非住宅部分", v: "1/2未満かつ50㎡以下", trap: "工業専用は不可" }
+          ]
+        },
+        {
+          title: "農地法・国土法など",
+          rows: [
+            { k: "農地法3条（農地→農地）", v: "農業委員会", trap: "転用ではない" },
+            { k: "4条・5条（転用）", v: "都道府県知事", trap: "市街化区域は届出で足りる場合あり" },
+            { k: "無許可転用の契約", v: "無効", trap: "原状回復命令もあり" },
+            { k: "国土法の事後届出（市街化）", v: "2,000㎡", trap: "非線引5,000／区域外1万" },
+            { k: "事後届出が不要", v: "国・自治体との取引など", trap: "事前届出と混同しない" }
+          ]
+        }
+      ]
+    },
+    {
+      id: "zei",
+      field: "税その他",
+      color: "zei",
+      blurb: "8問前後 · 税率暗記",
+      blocks: [
+        {
+          title: "税率・特例の早見",
+          rows: [
+            { k: "不動産取得税", v: "原則4％（住宅3％）", trap: "相続は非課税・課税標準は評価額" },
+            { k: "固定資産税", v: "1.4％", trap: "1月1日現在の所有者" },
+            { k: "住宅用地特例", v: "200㎡まで1/6", trap: "超過は1/3" },
+            { k: "固定資産税の免税点", v: "土地30万／家屋20万", trap: "償却資産150万" },
+            { k: "新築住宅の減額", v: "3年（耐火5年）1/2", trap: "120㎡まで" },
+            { k: "都市計画税", v: "上限0.3％", trap: "市街化区域内のみ・固定資産税と併課" },
+            { k: "登録免許税（売買／相続）", v: "2.0％／0.4％", trap: "印紙税と混同しやすい" },
+            { k: "譲渡所得の区分", v: "5年以下＝短期", trap: "短期約39.6％／長期約20.3％" },
+            { k: "居住用の特別控除", v: "3,000万円", trap: "買換特例と選択関係に注意" },
+            { k: "相続税の基礎控除", v: "3,000万＋600万×人数", trap: "贈与税の基礎控除は110万" }
+          ]
+        }
+      ]
+    }
+  ];
+
+  const fields = [{ id: "all", label: "全部" }, ...DATA.map(d => ({ id: d.id, label: d.field.replace("上の", "") }))];
+  const modes = [
+    { id: "all", label: "全部表示", cls: "mode" },
+    { id: "nums", label: "数字だけ", cls: "mode" },
+    { id: "traps", label: "ひっかけ", cls: "mode" }
+  ];
+
+  let field = "all";
+  let mode = "all";
+  let checks = {};
+  try { checks = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") || {}; } catch (e) { checks = {}; }
+
+  const fieldChips = document.getElementById("fieldChips");
+  const modeChips = document.getElementById("modeChips");
+  const toc = document.getElementById("toc");
+  const sections = document.getElementById("sections");
+  const progBar = document.getElementById("progBar");
+  const progText = document.getElementById("progText");
+
+  function rowId(secId, bi, ri) { return secId + ":" + bi + ":" + ri; }
+
+  function saveChecks() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(checks)); } catch (e) {}
+  }
+
+  function updateProgress() {
+    const boxes = sections.querySelectorAll('input[type=checkbox]');
+    const total = boxes.length;
+    let done = 0;
+    boxes.forEach(b => { if (b.checked) done++; });
+    progBar.style.width = (total ? (done / total * 100) : 0) + "%";
+    progText.textContent = done + " / " + total + " チェック";
+  }
+
+  function renderChips() {
+    fieldChips.innerHTML = fields.map(f =>
+      '<button type="button" class="chip' + (f.id === field ? " active" : "") + '" data-field="' + f.id + '">' + f.label + "</button>"
+    ).join("");
+    modeChips.innerHTML = modes.map(m =>
+      '<button type="button" class="chip ' + m.cls + (m.id === mode ? " active" : "") + '" data-mode="' + m.id + '">' + m.label + "</button>"
+    ).join("");
+  }
+
+  function render() {
+    renderChips();
+    toc.innerHTML = DATA.map(sec =>
+      '<a class="' + sec.color + (field !== "all" && field !== sec.id ? " hidden" : "") + '" href="#' + sec.id + '">' +
+      sec.field + "<span>" + sec.blurb + "</span></a>"
+    ).join("");
+
+    sections.className = mode === "nums" ? "nums-only" : (mode === "traps" ? "trap-only" : "");
+    sections.innerHTML = DATA.map(sec => {
+      const show = field === "all" || field === sec.id;
+      const blocks = sec.blocks.map((b, bi) => {
+        const rows = b.rows.map((r, ri) => {
+          const id = rowId(sec.id, bi, ri);
+          const done = !!checks[id];
+          return (
+            '<div class="row' + (done ? " done" : "") + (r.trap ? " has-trap" : "") + '" data-row="' + id + '">' +
+              '<label class="check">' +
+                '<input type="checkbox" data-id="' + id + '"' + (done ? " checked" : "") + "/>" +
+                '<span class="k">' + esc(r.k) + "</span>" +
+              "</label>" +
+              '<span class="v">' + esc(r.v) + "</span>" +
+              (r.trap ? '<div class="trap">' + esc(r.trap) + "</div>" : "") +
+              (r.hook ? '<div class="hook">' + esc(r.hook) + "</div>" : "") +
+            "</div>"
+          );
+        }).join("");
+        let cmp = "";
+        if (b.compare) {
+          cmp = '<div class="compare-wrap"><table class="compare"><thead><tr>' +
+            b.compare.head.map(h => "<th>" + esc(h) + "</th>").join("") +
+            "</tr></thead><tbody>" +
+            b.compare.body.map(line => "<tr>" + line.map((c, i) =>
+              "<td" + (i === line.length - 1 ? ' class="num"' : "") + ">" + esc(c) + "</td>"
+            ).join("") + "</tr>").join("") +
+            "</tbody></table></div>";
+        }
+        return '<div class="block"><h3><span class="dot"></span>' + esc(b.title) + "</h3>" + rows + cmp + "</div>";
+      }).join("");
+      return (
+        '<section class="sec' + (show ? " show" : "") + '" id="' + sec.id + '">' +
+          '<div class="sec-head"><h2>' + esc(sec.field) + '</h2><span class="tag">' + esc(sec.blurb) + "</span></div>" +
+          blocks +
+        "</section>"
+      );
+    }).join("");
+    updateProgress();
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c]));
+  }
+
+  fieldChips.addEventListener("click", e => {
+    const btn = e.target.closest("[data-field]");
+    if (!btn) return;
+    field = btn.getAttribute("data-field");
+    render();
+    if (field !== "all") {
+      const el = document.getElementById(field);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  });
+
+  modeChips.addEventListener("click", e => {
+    const btn = e.target.closest("[data-mode]");
+    if (!btn) return;
+    mode = btn.getAttribute("data-mode");
+    render();
+  });
+
+  sections.addEventListener("change", e => {
+    const t = e.target;
+    if (!t.matches('input[type=checkbox][data-id]')) return;
+    const id = t.getAttribute("data-id");
+    if (t.checked) checks[id] = 1; else delete checks[id];
+    saveChecks();
+    const row = t.closest(".row");
+    if (row) row.classList.toggle("done", t.checked);
+    updateProgress();
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    if (!confirm("今夜のチェックを全部消しますか？")) return;
+    checks = {};
+    saveChecks();
+    render();
+  });
+
+  document.getElementById("topBtn").addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
