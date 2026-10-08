@@ -31,6 +31,11 @@
 
 **https://kitaha125-wq.github.io/takken/notes-library.html**（PDF全文ノート・検索付き）
 
+**今すぐiPhoneで開く（試験前要点）:**  
+https://htmlpreview.github.io/?https://raw.githubusercontent.com/kitaha125-wq/takken/cursor/exam-sheet-bedtime-5bef/exam-sheet.html
+
+**https://kitaha125-wq.github.io/takken/exam-sheet.html**（マージ後の本番URL）
+
 ### メインアプリ（2.4MB・初回2〜4分かかることがある）
 
 **https://classy-kleicha-030356.netlify.app/index.html**（いつものURL・データあり）
