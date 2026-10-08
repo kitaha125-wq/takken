@@ -172,6 +172,13 @@ footer.bar button, footer.bar a {
 }
 .btn-primary { background: var(--accent); color: #1a2332; }
 .btn-ghost { background: var(--bg2); color: var(--text); border: 1px solid var(--line) !important; }
+footer.bar button, footer.bar a {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+@supports not (height: 100dvh) {
+  body { min-height: 100vh; }
+}
 .hidden { display: none !important; }
 @media (min-width: 640px) {
   .toc { grid-template-columns: repeat(4, 1fr); }
@@ -182,7 +189,7 @@ footer.bar button, footer.bar a {
 <header>
   <div class="header-inner">
     <h1>試験前要点｜一目まとめ</h1>
-    <div class="sub">寝る前・試験直前用 · <a href="./weakness-daily.html">弱点振り返り</a> · <a href="./random-flash.html">ランダム1件</a> · <a href="./start.html">スタート</a></div>
+    <div class="sub">寝る前・試験直前用 · <a href="https://kitaha125-wq.github.io/takken/weakness-daily.html">弱点振り返り</a> · <a href="https://kitaha125-wq.github.io/takken/random-flash.html">ランダム1件</a> · <a href="https://kitaha125-wq.github.io/takken/start.html">スタート</a></div>
   </div>
   <div class="chips" id="fieldChips" role="tablist" aria-label="分野"></div>
   <div class="chips" id="modeChips" role="tablist" aria-label="表示"></div>
@@ -200,7 +207,7 @@ footer.bar button, footer.bar a {
 
 <footer class="bar">
   <button type="button" class="btn-ghost" id="resetBtn">チェック解除</button>
-  <a class="btn-ghost" href="./notes-library.html">全文ノート</a>
+  <a class="btn-ghost" href="https://kitaha125-wq.github.io/takken/notes-library.html">全文ノート</a>
   <button type="button" class="btn-primary" id="topBtn">上へ</button>
 </footer>
 

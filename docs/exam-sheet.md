@@ -4,7 +4,17 @@
 
 ## 開き方
 
-- GitHub Pages（マージ後）: https://kitaha125-wq.github.io/takken/exam-sheet.html
+### 今すぐiPhoneで開く（PRマージ前）
+
+SafariでこのURLを開いてください（htmlpreview経由）:
+
+https://htmlpreview.github.io/?https://raw.githubusercontent.com/kitaha125-wq/takken/cursor/exam-sheet-bedtime-5bef/exam-sheet.html
+
+※ `github.io/.../exam-sheet.html` は **main にマージされるまで 404** です。
+
+### マージ後（本番）
+
+- GitHub Pages: https://kitaha125-wq.github.io/takken/exam-sheet.html
 - リポジトリ内: [`exam-sheet.html`](../exam-sheet.html)
 - スタートページからも開けます: [`start.html`](../start.html)
 
