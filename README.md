@@ -33,6 +33,8 @@
 
 **https://kitaha125-wq.github.io/takken/exam-sheet.html**（試験前・寝る前の一目要点）
 
+**https://kitaha125-wq.github.io/takken/my-weak-sheet.html**（低正答率の要点・あなた専用）
+
 ### メインアプリ（2.4MB・初回2〜4分かかることがある）
 
 **https://classy-kleicha-030356.netlify.app/index.html**（いつものURL・データあり）
