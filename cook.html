@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="二刀流クッキング">
+  <meta name="theme-color" content="#ea580c">
+  <title>ホットクック × ビストロ 二刀流クッキングアシスタント</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .bg-hotcook { background-color: #ea580c; }
+    .text-hotcook { color: #ea580c; }
+    .border-hotcook { border-color: #ea580c; }
+    .bg-bistro { background-color: #059669; }
+    .text-bistro { color: #059669; }
+    .border-bistro { border-color: #059669; }
+    .active-tab { border-bottom: 4px solid #2563eb; color: #2563eb; font-weight: bold; }
+    .voice-on { background-color: #2563eb !important; color: #fff !important; }
+    .recipe-card { transition: transform .15s ease, box-shadow .15s ease; }
+    .recipe-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(15,23,42,.12); }
+    .cal-day { min-height: 88px; }
+    .hidden-sec { display: none !important; }
+    #toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: #0f172a; color: #fff; padding: 10px 18px; border-radius: 999px;
+      font-size: 14px; z-index: 60; opacity: 0; pointer-events: none; transition: opacity .2s;
+    }
+    #toast.show { opacity: 1; }
+    .voice-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; display: inline-block;
+    }
+    .voice-dot.live { background: #ef4444; animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 pb-24">
+
+  <header class="bg-white shadow-md sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-r from-orange-500 to-emerald-500 flex items-center justify-center text-white font-bold text-xl" aria-hidden="true">
+          <i class="fa-solid fa-utensils"></i>
+        </div>
+        <div>
+          <h1 class="text-xl md:text-2xl font-bold text-slate-900">二刀流クッキングアシスタント</h1>
+          <p class="text-xs text-slate-500">ホットクック (KN-HW) × ビストロ (NE-BS6C)</p>
+        </div>
+      </div>
+
+      <button id="voiceToggleBtn" onclick="toggleVoiceControl()" class="px-4 py-2 rounded-xl bg-slate-200 text-slate-700 font-semibold flex items-center space-x-2 shadow-sm hover:bg-slate-300 transition">
+        <i class="fa-solid fa-microphone"></i>
+        <span class="voice-dot" id="voiceDot"></span>
+        <span id="voiceStatusText">音声操作: OFF</span>
+      </button>
+    </div>
+
+    <nav class="max-w-7xl mx-auto px-4 flex space-x-6 overflow-x-auto text-sm md:text-base border-t border-slate-200">
+      <button onclick="switchTab('recipes')" id="tab-recipes" class="py-3 px-2 whitespace-nowrap active-tab"><i class="fa-solid fa-book-open mr-2"></i>レシピ図鑑</button>
+      <button onclick="switchTab('calendar')" id="tab-calendar" class="py-3 px-2 whitespace-nowrap text-slate-500"><i class="fa-solid fa-calendar-days mr-2"></i>1ヶ月献立カレンダー</button>
+      <button onclick="switchTab('pantry')" id="tab-pantry" class="py-3 px-2 whitespace-nowrap text-slate-500"><i class="fa-solid fa-kitchen-set mr-2"></i>冷蔵庫マッチング</button>
+      <button onclick="switchTab('shopping')" id="tab-shopping" class="py-3 px-2 whitespace-nowrap text-slate-500"><i class="fa-solid fa-cart-shopping mr-2"></i>買い物リスト</button>
+      <button onclick="switchTab('favorites')" id="tab-favorites" class="py-3 px-2 whitespace-nowrap text-slate-500"><i class="fa-solid fa-star mr-2 text-yellow-500"></i>お気に入り</button>
+    </nav>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6">
+
+    <!-- レシピ図鑑 -->
+    <section id="sec-recipes" class="space-y-6">
+      <div class="flex flex-wrap gap-2 pb-2">
+        <button onclick="filterCategory('all')" class="cat-btn px-4 py-2 rounded-full bg-blue-600 text-white font-medium text-sm" data-cat="all">すべて</button>
+        <button onclick="filterCategory('main')" class="cat-btn px-4 py-2 rounded-full bg-white text-slate-600 font-medium text-sm hover:bg-slate-200" data-cat="main">メイン料理</button>
+        <button onclick="filterCategory('soup')" class="cat-btn px-4 py-2 rounded-full bg-white text-slate-600 font-medium text-sm hover:bg-slate-200" data-cat="soup">スープ・汁物</button>
+        <button onclick="filterCategory('rice')" class="cat-btn px-4 py-2 rounded-full bg-white text-slate-600 font-medium text-sm hover:bg-slate-200" data-cat="rice">パスタ・ごはん</button>
+        <button onclick="filterCategory('side')" class="cat-btn px-4 py-2 rounded-full bg-white text-slate-600 font-medium text-sm hover:bg-slate-200" data-cat="side">副菜・おつまみ</button>
+        <button onclick="filterCategory('dessert')" class="cat-btn px-4 py-2 rounded-full bg-white text-slate-600 font-medium text-sm hover:bg-slate-200" data-cat="dessert">デザート</button>
+      </div>
+
+      <div class="flex flex-wrap gap-2 items-center">
+        <span class="text-sm text-slate-500">機器:</span>
+        <button onclick="filterDevice('all')" class="dev-btn px-3 py-1.5 rounded-lg border text-sm bg-blue-50 border-blue-300 text-blue-700" data-dev="all">両方</button>
+        <button onclick="filterDevice('hotcook')" class="dev-btn px-3 py-1.5 rounded-lg border text-sm bg-white border-slate-200 text-slate-600" data-dev="hotcook"><span class="text-hotcook font-semibold">ホットクック</span></button>
+        <button onclick="filterDevice('bistro')" class="dev-btn px-3 py-1.5 rounded-lg border text-sm bg-white border-slate-200 text-slate-600" data-dev="bistro"><span class="text-bistro font-semibold">ビストロ</span></button>
+        <div class="ml-auto flex gap-2 w-full sm:w-auto">
+          <input id="recipeSearch" type="search" placeholder="レシピ名・材料で検索" class="flex-1 sm:w-64 px-3 py-2 rounded-lg border border-slate-300 text-sm" oninput="renderRecipes()">
+        </div>
+      </div>
+
+      <div id="recipeGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
+
+    <!-- 献立カレンダー -->
+    <section id="sec-calendar" class="space-y-4 hidden-sec">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-lg font-bold">1ヶ月献立カレンダー</h2>
+          <p class="text-sm text-slate-500">日付をタップしてレシピを割り当て。ホットクックとビストロを交互に使う想定です。</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="shiftMonth(-1)" class="px-3 py-2 rounded-lg bg-white border shadow-sm"><i class="fa-solid fa-chevron-left"></i></button>
+          <span id="calMonthLabel" class="font-bold min-w-[8rem] text-center"></span>
+          <button onclick="shiftMonth(1)" class="px-3 py-2 rounded-lg bg-white border shadow-sm"><i class="fa-solid fa-chevron-right"></i></button>
+          <button onclick="autoFillMonth()" class="ml-2 px-3 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">自動で埋める</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-slate-500 mb-1">
+        <div>日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div>土</div>
+      </div>
+      <div id="calendarGrid" class="grid grid-cols-7 gap-1"></div>
+      <div id="dayDetail" class="bg-white rounded-xl p-4 shadow-sm border border-slate-200 hidden">
+        <div class="flex justify-between items-start gap-3">
+          <div>
+            <h3 id="dayDetailTitle" class="font-bold text-lg"></h3>
+            <p class="text-sm text-slate-500">レシピを選んで献立に追加</p>
+          </div>
+          <button onclick="clearDayPlan()" class="text-sm text-red-600 hover:underline">この日をクリア</button>
+        </div>
+        <div id="dayPlanList" class="mt-3 space-y-2"></div>
+        <div class="mt-4">
+          <label class="text-sm font-medium">レシピを追加</label>
+          <select id="dayRecipeSelect" class="mt-1 w-full border rounded-lg px-3 py-2 text-sm"></select>
+          <button onclick="addRecipeToDay()" class="mt-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">追加</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 冷蔵庫マッチング -->
+    <section id="sec-pantry" class="space-y-4 hidden-sec">
+      <div>
+        <h2 class="text-lg font-bold">冷蔵庫マッチング</h2>
+        <p class="text-sm text-slate-500">持っている食材をチェックすると、作れるレシピを優先表示します。</p>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
+        <div class="flex flex-wrap gap-2 mb-3">
+          <input id="pantryInput" type="text" placeholder="食材を追加（例: 鶏肉）" class="flex-1 min-w-[12rem] px-3 py-2 rounded-lg border text-sm" onkeydown="if(event.key==='Enter')addPantryItem()">
+          <button onclick="addPantryItem()" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold">追加</button>
+          <button onclick="loadSamplePantry()" class="px-4 py-2 rounded-lg bg-slate-200 text-slate-700 text-sm font-semibold">サンプル</button>
+        </div>
+        <div id="pantryChips" class="flex flex-wrap gap-2"></div>
+      </div>
+      <div>
+        <h3 class="font-semibold mb-2">マッチしたレシピ <span id="matchCount" class="text-slate-500 text-sm font-normal"></span></h3>
+        <div id="matchGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </div>
+    </section>
+
+    <!-- 買い物リスト -->
+    <section id="sec-shopping" class="space-y-4 hidden-sec">
+      <div class="flex flex-wrap justify-between items-center gap-3">
+        <div>
+          <h2 class="text-lg font-bold">買い物リスト</h2>
+          <p class="text-sm text-slate-500">献立やレシピから材料を集められます。端末内に保存されます。</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="importFromCalendar()" class="px-3 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">今月の献立から追加</button>
+          <button onclick="clearCheckedShopping()" class="px-3 py-2 rounded-lg bg-slate-200 text-sm font-semibold">買ったものを削除</button>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
+        <div class="flex gap-2 mb-3">
+          <input id="shopInput" type="text" placeholder="買うものを追加" class="flex-1 px-3 py-2 rounded-lg border text-sm" onkeydown="if(event.key==='Enter')addShopItem()">
+          <button onclick="addShopItem()" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">追加</button>
+        </div>
+        <ul id="shopList" class="divide-y"></ul>
+        <p id="shopEmpty" class="text-sm text-slate-400 py-6 text-center hidden">リストは空です</p>
+      </div>
+    </section>
+
+    <!-- お気に入り -->
+    <section id="sec-favorites" class="space-y-4 hidden-sec">
+      <div>
+        <h2 class="text-lg font-bold">お気に入り</h2>
+        <p class="text-sm text-slate-500">星マークを付けたレシピがここに集まります。</p>
+      </div>
+      <div id="favGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      <p id="favEmpty" class="text-sm text-slate-400 py-10 text-center hidden">まだお気に入りがありません</p>
+    </section>
+  </main>
+
+  <!-- レシピ詳細モーダル -->
+  <div id="recipeModal" class="fixed inset-0 z-40 hidden items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4" onclick="if(event.target===this)closeModal()">
+    <div class="bg-white w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto shadow-xl">
+      <div class="sticky top-0 bg-white border-b px-4 py-3 flex justify-between items-center">
+        <h3 id="modalTitle" class="font-bold text-lg pr-4"></h3>
+        <button onclick="closeModal()" class="w-9 h-9 rounded-full hover:bg-slate-100"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="modalBody" class="p-4 space-y-4"></div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    const STORAGE = {
+      fav: 'cook.favorites.v1',
+      pantry: 'cook.pantry.v1',
+      shop: 'cook.shopping.v1',
+      cal: 'cook.calendar.v1',
+    };
+
+    const RECIPES = [
+      { id: 'hc-curry', name: '無水カレー', cat: 'main', device: 'hotcook', time: 45, servings: 4,
+        ingredients: ['牛肉', '玉ねぎ', 'にんじん', 'じゃがいも', 'カレールー', 'にんにく'],
+        steps: ['野菜と肉を一口大に切る', 'ホットクックに材料を入れ無水カレーコース', 'ルーを溶かし少し煮込む'],
+        tip: 'KN-HW の「カレー」コースがおすすめ' },
+      { id: 'hc-nikujaga', name: '肉じゃが', cat: 'main', device: 'hotcook', time: 40, servings: 4,
+        ingredients: ['牛肉', 'じゃがいも', '玉ねぎ', 'にんじん', 'しらたき', '醤油', 'みりん', '砂糖'],
+        steps: ['材料を切って投入', '煮物コースで加熱', '味を見て仕上げ'],
+        tip: 'ほったらかしで煮崩れしにくい' },
+      { id: 'hc-stew', name: 'クリームシチュー', cat: 'main', device: 'hotcook', time: 50, servings: 4,
+        ingredients: ['鶏もも肉', 'じゃがいも', 'にんじん', '玉ねぎ', '牛乳', 'シチュールー', 'バター'],
+        steps: ['具材を入れる', 'シチューコース', 'ルーと牛乳を加えて仕上げ'],
+        tip: '牛乳は最後に入れると分離しにくい' },
+      { id: 'hc-soup', name: 'ミネストローネ', cat: 'soup', device: 'hotcook', time: 35, servings: 4,
+        ingredients: ['玉ねぎ', 'にんじん', 'キャベツ', 'トマト缶', 'ベーコン', 'コンソメ', 'にんにく'],
+        steps: ['具材をざく切り', 'スープコース', '塩こしょうで味を整える'],
+        tip: '冷凍野菜でもOK' },
+      { id: 'hc-takikomi', name: 'きのこ炊き込みごはん', cat: 'rice', device: 'hotcook', time: 50, servings: 4,
+        ingredients: ['米', 'しめじ', 'えのき', '油揚げ', '醤油', 'みりん', 'だし'],
+        steps: ['米を研ぐ', '具と調味料を入れる', 'ごはんコース'],
+        tip: '水加減は通常よりやや少なめ' },
+      { id: 'hc-kakuni', name: '豚の角煮', cat: 'main', device: 'hotcook', time: 90, servings: 3,
+        ingredients: ['豚バラ肉', '生姜', 'ネギ', '醤油', '砂糖', 'みりん', '酒', 'ゆで卵'],
+        steps: ['塊肉と調味料を入れる', '煮込みコース長め', '卵を加えて味を染み込ませる'],
+        tip: '冷めてから切ると崩れにくい' },
+      { id: 'hc-potage', name: 'かぼちゃポタージュ', cat: 'soup', device: 'hotcook', time: 30, servings: 3,
+        ingredients: ['かぼちゃ', '玉ねぎ', '牛乳', 'バター', 'コンソメ', '生クリーム'],
+        steps: ['かぼちゃと玉ねぎを入れる', 'スープコース', 'ミキサー or ハンドブレンダーでなめらかに'],
+        tip: '種とワタをしっかり取る' },
+      { id: 'hc-nimono', name: '大根と手羽元の煮物', cat: 'main', device: 'hotcook', time: 45, servings: 3,
+        ingredients: ['大根', '手羽元', '生姜', '醤油', 'みりん', '砂糖', 'だし'],
+        steps: ['大根に隠し包丁', '材料投入で煮物コース', '汁をかけて仕上げ'],
+        tip: '手羽元の旨味が大根に染みる' },
+      { id: 'bs-gratin', name: 'マカロニグラタン', cat: 'rice', device: 'bistro', time: 35, servings: 3,
+        ingredients: ['マカロニ', '鶏もも肉', '玉ねぎ', '牛乳', 'バター', '小麦粉', 'チーズ'],
+        steps: ['ホワイトソースを作る', '具と和える', 'ビストロでグラタン焼き'],
+        tip: 'NE-BS6C の「グラタン」自動メニュー対応' },
+      { id: 'bs-pizza', name: 'マルゲリータ風ピザ', cat: 'main', device: 'bistro', time: 25, servings: 2,
+        ingredients: ['ピザ生地', 'トマトソース', 'モッツァレラ', 'バジル', 'オリーブオイル'],
+        steps: ['生地にソースを塗る', 'チーズを乗せる', 'ピザモードで焼く'],
+        tip: '予熱ありの方が香ばしい' },
+      { id: 'bs-salmon', name: '鮭のムニエル', cat: 'main', device: 'bistro', time: 20, servings: 2,
+        ingredients: ['鮭', '小麦粉', 'バター', 'レモン', '塩こしょう', 'パセリ'],
+        steps: ['鮭に粉をまぶす', 'バターをのせて焼く', 'レモンを絞る'],
+        tip: 'スチームでパサつき防止' },
+      { id: 'bs-chicken', name: 'チキンの香草焼き', cat: 'main', device: 'bistro', time: 30, servings: 2,
+        ingredients: ['鶏もも肉', 'にんにく', 'ローズマリー', 'オリーブオイル', '塩こしょう', 'レモン'],
+        steps: ['下味をつける', '皮目を上にして焼く', '休ませてカット'],
+        tip: 'スチームオーブンでジューシーに' },
+      { id: 'bs-toast', name: 'フレンチトースト', cat: 'dessert', device: 'bistro', time: 15, servings: 2,
+        ingredients: ['食パン', '卵', '牛乳', '砂糖', 'バニラエッセンス', 'バター'],
+        steps: ['卵液に浸す', '天板に並べる', '軽めの焼き色コース'],
+        tip: '厚切りパンがおすすめ' },
+      { id: 'bs-veggie', name: '根菜のロースト', cat: 'side', device: 'bistro', time: 30, servings: 3,
+        ingredients: ['にんじん', 'さつまいも', 'じゃがいも', '玉ねぎ', 'オリーブオイル', '塩こしょう', 'ハーブ'],
+        steps: ['乱切りにして油を絡める', '並べて焼く', '仕上げにハーブ'],
+        tip: 'サイズを揃えると仕上がり均一' },
+      { id: 'bs-pasta', name: 'ミートソーススパゲティ', cat: 'rice', device: 'bistro', time: 35, servings: 2,
+        ingredients: ['スパゲティ', '合いびき肉', '玉ねぎ', 'にんじん', 'トマト缶', 'にんにく', 'ケチャップ'],
+        steps: ['ソースを作る（ホットクックでも可）', '麺を茹でる', '合わせる'],
+        tip: 'ソースはホットクック、仕上げはビストロでも二刀流' },
+      { id: 'bs-scone', name: 'チーズスコーン', cat: 'dessert', device: 'bistro', time: 30, servings: 6,
+        ingredients: ['薄力粉', 'バター', 'ベーキングパウダー', '牛乳', 'チーズ', '塩'],
+        steps: ['生地をまとめる', 'カットする', 'オーブンで焼く'],
+        tip: '生地はこねすぎない' },
+      { id: 'bs-hamburg', name: 'ハンバーグステーキ', cat: 'main', device: 'bistro', time: 30, servings: 2,
+        ingredients: ['合いびき肉', '玉ねぎ', '卵', 'パン粉', '牛乳', '塩こしょう', 'デミグラス'],
+        steps: ['タネを練る', '成形して焼く', 'ソースをかける'],
+        tip: '中心温度に注意。スチーム併用が安心' },
+      { id: 'hc-oden', name: 'おでん', cat: 'main', device: 'hotcook', time: 60, servings: 4,
+        ingredients: ['大根', '卵', 'こんにゃく', 'ちくわ', 'がんもどき', 'だし', '醤油', 'みりん'],
+        steps: ['下処理した具を入れる', '煮込みコース', 'しばらく置いて味を染み込ませる'],
+        tip: '翌日がさらに美味しい' },
+      { id: 'hc-porridge', name: '中華粥', cat: 'rice', device: 'hotcook', time: 55, servings: 3,
+        ingredients: ['米', '鶏がらスープ', '生姜', 'ネギ', 'ごま油', '塩'],
+        steps: ['米とスープを入れる', 'おかゆコース', 'ネギとごま油で仕上げ'],
+        tip: '体調不良の日にも' },
+      { id: 'bs-side-salad', name: '温野菜サラダ', cat: 'side', device: 'bistro', time: 15, servings: 2,
+        ingredients: ['ブロッコリー', 'にんじん', 'かぼちゃ', 'ドレッシング', '塩'],
+        steps: ['野菜を切る', 'スチームで加熱', 'ドレッシング'],
+        tip: '彩りよくカット' },
+    ];
+
+    let state = {
+      cat: 'all',
+      device: 'all',
+      favorites: loadJSON(STORAGE.fav, []),
+      pantry: loadJSON(STORAGE.pantry, []),
+      shopping: loadJSON(STORAGE.shop, []),
+      calendar: loadJSON(STORAGE.cal, {}),
+      calYear: new Date().getFullYear(),
+      calMonth: new Date().getMonth(),
+      selectedDay: null,
+      voiceOn: false,
+      recognition: null,
+    };
+
+    function loadJSON(key, fallback) {
+      try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; }
+    }
+    function saveJSON(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+
+    function toast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => el.classList.remove('show'), 2200);
+    }
+
+    function switchTab(name) {
+      ['recipes','calendar','pantry','shopping','favorites'].forEach(n => {
+        document.getElementById('sec-' + n).classList.toggle('hidden-sec', n !== name);
+        const tab = document.getElementById('tab-' + n);
+        tab.classList.toggle('active-tab', n === name);
+        tab.classList.toggle('text-slate-500', n !== name);
+      });
+      if (name === 'calendar') renderCalendar();
+      if (name === 'pantry') { renderPantry(); renderMatches(); }
+      if (name === 'shopping') renderShopping();
+      if (name === 'favorites') renderFavorites();
+      if (name === 'recipes') renderRecipes();
+    }
+
+    function filterCategory(cat) {
+      state.cat = cat;
+      document.querySelectorAll('.cat-btn').forEach(b => {
+        const on = b.dataset.cat === cat;
+        b.className = 'cat-btn px-4 py-2 rounded-full font-medium text-sm ' +
+          (on ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-200');
+      });
+      renderRecipes();
+    }
+
+    function filterDevice(dev) {
+      state.device = dev;
+      document.querySelectorAll('.dev-btn').forEach(b => {
+        const on = b.dataset.dev === dev;
+        b.className = 'dev-btn px-3 py-1.5 rounded-lg border text-sm ' +
+          (on ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-white border-slate-200 text-slate-600');
+      });
+      renderRecipes();
+    }
+
+    function filteredRecipes() {
+      const q = (document.getElementById('recipeSearch')?.value || '').trim().toLowerCase();
+      return RECIPES.filter(r => {
+        if (state.cat !== 'all' && r.cat !== state.cat) return false;
+        if (state.device !== 'all' && r.device !== state.device) return false;
+        if (!q) return true;
+        return r.name.toLowerCase().includes(q) || r.ingredients.some(i => i.toLowerCase().includes(q));
+      });
+    }
+
+    function deviceBadge(device) {
+      if (device === 'hotcook') return '<span class="text-xs font-bold px-2 py-0.5 rounded bg-orange-100 text-hotcook">ホットクック</span>';
+      return '<span class="text-xs font-bold px-2 py-0.5 rounded bg-emerald-100 text-bistro">ビストロ</span>';
+    }
+
+    function isFav(id) { return state.favorites.includes(id); }
+
+    function recipeCardHTML(r) {
+      const star = isFav(r.id) ? 'fa-solid text-yellow-500' : 'fa-regular text-slate-400';
+      return `<article class="recipe-card bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-4">
+          <div class="flex justify-between items-start gap-2">
+            <div>
+              <div class="mb-1">${deviceBadge(r.device)}</div>
+              <h3 class="font-bold text-lg leading-snug">${r.name}</h3>
+            </div>
+            <button onclick="toggleFav('${r.id}')" class="w-9 h-9 rounded-full hover:bg-slate-100" aria-label="お気に入り">
+              <i class="${star} fa-star"></i>
+            </button>
+          </div>
+          <p class="text-sm text-slate-500 mt-2"><i class="fa-regular fa-clock mr-1"></i>${r.time}分 · ${r.servings}人分</p>
+          <p class="text-xs text-slate-500 mt-2 line-clamp-2">${r.ingredients.slice(0,5).join('・')}</p>
+          <div class="mt-3 flex gap-2">
+            <button onclick="openRecipe('${r.id}')" class="flex-1 px-3 py-2 rounded-lg bg-slate-900 text-white text-sm font-semibold">詳細</button>
+            <button onclick="addIngredientsToShop('${r.id}')" class="px-3 py-2 rounded-lg bg-slate-100 text-sm font-semibold" title="材料を買い物リストへ"><i class="fa-solid fa-cart-plus"></i></button>
+          </div>
+        </div>
+      </article>`;
+    }
+
+    function renderRecipes() {
+      const list = filteredRecipes();
+      const grid = document.getElementById('recipeGrid');
+      grid.innerHTML = list.length ? list.map(recipeCardHTML).join('') :
+        '<p class="text-slate-400 col-span-full text-center py-10">該当するレシピがありません</p>';
+    }
+
+    function toggleFav(id) {
+      if (isFav(id)) state.favorites = state.favorites.filter(x => x !== id);
+      else state.favorites.push(id);
+      saveJSON(STORAGE.fav, state.favorites);
+      renderRecipes();
+      if (!document.getElementById('sec-favorites').classList.contains('hidden-sec')) renderFavorites();
+      toast(isFav(id) ? 'お気に入りに追加' : 'お気に入りを解除');
+    }
+
+    function openRecipe(id) {
+      const r = RECIPES.find(x => x.id === id);
+      if (!r) return;
+      document.getElementById('modalTitle').textContent = r.name;
+      document.getElementById('modalBody').innerHTML = `
+        <div class="flex flex-wrap gap-2 items-center">${deviceBadge(r.device)}
+          <span class="text-sm text-slate-500">${r.time}分 · ${r.servings}人分</span>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-1">材料</h4>
+          <ul class="list-disc pl-5 text-sm space-y-1">${r.ingredients.map(i => `<li>${i}</li>`).join('')}</ul>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-1">手順</h4>
+          <ol class="list-decimal pl-5 text-sm space-y-1">${r.steps.map(s => `<li>${s}</li>`).join('')}</ol>
+        </div>
+        <p class="text-sm bg-slate-50 border rounded-lg p-3"><i class="fa-solid fa-lightbulb text-amber-500 mr-1"></i>${r.tip}</p>
+        <div class="flex gap-2">
+          <button onclick="toggleFav('${r.id}'); openRecipe('${r.id}')" class="flex-1 px-3 py-2 rounded-lg border font-semibold text-sm">${isFav(r.id)?'★ お気に入り済':'☆ お気に入り'}</button>
+          <button onclick="addIngredientsToShop('${r.id}')" class="flex-1 px-3 py-2 rounded-lg bg-blue-600 text-white font-semibold text-sm">材料を買い物へ</button>
+        </div>`;
+      const modal = document.getElementById('recipeModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('recipeModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    // Calendar
+    function dayKey(y, m, d) { return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+
+    function shiftMonth(delta) {
+      state.calMonth += delta;
+      if (state.calMonth < 0) { state.calMonth = 11; state.calYear--; }
+      if (state.calMonth > 11) { state.calMonth = 0; state.calYear++; }
+      state.selectedDay = null;
+      document.getElementById('dayDetail').classList.add('hidden');
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      const y = state.calYear, m = state.calMonth;
+      document.getElementById('calMonthLabel').textContent = `${y}年${m+1}月`;
+      const first = new Date(y, m, 1).getDay();
+      const days = new Date(y, m + 1, 0).getDate();
+      const grid = document.getElementById('calendarGrid');
+      let html = '';
+      for (let i = 0; i < first; i++) html += '<div></div>';
+      for (let d = 1; d <= days; d++) {
+        const key = dayKey(y, m, d);
+        const plans = state.calendar[key] || [];
+        const selected = state.selectedDay === key;
+        html += `<button onclick="selectDay('${key}')" class="cal-day text-left p-1.5 rounded-lg border bg-white hover:border-blue-400 ${selected?'border-blue-500 ring-2 ring-blue-200':''}">
+          <div class="text-xs font-bold ${new Date(y,m,d).getDay()===0?'text-red-500':new Date(y,m,d).getDay()===6?'text-blue-500':''}">${d}</div>
+          <div class="mt-1 space-y-0.5">${plans.slice(0,2).map(id => {
+            const r = RECIPES.find(x => x.id === id);
+            if (!r) return '';
+            const color = r.device === 'hotcook' ? 'text-hotcook' : 'text-bistro';
+            return `<div class="text-[10px] leading-tight truncate ${color}">${r.name}</div>`;
+          }).join('')}${plans.length>2?`<div class="text-[10px] text-slate-400">+${plans.length-2}</div>`:''}</div>
+        </button>`;
+      }
+      grid.innerHTML = html;
+
+      const sel = document.getElementById('dayRecipeSelect');
+      sel.innerHTML = RECIPES.map(r => `<option value="${r.id}">[${r.device==='hotcook'?'HC':'BS'}] ${r.name}</option>`).join('');
+    }
+
+    function selectDay(key) {
+      state.selectedDay = key;
+      renderCalendar();
+      const box = document.getElementById('dayDetail');
+      box.classList.remove('hidden');
+      document.getElementById('dayDetailTitle').textContent = key.replace(/-/g, '/') + ' の献立';
+      const plans = state.calendar[key] || [];
+      document.getElementById('dayPlanList').innerHTML = plans.length
+        ? plans.map(id => {
+            const r = RECIPES.find(x => x.id === id);
+            return `<div class="flex items-center justify-between gap-2 py-2 border-b">
+              <button onclick="openRecipe('${id}')" class="text-left font-medium hover:underline">${deviceBadge(r.device)} <span class="ml-1">${r.name}</span></button>
+              <button onclick="removeFromDay('${id}')" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash"></i></button>
+            </div>`;
+          }).join('')
+        : '<p class="text-sm text-slate-400">まだレシピがありません</p>';
+    }
+
+    function addRecipeToDay() {
+      if (!state.selectedDay) return toast('日付を選んでください');
+      const id = document.getElementById('dayRecipeSelect').value;
+      const list = state.calendar[state.selectedDay] || [];
+      if (list.includes(id)) return toast('すでに入っています');
+      list.push(id);
+      state.calendar[state.selectedDay] = list;
+      saveJSON(STORAGE.cal, state.calendar);
+      selectDay(state.selectedDay);
+      toast('献立に追加しました');
+    }
+
+    function removeFromDay(id) {
+      if (!state.selectedDay) return;
+      state.calendar[state.selectedDay] = (state.calendar[state.selectedDay] || []).filter(x => x !== id);
+      saveJSON(STORAGE.cal, state.calendar);
+      selectDay(state.selectedDay);
+    }
+
+    function clearDayPlan() {
+      if (!state.selectedDay) return;
+      delete state.calendar[state.selectedDay];
+      saveJSON(STORAGE.cal, state.calendar);
+      selectDay(state.selectedDay);
+      toast('クリアしました');
+    }
+
+    function autoFillMonth() {
+      const y = state.calYear, m = state.calMonth;
+      const days = new Date(y, m + 1, 0).getDate();
+      const pool = [...RECIPES];
+      for (let d = 1; d <= days; d++) {
+        const key = dayKey(y, m, d);
+        if ((state.calendar[key] || []).length) continue;
+        const prefer = d % 2 === 0 ? 'hotcook' : 'bistro';
+        let pick = pool.filter(r => r.device === prefer);
+        if (!pick.length) pick = pool;
+        const r = pick[Math.floor(Math.random() * pick.length)];
+        state.calendar[key] = [r.id];
+      }
+      saveJSON(STORAGE.cal, state.calendar);
+      renderCalendar();
+      toast('空の日を自動で埋めました');
+    }
+
+    // Pantry
+    function renderPantry() {
+      const box = document.getElementById('pantryChips');
+      if (!state.pantry.length) {
+        box.innerHTML = '<p class="text-sm text-slate-400">食材が未登録です。「サンプル」で試せます。</p>';
+        return;
+      }
+      box.innerHTML = state.pantry.map(p =>
+        `<button onclick="removePantry('${encodeURIComponent(p)}')" class="px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 text-sm border border-emerald-200">${p} <i class="fa-solid fa-xmark ml-1 text-emerald-500"></i></button>`
+      ).join('');
+    }
+
+    function addPantryItem() {
+      const input = document.getElementById('pantryInput');
+      const v = input.value.trim();
+      if (!v) return;
+      if (!state.pantry.includes(v)) {
+        state.pantry.push(v);
+        saveJSON(STORAGE.pantry, state.pantry);
+      }
+      input.value = '';
+      renderPantry();
+      renderMatches();
+    }
+
+    function removePantry(encoded) {
+      const v = decodeURIComponent(encoded);
+      state.pantry = state.pantry.filter(x => x !== v);
+      saveJSON(STORAGE.pantry, state.pantry);
+      renderPantry();
+      renderMatches();
+    }
+
+    function loadSamplePantry() {
+      const sample = ['鶏肉','玉ねぎ','にんじん','じゃがいも','牛乳','米','卵','醤油','バター','チーズ'];
+      state.pantry = [...new Set([...state.pantry, ...sample])];
+      saveJSON(STORAGE.pantry, state.pantry);
+      renderPantry();
+      renderMatches();
+      toast('サンプル食材を追加しました');
+    }
+
+    function matchScore(r) {
+      if (!state.pantry.length) return 0;
+      const hits = r.ingredients.filter(ing => state.pantry.some(p => ing.includes(p) || p.includes(ing)));
+      return hits.length / r.ingredients.length;
+    }
+
+    function renderMatches() {
+      const ranked = [...RECIPES]
+        .map(r => ({ r, score: matchScore(r) }))
+        .filter(x => x.score > 0)
+        .sort((a, b) => b.score - a.score);
+      document.getElementById('matchCount').textContent = ranked.length ? `(${ranked.length}件)` : '';
+      const grid = document.getElementById('matchGrid');
+      if (!ranked.length) {
+        grid.innerHTML = '<p class="text-slate-400 col-span-full text-center py-8">食材を追加するとマッチ結果が出ます</p>';
+        return;
+      }
+      grid.innerHTML = ranked.map(({ r, score }) => {
+        const pct = Math.round(score * 100);
+        return `<div>${recipeCardHTML(r)}<p class="text-xs text-center mt-1 text-emerald-700 font-semibold">マッチ度 ${pct}%</p></div>`;
+      }).join('');
+    }
+
+    // Shopping
+    function renderShopping() {
+      const list = document.getElementById('shopList');
+      const empty = document.getElementById('shopEmpty');
+      if (!state.shopping.length) {
+        list.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+      list.innerHTML = state.shopping.map((item, i) => `
+        <li class="flex items-center gap-3 py-3">
+          <input type="checkbox" ${item.done?'checked':''} onchange="toggleShop(${i})" class="w-5 h-5">
+          <span class="flex-1 text-sm ${item.done?'line-through text-slate-400':''}">${item.name}</span>
+          <button onclick="removeShop(${i})" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
+        </li>`).join('');
+    }
+
+    function addShopItem(name) {
+      const input = document.getElementById('shopInput');
+      const v = (name || input.value).trim();
+      if (!v) return;
+      if (!state.shopping.some(s => s.name === v && !s.done)) {
+        state.shopping.push({ name: v, done: false });
+        saveJSON(STORAGE.shop, state.shopping);
+      }
+      if (!name) input.value = '';
+      renderShopping();
+      if (name) toast('買い物リストに追加');
+    }
+
+    function toggleShop(i) {
+      state.shopping[i].done = !state.shopping[i].done;
+      saveJSON(STORAGE.shop, state.shopping);
+      renderShopping();
+    }
+
+    function removeShop(i) {
+      state.shopping.splice(i, 1);
+      saveJSON(STORAGE.shop, state.shopping);
+      renderShopping();
+    }
+
+    function clearCheckedShopping() {
+      state.shopping = state.shopping.filter(s => !s.done);
+      saveJSON(STORAGE.shop, state.shopping);
+      renderShopping();
+      toast('買ったものを削除しました');
+    }
+
+    function addIngredientsToShop(id) {
+      const r = RECIPES.find(x => x.id === id);
+      if (!r) return;
+      r.ingredients.forEach(ing => {
+        if (!state.shopping.some(s => s.name === ing && !s.done)) {
+          state.shopping.push({ name: ing, done: false });
+        }
+      });
+      saveJSON(STORAGE.shop, state.shopping);
+      toast(`${r.name} の材料を追加`);
+      if (!document.getElementById('sec-shopping').classList.contains('hidden-sec')) renderShopping();
+    }
+
+    function importFromCalendar() {
+      const y = state.calYear, m = state.calMonth;
+      const days = new Date(y, m + 1, 0).getDate();
+      let added = 0;
+      for (let d = 1; d <= days; d++) {
+        const key = dayKey(y, m, d);
+        (state.calendar[key] || []).forEach(id => {
+          const r = RECIPES.find(x => x.id === id);
+          if (!r) return;
+          r.ingredients.forEach(ing => {
+            if (!state.shopping.some(s => s.name === ing && !s.done)) {
+              state.shopping.push({ name: ing, done: false });
+              added++;
+            }
+          });
+        });
+      }
+      saveJSON(STORAGE.shop, state.shopping);
+      renderShopping();
+      toast(added ? `${added}件の材料を追加` : '追加できる材料がありません');
+    }
+
+    function renderFavorites() {
+      const favs = RECIPES.filter(r => isFav(r.id));
+      document.getElementById('favEmpty').classList.toggle('hidden', favs.length > 0);
+      document.getElementById('favGrid').innerHTML = favs.map(recipeCardHTML).join('');
+    }
+
+    // Voice
+    function toggleVoiceControl() {
+      if (state.voiceOn) {
+        stopVoice();
+        return;
+      }
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) {
+        toast('このブラウザは音声認識に未対応です');
+        return;
+      }
+      const rec = new SR();
+      rec.lang = 'ja-JP';
+      rec.continuous = true;
+      rec.interimResults = false;
+      rec.onresult = (ev) => {
+        const text = ev.results[ev.results.length - 1][0].transcript.trim();
+        handleVoiceCommand(text);
+      };
+      rec.onerror = () => toast('音声認識エラー');
+      rec.onend = () => {
+        if (state.voiceOn) {
+          try { rec.start(); } catch {}
+        }
+      };
+      try {
+        rec.start();
+        state.recognition = rec;
+        state.voiceOn = true;
+        document.getElementById('voiceToggleBtn').classList.add('voice-on');
+        document.getElementById('voiceStatusText').textContent = '音声操作: ON';
+        document.getElementById('voiceDot').classList.add('live');
+        toast('音声操作ON「レシピ」「献立」「買い物」など');
+      } catch {
+        toast('マイクを開始できませんでした');
+      }
+    }
+
+    function stopVoice() {
+      state.voiceOn = false;
+      try { state.recognition && state.recognition.stop(); } catch {}
+      state.recognition = null;
+      document.getElementById('voiceToggleBtn').classList.remove('voice-on');
+      document.getElementById('voiceStatusText').textContent = '音声操作: OFF';
+      document.getElementById('voiceDot').classList.remove('live');
+      toast('音声操作OFF');
+    }
+
+    function handleVoiceCommand(text) {
+      toast('認識: ' + text);
+      if (/レシピ|図鑑/.test(text)) return switchTab('recipes');
+      if (/献立|カレンダー/.test(text)) return switchTab('calendar');
+      if (/冷蔵|マッチ|食材/.test(text)) return switchTab('pantry');
+      if (/買い物|かいもの/.test(text)) return switchTab('shopping');
+      if (/お気に入り|好き/.test(text)) return switchTab('favorites');
+      if (/ホットクック/.test(text)) { switchTab('recipes'); filterDevice('hotcook'); return; }
+      if (/ビストロ/.test(text)) { switchTab('recipes'); filterDevice('bistro'); return; }
+      if (/自動|埋めて/.test(text)) { switchTab('calendar'); autoFillMonth(); return; }
+      const hit = RECIPES.find(r => text.includes(r.name));
+      if (hit) openRecipe(hit.id);
+    }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    // Boot
+    renderRecipes();
+    if (new URLSearchParams(location.search).get('demo') === '1') {
+      loadSamplePantry();
+      if (!Object.keys(state.calendar).length) autoFillMonth();
+      if (!state.favorites.length) {
+        state.favorites = ['hc-curry', 'bs-gratin', 'hc-nikujaga'];
+        saveJSON(STORAGE.fav, state.favorites);
+      }
+      toast('デモデータを読み込みました');
+    }
+  </script>
+</body>
+</html>
