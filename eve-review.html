@@ -467,6 +467,17 @@ footer.bar a, footer.bar button {
   });
 
   render();
+
+  // ?demo=1 でタブを自動巡回（動作確認・デモ用）
+  if (/[?&]demo=1(?:&|$)/.test(location.search)) {
+    const order = ["plan", "nums", "tables", "traps"];
+    let i = 0;
+    setInterval(() => {
+      i = (i + 1) % order.length;
+      tab = order[i];
+      render();
+    }, 2200);
+  }
 })();
 </script>
 </body>
