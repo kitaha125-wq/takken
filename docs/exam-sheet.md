@@ -2,6 +2,8 @@
 
 寝る前・試験直前に、頻出の数字・線引き・ひっかけだけを眺めるための軽量ページです。
 
+もっと短い「前日・当日朝」専用は [`eve-review.html`](../eve-review.html) / [docs/eve-review.md](./eve-review.md)。
+
 ## 開き方
 
 - iPhone（Safari）: https://kitaha125-wq.github.io/takken/exam-sheet.html

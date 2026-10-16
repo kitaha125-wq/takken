@@ -31,6 +31,8 @@
 
 **https://kitaha125-wq.github.io/takken/notes-library.html**（PDF全文ノート・検索付き）
 
+**https://kitaha125-wq.github.io/takken/eve-review.html**（試験前日・直前｜これだけ見る）
+
 **https://kitaha125-wq.github.io/takken/exam-sheet.html**（試験前・寝る前の一目要点）
 
 **https://kitaha125-wq.github.io/takken/my-weak-sheet.html**（過去問の要点・読みやすさ優先）
