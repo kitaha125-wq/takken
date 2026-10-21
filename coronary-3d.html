@@ -890,10 +890,10 @@ function updateInfoPanel() {
   const a = ARTERIES.find((x) => x.id === state.selectedId);
   if (!a) {
     chips.innerHTML = `
-      <span class="chip rca">RCA系</span>
-      <span class="chip lad">LAD系</span>
-      <span class="chip lcx">LCx系</span>
-      <span class="chip lmt">LMT</span>`;
+      <button type="button" class="chip rca" data-focus="rca">RCA系</button>
+      <button type="button" class="chip lad" data-focus="lad">LAD系</button>
+      <button type="button" class="chip lcx" data-focus="lcx">LCx系</button>
+      <button type="button" class="chip lmt" data-focus="lmt">LMT</button>`;
     title.textContent = OVERVIEW.name;
     abbr.textContent = OVERVIEW.abbr;
     desc.textContent = OVERVIEW.desc;
@@ -901,13 +901,24 @@ function updateInfoPanel() {
     return;
   }
 
-  chips.innerHTML = `<span class="chip ${a.system}">${a.system.toUpperCase()}</span>`;
+  chips.innerHTML = `
+    <button type="button" class="chip ${a.system} on" data-focus="${a.system}">${a.system.toUpperCase()}</button>
+    <button type="button" class="chip" data-focus="all">全体</button>`;
   title.textContent = a.name;
   abbr.textContent = a.abbr;
   desc.textContent = a.tip;
   meta.innerHTML = `
     <div><strong>灌流域</strong> · ${a.territory}</div>
     <div><strong>主な供給</strong> · ${a.supplies}</div>`;
+}
+
+function focusSystem(system) {
+  if (!system || system === "all") {
+    setSelected(null);
+    return;
+  }
+  const first = ARTERIES.find((a) => a.system === system);
+  if (first) setSelected(first.id);
 }
 
 function renderArteryList() {
@@ -1052,6 +1063,12 @@ document.getElementById("arteryList").addEventListener("click", (e) => {
   const btn = e.target.closest("[data-id]");
   if (!btn) return;
   setSelected(btn.getAttribute("data-id"));
+});
+
+document.getElementById("systemChips").addEventListener("click", (e) => {
+  const chip = e.target.closest("[data-focus]");
+  if (!chip || state.mode === "quiz") return;
+  focusSystem(chip.getAttribute("data-focus"));
 });
 
 document.getElementById("quizChoices").addEventListener("click", (e) => {
