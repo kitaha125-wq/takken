@@ -417,8 +417,10 @@ body {
       <div class="abbr" id="infoAbbr">RCA · LAD · LCx</div>
       <p class="desc" id="infoDesc">画面をドラッグして回転、ピンチ／ホイールで拡大。左の枝リスト、または3D上の血管をタップすると詳細が出ます。</p>
       <div class="meta" id="infoMeta"></div>
-      <div class="list-title">主要枝</div>
-      <div class="artery-list" id="arteryList"></div>
+      <div id="exploreSection">
+        <div class="list-title">主要枝</div>
+        <div class="artery-list" id="arteryList"></div>
+      </div>
       <div class="quiz-box" id="quizBox" hidden>
         <div class="score" id="quizScore">正解 0 / 0</div>
         <div class="quiz-q" id="quizQ"></div>
@@ -934,6 +936,7 @@ function setMode(mode) {
     el.setAttribute("aria-selected", !exploreOn ? "true" : "false");
   });
   document.getElementById("quizBox").hidden = mode !== "quiz";
+  document.getElementById("exploreSection").hidden = mode === "quiz";
   document.getElementById("hintText").textContent =
     mode === "quiz"
       ? "ハイライトされた血管はどの枝？"
@@ -945,7 +948,7 @@ function setMode(mode) {
     document.getElementById("infoAbbr").textContent = "ハイライト枝を当てる";
     document.getElementById("infoDesc").textContent = "3Dで光っている血管の名前を選んでください。";
     document.getElementById("infoMeta").innerHTML = "";
-    renderArteryList();
+    document.getElementById("systemChips").innerHTML = `<span class="chip">クイズモード</span>`;
     nextQuiz(true);
   } else {
     setSelected(state.selectedId);
