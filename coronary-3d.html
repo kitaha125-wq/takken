@@ -56,7 +56,7 @@ body {
 
 .topbar {
   position: relative;
-  z-index: 2;
+  z-index: 4;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -66,7 +66,8 @@ body {
 }
 .brand {
   pointer-events: auto;
-  max-width: min(520px, 72vw);
+  max-width: min(420px, 58vw);
+  flex: 1 1 auto;
 }
 .brand-kicker {
   font-size: 11px;
@@ -89,10 +90,13 @@ body {
 }
 .top-actions {
   pointer-events: auto;
+  position: relative;
+  z-index: 5;
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
   justify-content: flex-end;
+  flex: 0 0 auto;
 }
 .btn {
   appearance: none;
@@ -132,8 +136,19 @@ body {
   height: 100%;
   min-height: 0;
 }
+.mode-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.mode-tabs .btn {
+  flex: 1;
+  text-align: center;
+}
 .panel {
   pointer-events: auto;
+  position: relative;
+  z-index: 3;
   width: min(360px, 92vw);
   max-height: min(62vh, 560px);
   overflow: auto;
@@ -393,6 +408,10 @@ body {
 
   <div class="hud">
     <aside class="panel" id="infoPanel">
+      <div class="mode-tabs" role="tablist" aria-label="学習モード">
+        <button class="btn active" id="btnExplorePanel" type="button" role="tab" aria-selected="true">探索</button>
+        <button class="btn" id="btnQuizPanel" type="button" role="tab" aria-selected="false">クイズ</button>
+      </div>
       <div class="chip-row" id="systemChips"></div>
       <h2 id="infoTitle">全体を見る</h2>
       <div class="abbr" id="infoAbbr">RCA · LAD · LCx</div>
@@ -818,28 +837,29 @@ function setSelected(id, { fromQuiz = false } = {}) {
     if (!id) {
       mat.color.setHex(mesh.userData.baseColor);
       mat.emissive.setHex(mesh.userData.baseColor);
-      mat.emissiveIntensity = 0.08;
+      mat.emissiveIntensity = 0.12;
       mat.opacity = 1;
       mat.transparent = false;
     } else if (selected) {
       mat.color.setHex(COLORS.highlight);
-      mat.emissive.setHex(COLORS.highlight);
-      mat.emissiveIntensity = 0.35;
+      mat.emissive.setHex(0xffcc55);
+      mat.emissiveIntensity = 0.55;
       mat.opacity = 1;
       mat.transparent = false;
     } else if (sameSystem) {
       mat.color.setHex(mesh.userData.baseColor);
       mat.emissive.setHex(mesh.userData.baseColor);
-      mat.emissiveIntensity = 0.18;
-      mat.opacity = 1;
-      mat.transparent = false;
+      mat.emissiveIntensity = 0.22;
+      mat.opacity = 0.95;
+      mat.transparent = true;
     } else {
       mat.color.setHex(COLORS.dim);
       mat.emissive.setHex(0x000000);
       mat.emissiveIntensity = 0;
       mat.transparent = true;
-      mat.opacity = 0.22;
+      mat.opacity = 0.18;
     }
+    mat.needsUpdate = true;
   });
   updateInfoPanel();
   if (!fromQuiz) renderArteryList();
@@ -900,8 +920,19 @@ function renderArteryList() {
 
 function setMode(mode) {
   state.mode = mode;
-  document.getElementById("btnExplore").classList.toggle("active", mode === "explore");
-  document.getElementById("btnQuiz").classList.toggle("active", mode === "quiz");
+  const exploreOn = mode === "explore";
+  ["btnExplore", "btnExplorePanel"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle("active", exploreOn);
+    el.setAttribute("aria-selected", exploreOn ? "true" : "false");
+  });
+  ["btnQuiz", "btnQuizPanel"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle("active", !exploreOn);
+    el.setAttribute("aria-selected", !exploreOn ? "true" : "false");
+  });
   document.getElementById("quizBox").hidden = mode !== "quiz";
   document.getElementById("hintText").textContent =
     mode === "quiz"
@@ -910,6 +941,11 @@ function setMode(mode) {
 
   if (mode === "quiz") {
     state.quiz = { index: 0, correct: 0, total: 0, answered: false, order: shuffle(ARTERIES.map((a) => a.id)) };
+    document.getElementById("infoTitle").textContent = "クイズ";
+    document.getElementById("infoAbbr").textContent = "ハイライト枝を当てる";
+    document.getElementById("infoDesc").textContent = "3Dで光っている血管の名前を選んでください。";
+    document.getElementById("infoMeta").innerHTML = "";
+    renderArteryList();
     nextQuiz(true);
   } else {
     setSelected(state.selectedId);
@@ -1014,8 +1050,14 @@ document.getElementById("quizChoices").addEventListener("click", (e) => {
 });
 
 document.getElementById("quizNext").addEventListener("click", () => nextQuiz(true));
-document.getElementById("btnExplore").addEventListener("click", () => setMode("explore"));
-document.getElementById("btnQuiz").addEventListener("click", () => setMode("quiz"));
+function bindMode(id, mode) {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener("click", () => setMode(mode));
+}
+bindMode("btnExplore", "explore");
+bindMode("btnExplorePanel", "explore");
+bindMode("btnQuiz", "quiz");
+bindMode("btnQuizPanel", "quiz");
 document.getElementById("btnAuto").addEventListener("click", () => {
   state.autoRotate = !state.autoRotate;
   controls.autoRotate = state.autoRotate;
