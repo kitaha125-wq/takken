@@ -192,16 +192,24 @@ body {
 .meta strong { color: var(--ink); font-weight: 700; }
 .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 .chip {
+  appearance: none;
+  font: inherit;
   font-size: 11px;
   padding: 4px 8px;
   border-radius: 999px;
   border: 1px solid var(--line);
   color: var(--muted);
+  background: transparent;
+  cursor: pointer;
 }
 .chip.rca { color: #ffb4a8; border-color: rgba(232, 93, 76, 0.45); }
 .chip.lad { color: #9be8dc; border-color: rgba(61, 184, 168, 0.45); }
 .chip.lcx { color: #a8c8ff; border-color: rgba(91, 143, 217, 0.45); }
 .chip.lmt { color: #ffe29a; border-color: rgba(230, 184, 77, 0.45); }
+.chip.on {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ink);
+}
 
 .list-title {
   font-size: 12px;
