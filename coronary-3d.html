@@ -397,7 +397,9 @@ body {
     <div class="loader-inner">
       <div class="loader-title">冠動脈解剖</div>
       <div style="color:var(--muted);font-size:13px;letter-spacing:0.12em">3D LEARNING</div>
-      <div class="loader-bar"></div>
+      <div class="loader-bar" id="loaderBar"></div>
+      <p id="loaderMsg" style="display:none;margin-top:18px;max-width:280px;font-size:13px;line-height:1.6;color:#ffb4a8"></p>
+      <button id="loaderRetry" type="button" class="btn primary" style="display:none;margin:16px auto 0">再読み込み</button>
     </div>
   </div>
 
@@ -456,17 +458,53 @@ body {
   </footer>
 </div>
 
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+<script>
+(function () {
+  var msg = document.getElementById("loaderMsg");
+  var bar = document.getElementById("loaderBar");
+  var retry = document.getElementById("loaderRetry");
+  function fail(text) {
+    if (bar) bar.style.display = "none";
+    if (msg) { msg.style.display = "block"; msg.textContent = text; }
+    if (retry) {
+      retry.style.display = "block";
+      retry.onclick = function () { location.reload(); };
+    }
   }
-}
+  window.__coronaryFail = fail;
+  var urls = [
+    "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"
+  ];
+  var i = 0;
+  function loadNext() {
+    if (i >= urls.length) {
+      fail("3Dライブラリを読めませんでした。ネット接続を確認して再読み込みしてください。");
+      return;
+    }
+    var s = document.createElement("script");
+    s.src = urls[i++];
+    s.async = true;
+    s.onload = function () {
+      if (!window.THREE) { loadNext(); return; }
+      try { window.__startCoronary3D(); }
+      catch (err) {
+        console.error(err);
+        fail("表示に失敗しました。再読み込みを試してください。");
+      }
+    };
+    s.onerror = loadNext;
+    document.head.appendChild(s);
+  }
+  setTimeout(function () {
+    if (!window.THREE) fail("読み込みが遅いです。通信状況を確認するか、再読み込みしてください。");
+  }, 12000);
+  loadNext();
+})();
 </script>
-<script type="module">
-import * as THREE from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+<script>
+window.__startCoronary3D = function () {
+const THREE = window.THREE;
 
 const COLORS = {
   heart: 0x8a3a45,
@@ -707,24 +745,101 @@ const state = {
 };
 
 const viewport = document.getElementById("viewport");
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+if (!viewport) throw new Error("viewport missing");
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-renderer.setSize(viewport.clientWidth, viewport.clientHeight);
-renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.setSize(viewport.clientWidth || window.innerWidth, viewport.clientHeight || window.innerHeight);
+if (THREE.SRGBColorSpace) renderer.outputColorSpace = THREE.SRGBColorSpace;
 viewport.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(42, viewport.clientWidth / Math.max(viewport.clientHeight, 1), 0.1, 100);
+const camera = new THREE.PerspectiveCamera(42, (viewport.clientWidth || 1) / Math.max(viewport.clientHeight || 1, 1), 0.1, 100);
 camera.position.set(2.8, 1.4, 3.4);
 
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.06;
-controls.minDistance = 2.2;
-controls.maxDistance = 7;
-controls.target.set(0, 0.05, 0);
-controls.autoRotate = true;
-controls.autoRotateSpeed = 0.55;
+/** OrbitControls 非依存の簡易カメラ操作（iPhone向け） */
+const controls = {
+  target: new THREE.Vector3(0, 0.05, 0),
+  minDistance: 2.2,
+  maxDistance: 7,
+  autoRotate: true,
+  autoRotateSpeed: 0.55,
+  damping: 0.08,
+  spherical: new THREE.Spherical().setFromVector3(camera.position.clone().sub(new THREE.Vector3(0, 0.05, 0))),
+  _velTheta: 0,
+  _velPhi: 0,
+  _dragging: false,
+  _lastX: 0,
+  _lastY: 0,
+  _pinchStart: 0,
+  _distStart: 0,
+  update() {
+    if (this.autoRotate && !this._dragging) this.spherical.theta -= 0.0055 * this.autoRotateSpeed;
+    this.spherical.theta += this._velTheta;
+    this.spherical.phi += this._velPhi;
+    this._velTheta *= 1 - this.damping;
+    this._velPhi *= 1 - this.damping;
+    this.spherical.phi = Math.max(0.2, Math.min(Math.PI - 0.2, this.spherical.phi));
+    this.spherical.radius = Math.max(this.minDistance, Math.min(this.maxDistance, this.spherical.radius));
+    const offset = new THREE.Vector3().setFromSpherical(this.spherical);
+    camera.position.copy(this.target).add(offset);
+    camera.lookAt(this.target);
+  },
+  reset() {
+    this.target.set(0, 0.05, 0);
+    camera.position.set(2.8, 1.4, 3.4);
+    this.spherical.setFromVector3(camera.position.clone().sub(this.target));
+    this._velTheta = 0;
+    this._velPhi = 0;
+  },
+};
+controls.spherical.setFromVector3(camera.position.clone().sub(controls.target));
+
+(function bindOrbit(el) {
+  el.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "touch" && e.isPrimary === false) return;
+    controls._dragging = true;
+    controls._lastX = e.clientX;
+    controls._lastY = e.clientY;
+    try { el.setPointerCapture(e.pointerId); } catch (_) {}
+  });
+  el.addEventListener("pointermove", (e) => {
+    if (!controls._dragging) return;
+    const dx = e.clientX - controls._lastX;
+    const dy = e.clientY - controls._lastY;
+    controls._lastX = e.clientX;
+    controls._lastY = e.clientY;
+    controls.spherical.theta -= dx * 0.005;
+    controls.spherical.phi -= dy * 0.005;
+    controls._velTheta = -dx * 0.0008;
+    controls._velPhi = -dy * 0.0008;
+  });
+  function endDrag(e) {
+    controls._dragging = false;
+    try { el.releasePointerCapture(e.pointerId); } catch (_) {}
+  }
+  el.addEventListener("pointerup", endDrag);
+  el.addEventListener("pointercancel", endDrag);
+  el.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    controls.spherical.radius *= e.deltaY > 0 ? 1.08 : 0.92;
+  }, { passive: false });
+  el.addEventListener("touchstart", (e) => {
+    if (e.touches.length === 2) {
+      const a = e.touches[0], b = e.touches[1];
+      controls._pinchStart = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+      controls._distStart = controls.spherical.radius;
+      controls._dragging = false;
+    }
+  }, { passive: true });
+  el.addEventListener("touchmove", (e) => {
+    if (e.touches.length === 2 && controls._pinchStart) {
+      const a = e.touches[0], b = e.touches[1];
+      const dist = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+      controls.spherical.radius = controls._distStart * (controls._pinchStart / Math.max(dist, 1));
+    }
+  }, { passive: true });
+})(renderer.domElement);
 
 scene.add(new THREE.AmbientLight(0xb8d0dc, 0.55));
 const key = new THREE.DirectionalLight(0xffffff, 1.15);
@@ -1092,9 +1207,7 @@ document.getElementById("btnAuto").addEventListener("click", () => {
   document.getElementById("btnAuto").classList.toggle("active", state.autoRotate);
 });
 document.getElementById("btnReset").addEventListener("click", () => {
-  camera.position.set(2.8, 1.4, 3.4);
-  controls.target.set(0, 0.05, 0);
-  controls.update();
+  controls.reset();
   if (state.mode === "explore") setSelected(null);
 });
 document.getElementById("btnHeart").addEventListener("click", () => {
@@ -1135,8 +1248,10 @@ setSelected(null);
 animate();
 onResize();
 requestAnimationFrame(() => {
-  document.getElementById("loader").classList.add("hide");
+  const loader = document.getElementById("loader");
+  if (loader) loader.classList.add("hide");
 });
+}; // end __startCoronary3D
 </script>
 </body>
 </html>
